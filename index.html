@@ -1,6 +1,6 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,47 +9,50 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body {
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             background-color: #f0f2f5;
         }
-
         #app-container {
             width: 100%;
+            height: 100vh;
             background-color: white;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
-
-        #app {
+         #app {
             flex-grow: 1;
             overflow-y: auto;
-            -ms-overflow-style: none;
-            /* IE and Edge */
-            scrollbar-width: none;
-            /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
-
         #app::-webkit-scrollbar {
-            display: none;
-            /* Chrome, Safari, Opera */
+            display: none; /* Chrome, Safari, Opera */
         }
-
+        #teamAdminDashboard #app {
+            -ms-overflow-style: auto;
+            scrollbar-width: auto;
+        }
+        #teamAdminDashboard #app::-webkit-scrollbar {
+            display: block;
+        }
         .page {
             display: none;
         }
-
         .page.active {
             display: block;
         }
-
         .card {
             background-color: white;
             padding: 24px;
         }
-
         .btn {
             padding: 10px 20px;
             border-radius: 6px;
@@ -58,57 +61,45 @@
             transition: background-color 0.3s;
             text-align: center;
         }
-
         .btn-sm {
             padding: 5px 10px;
             font-size: 0.875rem;
         }
-
         .btn-primary {
             background-color: #1877f2;
             color: white;
         }
-
         .btn-primary:hover {
             background-color: #166fe5;
         }
-
         .btn-secondary {
             background-color: #e4e6eb;
             color: #050505;
         }
-
         .btn-secondary:hover {
             background-color: #d8dade;
         }
-
         .btn-danger {
             background-color: #fa383e;
             color: white;
         }
-
-        .btn-danger:hover {
+         .btn-danger:hover {
             background-color: #e32128;
         }
-
         .btn-warning {
             background-color: #f59e0b;
             color: white;
         }
-
         .btn-warning:hover {
             background-color: #d97706;
         }
-
         .btn-success {
             background-color: #10b981;
             color: white;
         }
-
         .btn-success:hover {
             background-color: #059669;
         }
-
         .input-field {
             width: 100%;
             padding: 10px;
@@ -116,29 +107,24 @@
             border-radius: 6px;
             margin-bottom: 12px;
         }
-
-        #currentReportItemsTable th,
-        #currentReportItemsTable td {
+        #currentReportItemsTable th, #currentReportItemsTable td {
             padding: 8px 12px;
             border: 1px solid #e2e8f0;
         }
-
+        
         #reportTable {
             border-collapse: collapse;
             width: 100%;
             background: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 0.7rem; /* Smaller font size */
         }
-
-        #reportTable th,
-        #reportTable td {
+        #reportTable th, #reportTable td {
             border: 1px solid #ddd;
-            padding: 4px;
+            padding: 3px; /* Smaller padding */
             text-align: center;
             white-space: nowrap;
         }
-
         #reportTable th {
             background: #0867d2;
             color: white;
@@ -146,47 +132,35 @@
             top: 0;
             z-index: 10;
         }
-
         /* Freeze first two columns */
-        #reportTable th:first-child,
-        #reportTable td:first-child {
+        #reportTable th:first-child, #reportTable td:first-child {
             position: sticky;
             left: 0;
             z-index: 11;
             background: #f1f5f9;
+            min-width: 100px;
         }
-
-        #reportTable th:nth-child(2),
-        #reportTable td:nth-child(2) {
+        #reportTable th:nth-child(2), #reportTable td:nth-child(2) {
             position: sticky;
-            left: 150px;
-            /* Adjust this value based on first column's width */
+            left: 100px; /* Adjust this value based on first column's width */
             z-index: 11;
             background: #f1f5f9;
         }
-
-        #reportTable th:first-child,
-        #reportTable th:nth-child(2) {
+         #reportTable th:first-child, #reportTable th:nth-child(2) {
             background: #0867d2;
             color: white;
         }
-
         #reportTable tfoot td {
             font-weight: bold;
             background: #f1f5f9;
         }
-
         #reportTable .summary-header {
-            background: #4a148c;
-            /* Purple for Summary Header */
+            background: #4a148c; /* Purple for Summary Header */
         }
-
         #reportTable .summary-col {
-            background: #f3e5f5;
-            /* Light purple for summary data columns */
-            font-weight: bold;
+             background: #f3e5f5; /* Light purple for summary data columns */
+             font-weight: bold;
         }
-
         .search-suggestions {
             border: 1px solid #ddd;
             max-height: 200px;
@@ -196,16 +170,13 @@
             z-index: 100;
             width: 100%;
         }
-
         .suggestion-item {
             padding: 8px;
             cursor: pointer;
         }
-
         .suggestion-item:hover {
             background-color: #f0f2f5;
         }
-
         .neon-glow-btn {
             background-color: #059669;
             color: white;
@@ -218,27 +189,22 @@
             box-shadow: 0 0 5px #10b981, 0 0 15px #10b981, 0 0 25px #10b981, 0 0 35px #10b981;
             transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
         }
-
         .neon-glow-btn:hover {
-            background-color: #06d6a0;
-            box-shadow: 0 0 10px #06d6a0, 0 0 25px #06d6a0, 0 0 40px #06d6a0, 0 0 60px #06d6a0;
+             background-color: #06d6a0;
+             box-shadow: 0 0 10px #06d6a0, 0 0 25px #06d6a0, 0 0 40px #06d6a0, 0 0 60px #06d6a0;
         }
-
-        .grouped-product-table th,
-        .grouped-product-table td {
+        .grouped-product-table th, .grouped-product-table td {
             padding: 6px;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
             font-size: 0.8rem;
         }
-
         .grouped-product-table .group-header {
             background-color: #f1f5f9;
             font-weight: 700;
             color: #1e293b;
             padding: 10px 8px;
         }
-
         .grouped-product-table .inline-input {
             width: 50px;
             padding: 4px;
@@ -247,321 +213,382 @@
             text-align: center;
             font-size: 0.8rem;
         }
-
         .toggle-btn {
             cursor: pointer;
             color: #1877f2;
             font-weight: 500;
             margin-left: 8px;
         }
+
     </style>
 </head>
-
 <body class="antialiased font-sans">
-    <div id="app-container">
-        <div id="app" class="container mx-auto p-4">
+<div id="app-container">
+    <div id="app" class="container mx-auto p-4">
 
-            <!-- Main Login Page -->
-            <div id="mainLoginPage" class="page active">
-                <div class="card max-w-md mx-auto mt-8 md:mt-16">
-                    <h1 class="text-2xl font-bold text-center mb-6">Welcome to Sales Report App</h1>
-                    <p class="text-center text-gray-600 mb-6">Login to continue</p>
-                    <div class="flex flex-col space-y-4">
-                        <button onclick="showPage('superAdminLoginPage')" class="btn btn-primary">Super Admin Login</button>
-                        <button onclick="showPage('teamAdminLoginPage')" class="btn btn-primary">Team Admin Login</button>
-                        <button onclick="showPage('teamMemberLoginPage')" class="btn btn-primary">Team Member Login</button>
-                    </div>
+        <!-- Main Login Page -->
+        <div id="mainLoginPage" class="page active">
+            <div class="card max-w-md mx-auto mt-8 md:mt-16">
+                <h1 class="text-2xl font-bold text-center mb-6">Welcome to Sales Report App</h1>
+                <p class="text-center text-gray-600 mb-6">Login to continue</p>
+                <div class="flex flex-col space-y-4">
+                    <button onclick="showPage('superAdminLoginPage')" class="btn btn-primary">Super Admin Login</button>
+                    <button onclick="showPage('teamAdminLoginPage')" class="btn btn-primary">Team Admin Login</button>
+                    <button onclick="showPage('teamMemberLoginPage')" class="btn btn-primary">Team Member Login</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Super Admin Login Page -->
-            <div id="superAdminLoginPage" class="page">
-                <div class="card max-w-md mx-auto mt-8 md:mt-16">
-                    <h2 class="text-xl font-bold mb-4">Super Admin Login</h2>
-                    <input type="password" id="superAdminPassword" class="input-field" placeholder="Enter password">
-                    <button onclick="loginSuperAdmin()" class="btn btn-primary w-full">Login</button>
-                    <button onclick="showPage('mainLoginPage')" class="btn btn-secondary w-full mt-2">Back to Main Menu</button>
-                </div>
+        <!-- Super Admin Login Page -->
+        <div id="superAdminLoginPage" class="page">
+             <div class="card max-w-md mx-auto mt-8 md:mt-16">
+                <h2 class="text-xl font-bold mb-4">Super Admin Login</h2>
+                <input type="password" id="superAdminPassword" class="input-field" placeholder="Enter password">
+                <button onclick="loginSuperAdmin()" class="btn btn-primary w-full">Login</button>
+                <button onclick="showPage('mainLoginPage')" class="btn btn-secondary w-full mt-2">Back to Main Menu</button>
             </div>
+        </div>
 
-            <!-- Team Admin Login Page -->
-            <div id="teamAdminLoginPage" class="page">
-                <div class="card max-w-md mx-auto mt-8 md:mt-16">
-                    <h2 class="text-xl font-bold mb-4">Team Admin Login</h2>
-                    <input type="text" id="teamAdminUsername" class="input-field" placeholder="Username">
-                    <input type="password" id="teamAdminPassword" class="input-field" placeholder="Password">
-                    <button onclick="loginTeamAdmin()" class="btn btn-primary w-full">Login</button>
-                    <button onclick="showPage('mainLoginPage')" class="btn btn-secondary w-full mt-2">Back to Main Menu</button>
-                </div>
+        <!-- Team Admin Login Page -->
+        <div id="teamAdminLoginPage" class="page">
+            <div class="card max-w-md mx-auto mt-8 md:mt-16">
+                <h2 class="text-xl font-bold mb-4">Team Admin Login</h2>
+                <input type="text" id="teamAdminUsername" class="input-field" placeholder="Username">
+                <input type="password" id="teamAdminPassword" class="input-field" placeholder="Password">
+                <button onclick="loginTeamAdmin()" class="btn btn-primary w-full">Login</button>
+                <button onclick="showPage('mainLoginPage')" class="btn btn-secondary w-full mt-2">Back to Main Menu</button>
             </div>
-
-            <!-- Team Member Login Page -->
-            <div id="teamMemberLoginPage" class="page">
-                <div class="card max-w-md mx-auto mt-8 md:mt-16">
-                    <h2 class="text-xl font-bold mb-4">Team Member Login</h2>
-                    <input type="text" id="teamMemberUsername" class="input-field" placeholder="Username">
-                    <input type="password" id="teamMemberPassword" class="input-field" placeholder="Password">
-                    <button onclick="loginTeamMember()" class="btn btn-primary w-full">Login</button>
-                    <button onclick="showPage('mainLoginPage')" class="btn btn-secondary w-full mt-2">Back to Main Menu</button>
-                </div>
+        </div>
+        
+        <!-- Team Member Login Page -->
+        <div id="teamMemberLoginPage" class="page">
+            <div class="card max-w-md mx-auto mt-8 md:mt-16">
+                <h2 class="text-xl font-bold mb-4">Team Member Login</h2>
+                <input type="text" id="teamMemberUsername" class="input-field" placeholder="Username">
+                <input type="password" id="teamMemberPassword" class="input-field" placeholder="Password">
+                <button onclick="loginTeamMember()" class="btn btn-primary w-full">Login</button>
+                <button onclick="showPage('mainLoginPage')" class="btn btn-secondary w-full mt-2">Back to Main Menu</button>
             </div>
+        </div>
 
 
-            <!-- Super Admin Dashboard -->
-            <div id="superAdminDashboard" class="page">
-                <div class="card">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                        <h2 class="text-2xl font-bold mb-4 md:mb-0">Super Admin Dashboard</h2>
-                        <button onclick="logout()" class="btn btn-danger w-full md:w-auto">Logout</button>
+        <!-- Super Admin Dashboard -->
+        <div id="superAdminDashboard" class="page">
+            <div class="card">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Super Admin Dashboard</h2>
+                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
+                </div>
+
+                <div class="mb-8">
+                    <button onclick="showPage('createTeamAdminPage')" class="btn btn-primary">Create New Team Admin</button>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-2">Manage Team Admins (<span id="teamAdminCount">0</span>)</h3>
+                    <div id="teamAdminsList" class="space-y-2"></div>
+                </div>
+                
+                 <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-2">Change Super Admin Password</h3>
+                    <div class="p-4 border rounded-lg space-y-4 max-w-md">
+                        <input type="password" id="newSuperAdminPassword" class="input-field" placeholder="New Password">
+                        <input type="password" id="confirmSuperAdminPassword" class="input-field" placeholder="Confirm New Password">
+                        <button onclick="changeSuperAdminPassword()" class="btn btn-warning w-full">Change Password</button>
                     </div>
+                </div>
 
-                    <div class="mb-8">
-                        <button onclick="showPage('createTeamAdminPage')" class="btn btn-primary">Create New Team Admin</button>
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-2">Notice for Team Admins</h3>
+                    <div class="p-4 border rounded-lg space-y-4">
+                        <textarea id="superAdminNotice" class="input-field !mb-0" placeholder="Write notice for team admins..."></textarea>
+                        <button onclick="saveSuperAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
+                         <button onclick="deleteSuperAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
                     </div>
+                </div>
 
-                    <div class="mb-8">
-                        <h3 class="text-lg font-semibold mb-2">Manage Team Admins (<span id="teamAdminCount">0</span>)</h3>
-                        <div id="teamAdminsList" class="space-y-2"></div>
-                    </div>
-
-                    <div class="mb-8">
-                        <h3 class="text-lg font-semibold mb-2">Change Super Admin Password</h3>
-                        <div class="p-4 border rounded-lg space-y-4 max-w-md">
-                            <input type="password" id="newSuperAdminPassword" class="input-field" placeholder="New Password">
-                            <input type="password" id="confirmSuperAdminPassword" class="input-field" placeholder="Confirm New Password">
-                            <button onclick="changeSuperAdminPassword()" class="btn btn-warning w-full">Change Password</button>
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold mb-2">Manage Advertisements</h3>
+                    <div class="p-4 border rounded-lg space-y-4">
+                        <div>
+                            <label for="popunderAd" class="font-semibold text-sm">Popunder Ad URL</label>
+                            <input type="text" id="popunderAd" class="input-field !mb-0" placeholder="https://example.com/popunder">
                         </div>
-                    </div>
-
-                    <div class="mb-8">
-                        <h3 class="text-lg font-semibold mb-2">Notice for Team Admins</h3>
-                        <div class="p-4 border rounded-lg space-y-4">
-                            <textarea id="superAdminNotice" class="input-field !mb-0" placeholder="Write notice for team admins..."></textarea>
-                            <button onclick="saveSuperAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
-                            <button onclick="deleteSuperAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
+                        <div>
+                            <label for="bannerAd" class="font-semibold text-sm">Banner Ad URL</label>
+                            <input type="text" id="bannerAd" class="input-field !mb-0" placeholder="https://example.com/banner.jpg">
                         </div>
+                        <div>
+                            <label for="nativeBannerAd" class="font-semibold text-sm">Native Banner Ad URL</label>
+                            <input type="text" id="nativeBannerAd" class="input-field !mb-0" placeholder="https://example.com/native_banner.jpg">
+                        </div>
+                        <button onclick="saveAdvertisements()" class="btn btn-primary w-full">Save Advertisements</button>
                     </div>
+                </div>
 
-                    <div class="mb-8">
-                        <h3 class="text-lg font-semibold mb-2">Manage Advertisements</h3>
-                        <div class="p-4 border rounded-lg space-y-4">
+            </div>
+        </div>
+        
+        <!-- Create Team Admin Page -->
+        <div id="createTeamAdminPage" class="page">
+            <div class="card max-w-md mx-auto mt-8 md:mt-16">
+                <h3 class="text-xl font-bold mb-4">Create New Team Admin</h3>
+                <input type="text" id="newTeamAdminUsername" class="input-field" placeholder="Team Admin Username">
+                <input type="password" id="newTeamAdminPassword" class="input-field" placeholder="Password">
+                <button onclick="createTeamAdmin()" class="btn btn-primary w-full">Create Team Admin</button>
+                <button onclick="showPage('superAdminDashboard')" class="btn btn-secondary w-full mt-2">Back to Dashboard</button>
+            </div>
+        </div>
+
+        <!-- Team Admin Dashboard -->
+        <div id="teamAdminDashboard" class="page">
+             <div class="card">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Admin Dashboard</h2>
+                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
+                </div>
+                <p class="mb-6">Welcome, <span id="loggedInTeamAdminUsername" class="font-semibold"></span>!</p>
+                <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
+
+                <div class="mb-8">
+                     <button onclick="showPage('createTeamMemberPage')" class="btn btn-primary">Create New Team Member</button>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center mb-2">
+                        <h3 class="text-lg font-semibold">Manage Team Members</h3>
+                        <span id="toggleTeamMembers" class="toggle-btn text-sm">[Hide]</span>
+                    </div>
+                    <div id="teamMembersList" class="space-y-2"></div>
+                </div>
+
+                <div class="mb-8">
+                     <div class="flex items-center mb-2">
+                        <h3 class="text-lg font-semibold">Notice for Team Members</h3>
+                        <span id="toggleAdminNotice" class="toggle-btn text-sm">[Hide]</span>
+                    </div>
+                    <div id="teamAdminNoticeSection" class="p-4 border rounded-lg space-y-4">
+                        <textarea id="teamAdminNotice" class="input-field !mb-0" placeholder="Write notice for team members..."></textarea>
+                        <button onclick="saveTeamAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
+                        <button onclick="deleteTeamAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
+                    </div>
+                </div>
+
+                 <div class="mb-8">
+                    <div class="flex items-center mb-2">
+                        <h3 class="text-lg font-semibold">Add New Product</h3>
+                        <span id="toggleAddProduct" class="toggle-btn text-sm">[Show]</span>
+                    </div>
+                    <div id="addProductSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
+                        <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
+                        <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
+                        
+                        <label for="existingCategorySelect" class="text-sm font-medium text-gray-700">Select Existing Category</label>
+                        <select id="existingCategorySelect" class="input-field" onchange="handleExistingCategorySelect()">
+                           <!-- Options will be populated by JS -->
+                        </select>
+                        
+                        <label for="newProductCategory" class="text-sm font-medium text-gray-700">Or, Add New Category</label>
+                        <input type="text" id="newProductCategory" class="input-field" placeholder="Type new category name..." oninput="handleNewCategoryInput()">
+                        
+                        <button onclick="addNewProduct()" class="btn btn-primary w-full">Add Product</button>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                     <div class="flex items-center mb-2">
+                        <h3 class="text-lg font-semibold">Manage Products</h3>
+                        <span id="toggleManageProducts" class="toggle-btn text-sm">[Hide]</span>
+                    </div>
+                    <div id="manageProductSection">
+                         <div class="relative mb-2">
+                            <input type="text" id="adminProductSearch" class="input-field" placeholder="Search for a product..." oninput="filterProductsForAdmin(this.value)">
+                        </div>
+                        <div id="productListForAdmin" class="space-y-2 max-h-96 overflow-y-auto p-2 border rounded-md"></div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center mb-2">
+                        <h3 class="text-lg font-semibold">Manage Notification System</h3>
+                        <span id="toggleNotificationSystem" class="toggle-btn text-sm">[Show]</span>
+                    </div>
+                    <div id="notificationSystemSection" class="p-4 border rounded-lg space-y-6" style="display: none;">
+                        <div class="flex items-center justify-between">
+                            <label for="enableNotifications" class="font-semibold text-gray-700">Enable Notification System</label>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="enableNotifications" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Message (for non-submitters)</label>
+                            <textarea id="reminderMessage" rows="3" class="input-field !mb-0" placeholder="Message for members who have not submitted their report..."></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="popunderAd" class="font-semibold text-sm">Popunder Ad URL</label>
-                                <input type="text" id="popunderAd" class="input-field !mb-0" placeholder="https://example.com/popunder">
+                                <label for="reminderTime1" class="block text-sm font-medium text-gray-700 mb-1">First Reminder Time</label>
+                                <input type="time" id="reminderTime1" class="input-field !mb-0">
                             </div>
-                            <div>
-                                <label for="bannerAd" class="font-semibold text-sm">Banner Ad URL</label>
-                                <input type="text" id="bannerAd" class="input-field !mb-0" placeholder="https://example.com/banner.jpg">
+                             <div>
+                                <label for="reminderTime2" class="block text-sm font-medium text-gray-700 mb-1">Second Reminder Time</label>
+                                <input type="time" id="reminderTime2" class="input-field !mb-0">
                             </div>
-                            <div>
-                                <label for="nativeBannerAd" class="font-semibold text-sm">Native Banner Ad URL</label>
-                                <input type="text" id="nativeBannerAd" class="input-field !mb-0" placeholder="https://example.com/native_banner.jpg">
-                            </div>
-                            <button onclick="saveAdvertisements()" class="btn btn-primary w-full">Save Advertisements</button>
                         </div>
-                    </div>
 
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Thank You Message (for submitters)</label>
+                            <textarea id="thankYouMessage" rows="2" class="input-field !mb-0" placeholder="Message for members who have submitted their report..."></textarea>
+                        </div>
+
+                        <button onclick="saveNotificationSettings()" class="btn btn-primary w-full">Save Settings</button>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Create Team Admin Page -->
-            <div id="createTeamAdminPage" class="page">
-                <div class="card max-w-md mx-auto mt-8 md:mt-16">
-                    <h3 class="text-xl font-bold mb-4">Create New Team Admin</h3>
-                    <input type="text" id="newTeamAdminUsername" class="input-field" placeholder="Team Admin Username">
-                    <input type="password" id="newTeamAdminPassword" class="input-field" placeholder="Password">
-                    <button onclick="createTeamAdmin()" class="btn btn-primary w-full">Create Team Admin</button>
-                    <button onclick="showPage('superAdminDashboard')" class="btn btn-secondary w-full mt-2">Back to Dashboard</button>
+                
+                 <div class="mb-8">
+                    <div class="flex items-center mb-2">
+                        <h3 class="text-lg font-semibold">Manage Logout Settings</h3>
+                        <span id="toggleLogoutSettings" class="toggle-btn text-sm">[Show]</span>
+                    </div>
+                    <div id="logoutSettingsSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
+                        <div>
+                            <label for="logoutClickCount" class="block text-sm font-medium text-gray-700 mb-1">Required Clicks to Logout</label>
+                            <input type="number" id="logoutClickCount" class="input-field !mb-0" placeholder="e.g., 10">
+                        </div>
+                        <button onclick="saveLogoutSettings()" class="btn btn-primary w-full">Save Logout Clicks</button>
+                    </div>
                 </div>
+
+
+                <!-- Team Report Section -->
+                <div id="teamReportSection" class="mb-8">
+                    <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
+                    
+                    <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
+                        <div class="flex items-center space-x-2">
+                            <label for="reportDate" class="font-semibold whitespace-nowrap">Select Date:</label>
+                            <input type="date" id="reportDate" onchange="renderTeamAdminReports()" class="input-field !mb-0 w-auto">
+                        </div>
+                         <button onclick="exportReportToExcel()" class="btn btn-success">Export</button>
+                         <button onclick="copyTable()" class="btn btn-secondary">Copy</button>
+                    </div>
+
+                    <div id="reportSubmissionStatus" class="mb-4 p-4 border rounded-lg bg-gray-50">
+                        <!-- Submission status will be rendered here -->
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
+                        <table id="reportTable">
+                            <thead>
+                              <tr id="memberRow">
+                              </tr>
+                              <tr id="subHeaderRow">
+                              </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                            <tfoot id="tableFoot">
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                 <div class="mt-8">
+                    <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
+                    <div class="grid grid-cols-2 gap-4 items-center">
+                        <div>
+                            <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
+                            <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
+                        </div>
+                         <div>
+                            <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
+                            <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
+                        </div>
+                    </div>
+                    <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full mt-4">View Report</button>
+                </div>
+
             </div>
+        </div>
+        
+         <!-- Create Team Member Page -->
+        <div id="createTeamMemberPage" class="page">
+            <div class="card max-w-md mx-auto mt-8 md:mt-16">
+                 <h3 class="text-xl font-bold mb-4">Create New Team Member</h3>
+                <input type="text" id="newTeamMemberName" class="input-field" placeholder="Team Member Name">
+                <input type="text" id="newTeamMemberUsername" class="input-field" placeholder="Team Member Username">
+                <input type="password" id="newTeamMemberPassword" class="input-field" placeholder="Password">
+                <button onclick="createTeamMember()" class="btn btn-primary w-full">Create Team Member</button>
+                <button onclick="showPage('teamAdminDashboard')" class="btn btn-secondary w-full mt-2">Back to Dashboard</button>
+            </div>
+        </div>
 
-            <!-- Team Admin Dashboard -->
-            <div id="teamAdminDashboard" class="page">
-                <div class="card">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                        <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Admin Dashboard</h2>
-                        <button onclick="logout()" class="btn btn-danger w-full md:w-auto">Logout</button>
-                    </div>
-                    <p class="mb-6">Welcome, <span id="loggedInTeamAdminUsername" class="font-semibold"></span>!</p>
-                    <div id="superAdminNoticeContainer" class="mb-4"></div>
+        <!-- Team Member Dashboard -->
+        <div id="teamMemberDashboard" class="page">
+            <div class="card">
+                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Member Dashboard</h2>
+                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
+                </div>
+                <p class="mb-6">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
 
-                    <div class="mb-8">
-                        <button onclick="showPage('createTeamMemberPage')" class="btn btn-primary">Create New Team Member</button>
-                    </div>
-
-                    <div class="mb-8">
-                        <div class="flex items-center mb-2">
-                            <h3 class="text-lg font-semibold">Manage Team Members</h3>
-                            <span id="toggleTeamMembers" class="toggle-btn text-sm">[Hide]</span>
+                <div id="submitReportContainer" class="mb-8 p-4 border rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2">Submit Daily Sales Report</h3>
+                    
+                     <div class="border-t pt-4">
+                        <h4 class="text-md font-semibold mb-4">Add Products to Report</h4>
+                        
+                        <div class="flex flex-col md:flex-row gap-4 mb-4">
+                            <input type="text" id="memberProductSearch" oninput="handleProductSearchForMember(this.value)" class="input-field !mb-0 flex-grow" placeholder="Search for a product by name...">
+                            <select id="productCategorySelect" onchange="handleCategorySelect(this.value)" class="input-field !mb-0 md:w-1/3">
+                                <!-- Categories will be populated here -->
+                            </select>
                         </div>
-                        <div id="teamMembersList" class="space-y-2"></div>
-                    </div>
 
-                    <div class="mb-8">
-                        <div class="flex items-center mb-2">
-                            <h3 class="text-lg font-semibold">Notice for Team Members</h3>
-                            <span id="toggleAdminNotice" class="toggle-btn text-sm">[Hide]</span>
-                        </div>
-                        <div id="teamAdminNoticeSection" class="p-4 border rounded-lg space-y-4">
-                            <textarea id="teamAdminNotice" class="input-field !mb-0" placeholder="Write notice for team members..."></textarea>
-                            <button onclick="saveTeamAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
-                            <button onclick="deleteTeamAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
-                        </div>
-                    </div>
-
-                    <div class="mb-8">
-                        <div class="flex items-center mb-2">
-                            <h3 class="text-lg font-semibold">Add New Product</h3>
-                            <span id="toggleAddProduct" class="toggle-btn text-sm">[Show]</span>
-                        </div>
-                        <div id="addProductSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
-                            <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
-                            <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
-                            <input type="text" id="newProductCategory" class="input-field" placeholder="Product Category (e.g., Chili Powder)">
-                            <button onclick="addNewProduct()" class="btn btn-primary w-full">Add Product</button>
+                        <div id="memberProductListContainer" class="max-h-[60vh] overflow-y-auto mb-6">
+                            <!-- Product list for selected category or search will be rendered here -->
                         </div>
                     </div>
 
-                    <div class="mb-8">
-                        <div class="flex items-center mb-2">
-                            <h3 class="text-lg font-semibold">Manage Products</h3>
-                            <span id="toggleManageProducts" class="toggle-btn text-sm">[Hide]</span>
-                        </div>
-                        <div id="manageProductSection">
-                            <div class="relative mb-2">
-                                <input type="text" id="adminProductSearch" class="input-field" placeholder="Search for a product..." oninput="filterProductsForAdmin(this.value)">
-                            </div>
-                            <div id="productListForAdmin" class="space-y-2 max-h-96 overflow-y-auto p-2 border rounded-md"></div>
-                        </div>
-                    </div>
 
-                    <!-- Team Report Section -->
-                    <div id="teamReportSection" class="mb-8">
-                        <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
-
-                        <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
-                            <div class="flex items-center space-x-2">
-                                <label for="reportDate" class="font-semibold whitespace-nowrap">Select Date:</label>
-                                <input type="date" id="reportDate" onchange="renderTeamAdminReports()" class="input-field !mb-0 w-auto">
-                            </div>
-                            <button onclick="exportReportToExcel()" class="btn btn-success">Export</button>
-                            <button onclick="copyTable()" class="btn btn-secondary">Copy</button>
-                        </div>
-
-                        <div id="reportSubmissionStatus" class="mb-4 p-4 border rounded-lg bg-gray-50">
-                            <!-- Submission status will be rendered here -->
-                        </div>
-
-                        <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
-                            <table id="reportTable">
-                                <thead>
-                                    <tr id="memberRow">
-                                    </tr>
-                                    <tr id="subHeaderRow">
+                    <div class="mt-6">
+                        <h4 class="text-md font-semibold mb-2">Current Report Items</h4>
+                        <div class="border rounded-lg overflow-x-auto">
+                            <table id="currentReportItemsTable" class="w-full text-left">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Rate</th>
+                                        <th>TGT</th>
+                                        <th>Sales</th>
+                                        <th>Amount</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tableBody">
+                                <tbody id="currentReportItems">
                                 </tbody>
-                                <tfoot id="tableFoot">
-                                </tfoot>
                             </table>
                         </div>
                     </div>
 
-                    <div class="mt-8">
-                        <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
-                        <div class="grid grid-cols-2 gap-4 items-center">
-                            <div>
-                                <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
-                                <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
-                            </div>
-                            <div>
-                                <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
-                                <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
-                            </div>
-                        </div>
-                        <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full mt-4">View Report</button>
-                    </div>
-
+                    <button onclick="submitSalesReport()" class="btn btn-success mt-4 w-full">Submit Final Report</button>
                 </div>
-            </div>
 
-            <!-- Create Team Member Page -->
-            <div id="createTeamMemberPage" class="page">
-                <div class="card max-w-md mx-auto mt-8 md:mt-16">
-                    <h3 class="text-xl font-bold mb-4">Create New Team Member</h3>
-                    <input type="text" id="newTeamMemberName" class="input-field" placeholder="Team Member Name">
-                    <input type="text" id="newTeamMemberUsername" class="input-field" placeholder="Team Member Username">
-                    <input type="password" id="newTeamMemberPassword" class="input-field" placeholder="Password">
-                    <button onclick="createTeamMember()" class="btn btn-primary w-full">Create Team Member</button>
-                    <button onclick="showPage('teamAdminDashboard')" class="btn btn-secondary w-full mt-2">Back to Dashboard</button>
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">My Submitted Reports</h3>
+                    <div id="mySalesReportsList" class="space-y-4"></div>
                 </div>
+
+                 <div id="teamAdminNoticeContainer" class="mt-8"></div>
             </div>
-
-            <!-- Team Member Dashboard -->
-            <div id="teamMemberDashboard" class="page">
-                <div class="card">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                        <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Member Dashboard</h2>
-                        <button onclick="logout()" class="btn btn-danger w-full md:w-auto">Logout</button>
-                    </div>
-                    <p class="mb-6">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
-
-                    <div id="submitReportContainer" class="mb-8 p-4 border rounded-lg">
-                        <h3 class="text-lg font-semibold mb-2">Submit Daily Sales Report</h3>
-
-                        <div class="border-t pt-4">
-                            <h4 class="text-md font-semibold mb-4">Add Products to Report</h4>
-
-                            <div class="flex flex-col md:flex-row gap-4 mb-4">
-                                <input type="text" id="memberProductSearch" oninput="handleProductSearchForMember(this.value)" class="input-field !mb-0 flex-grow" placeholder="Search for a product by name...">
-                                <select id="productCategorySelect" onchange="handleCategorySelect(this.value)" class="input-field !mb-0 md:w-1/3">
-                                    <!-- Categories will be populated here -->
-                                </select>
-                            </div>
-
-                            <div id="memberProductListContainer" class="max-h-[60vh] overflow-y-auto mb-6">
-                                <!-- Product list for selected category or search will be rendered here -->
-                            </div>
-                        </div>
-
-
-                        <div class="mt-6">
-                            <h4 class="text-md font-semibold mb-2">Current Report Items</h4>
-                            <div class="border rounded-lg overflow-x-auto">
-                                <table id="currentReportItemsTable" class="w-full text-left">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th>Product Name</th>
-                                            <th>Rate</th>
-                                            <th>TGT</th>
-                                            <th>Sales</th>
-                                            <th>Amount</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="currentReportItems">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <button onclick="submitSalesReport()" class="btn btn-success mt-4 w-full">Submit Final Report</button>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">My Submitted Reports</h3>
-                        <div id="mySalesReportsList" class="space-y-4"></div>
-                    </div>
-
-                    <div id="teamAdminNoticeContainer" class="mt-8"></div>
-                </div>
-            </div>
-
-            <!-- Advertisement Container -->
-            <div id="adContainer" class="mt-8 text-center"></div>
         </div>
+
+        <!-- Advertisement Container -->
+        <div id="adContainer" class="mt-8 text-center"></div>
     </div>
+</div>
     <script>
         // --- Firebase Configuration ---
         const firebaseConfig = {
@@ -576,412 +603,95 @@
 
         // --- Global Variables ---
         let db;
-        let state = {};
-        const defaultProducts = [{
-                id: 'prod_1',
-                name: 'Chili Powder 50gm NEW',
-                rate: 29.11
-            },
-            {
-                id: 'prod_2',
-                name: 'Chili Powder 100gm NEW',
-                rate: 57.60
-            },
-            {
-                id: 'prod_3',
-                name: 'Chili Powder - 200gm',
-                rate: 108.00
-            },
-            {
-                id: 'prod_4',
-                name: 'Chili Powder-500gm x 24',
-                rate: 254.57
-            },
-            {
-                id: 'prod_5',
-                name: 'Chili Powder-1kg',
-                rate: 556.45
-            },
-            {
-                id: 'prod_6',
-                name: 'Chili powder 200 gm jar',
-                rate: 132.96
-            },
-            {
-                id: 'prod_7',
-                name: 'Chili powder 5 kg-New',
-                rate: 1530
-            },
-            {
-                id: 'prod_8',
-                name: '16 Ana Chilli-15Kg (Bulk)',
-                rate: 4380
-            },
-            {
-                id: 'prod_9',
-                name: 'Turmeric Powder 15gm New',
-                rate: 9.95
-            },
-            {
-                id: 'prod_10',
-                name: 'Turmeric Powder 50gm NEW',
-                rate: 30.67
-            },
-            {
-                id: 'prod_11',
-                name: 'Turmeric Powder 100gm NEW',
-                rate: 57.78
-            },
-            {
-                id: 'prod_12',
-                name: 'Turmeric Powder 200 gm',
-                rate: 112.00
-            },
-            {
-                id: 'prod_13',
-                name: 'Turmeric Powder 500gmX24 Pouch',
-                rate: 249.43
-            },
-            {
-                id: 'prod_14',
-                name: 'Turmeric Powder-1kg',
-                rate: 533.33
-            },
-            {
-                id: 'prod_15',
-                name: 'Turmeric powder 200 gm jar',
-                rate: 135.36
-            },
-            {
-                id: 'prod_16',
-                name: 'Turmeric Powder- 5kg',
-                rate: 1310
-            },
-            {
-                id: 'prod_17',
-                name: '16 Ana Turmeric 15kg (Bulk)',
-                rate: 0.00
-            },
-            {
-                id: 'prod_18',
-                name: 'Pran Coriander Powder 50 gm pouch',
-                rate: 23.57
-            },
-            {
-                id: 'prod_19',
-                name: 'Pran Coriander Powder 100 gm pouch',
-                rate: 44.14
-            },
-            {
-                id: 'prod_20',
-                name: 'Pran Coriander Powder 200 gm pouch',
-                rate: 83.33
-            },
-            {
-                id: 'prod_21',
-                name: 'Pran Coriander Powder 500 gm pouch',
-                rate: 180.00
-            },
-            {
-                id: 'prod_22',
-                name: 'Pran Coriander Powder 200 gm Jar',
-                rate: 92.57
-            },
-            {
-                id: 'prod_23',
-                name: 'Pran Cumin Powder 15gm pouch',
-                rate: 22.05
-            },
-            {
-                id: 'prod_24',
-                name: 'Pran Cumin Powder 50gm pouch',
-                rate: 66.67
-            },
-            {
-                id: 'prod_25',
-                name: 'Pran Cumin Powder 100gm pouch',
-                rate: 129.09
-            },
-            {
-                id: 'prod_26',
-                name: 'Pran Cumin Powder 200gm pouch',
-                rate: 247.11
-            },
-            {
-                id: 'prod_27',
-                name: 'Pran Cumin Powder 200gm Jar',
-                rate: 268.18
-            },
-            {
-                id: 'prod_28',
-                name: 'Pran Cumin Powder 500gm pouch',
-                rate: 578.57
-            },
-            {
-                id: 'prod_29',
-                name: 'Fish Masala 20gm Foil NEW',
-                rate: 15.00
-            },
-            {
-                id: 'prod_30',
-                name: 'Beef Masala 20gm Foil NEW',
-                rate: 15.45
-            },
-            {
-                id: 'prod_31',
-                name: 'Chicken Masala 20gm Foil NEW',
-                rate: 15.11
-            },
-            {
-                id: 'prod_32',
-                name: 'Meat Masala 20gm Foil NEW',
-                rate: 15.45
-            },
-            {
-                id: 'prod_33',
-                name: 'Biriyani Masala Mix 25 gm',
-                rate: 30.74
-            },
-            {
-                id: 'prod_34',
-                name: 'Meat Masala 100gm×48pcs P.Box',
-                rate: 76.36
-            },
-            {
-                id: 'prod_35',
-                name: 'Chicken Masala 100gm×48pcs P.Box',
-                rate: 75.00
-            },
-            {
-                id: 'prod_36',
-                name: 'Chicken Roast Masala 35gm×48pcs P.Box',
-                rate: 48.89
-            },
-            {
-                id: 'prod_37',
-                name: 'Tehari Masala 40gm×48pcs P.Box',
-                rate: 44.16
-            },
-            {
-                id: 'prod_38',
-                name: 'Bombay Biryani Masala 45gm×48pcs P.Box',
-                rate: 48.00
-            },
-            {
-                id: 'prod_39',
-                name: 'Biryani Masala 40gm×48pcs P.Box',
-                rate: 46.15
-            },
-            {
-                id: 'prod_40',
-                name: 'Chatpati Masala 45gm×48pcs P.Box',
-                rate: 36.00
-            },
-            {
-                id: 'prod_41',
-                name: 'Chatpati Masala 45gm×48pcs P.Box',
-                rate: 36.00
-            },
-            {
-                id: 'prod_42',
-                name: 'Firni Mix 150gm×48pcs P.Box',
-                rate: 48.40
-            },
-            {
-                id: 'prod_43',
-                name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box',
-                rate: 62.77
-            },
-            {
-                id: 'prod_44',
-                name: 'Kacchi Biryani Masala 45gm×48pcs P.Box',
-                rate: 52.53
-            },
-            {
-                id: 'prod_45',
-                name: 'Haleem Mix  200 gm',
-                rate: 54.67
-            },
-            {
-                id: 'prod_46',
-                name: 'Curry powder 20gm',
-                rate: 90.10
-            },
-            {
-                id: 'prod_47',
-                name: 'Garam Masala 15gm Foil New',
-                rate: 27.50
-            },
-            {
-                id: 'prod_48',
-                name: 'Payes Mix 150gmX48pcs P.Box',
-                rate: 53.78
-            },
-            {
-                id: 'prod_49',
-                name: 'Kacchi Biryani Masala 40 gm',
-                rate: 52.53
-            },
-            {
-                id: 'prod_50',
-                name: 'Beef Kala Bhuna 80 gm',
-                rate: 91.58
-            },
-            {
-                id: 'prod_51',
-                name: 'Shindhi Biriany Masala 45 gm',
-                rate: 44.31
-            },
-            {
-                id: 'prod_52',
-                name: 'Khichuri Masala 50 gm',
-                rate: 48.96
-            },
-            {
-                id: 'prod_53',
-                name: 'Mustard Oil-80ml',
-                rate: 23.56
-            },
-            {
-                id: 'prod_54',
-                name: 'Mustard Oil-200-mL',
-                rate: 52.89
-            },
-            {
-                id: 'prod_55',
-                name: 'Mustard Oil-250ml',
-                rate: 66.00
-            },
-            {
-                id: 'prod_56',
-                name: 'Mustard Oil-500 ml',
-                rate: 136.89
-            },
-            {
-                id: 'prod_57',
-                name: 'Mustard Oil 500ml-CP',
-                rate: 118.34
-            },
-            {
-                id: 'prod_58',
-                name: 'Mustard Oil-1000ml',
-                rate: 265.71
-            },
-            {
-                id: 'prod_59',
-                name: 'Mustard Oil 1000ml-CP',
-                rate: 255.11
-            },
-            {
-                id: 'prod_60',
-                name: 'Mustard oil 2 liter',
-                rate: 528.89
-            },
-            {
-                id: 'prod_61',
-                name: 'M . Oil 5 Liter',
-                rate: 1102.22
-            },
-            {
-                id: 'prod_62',
-                name: 'Mughal 150 ml',
-                rate: 43.00
-            },
-            {
-                id: 'prod_63',
-                name: 'Mustard oil 16kg Tin',
-                rate: 3270.00
-            },
-            {
-                id: 'prod_64',
-                name: 'Testing salt 20 gm',
-                rate: 7.08
-            },
-            {
-                id: 'prod_65',
-                name: 'T-Salt-40 gm New',
-                rate: 14.17
-            },
-            {
-                id: 'prod_66',
-                name: 'T-Salt-100 gm New',
-                rate: 35.00
-            },
-            {
-                id: 'prod_67',
-                name: 'T-Salt 450 gm',
-                rate: 137.89
-            },
-            {
-                id: 'prod_68',
-                name: 'Shader Masala 4gmX480 Pcs',
-                rate: 3.40
-            },
-            {
-                id: 'prod_69',
-                name: 'Whole Panchforan 50gm New',
-                rate: 23.41
-            },
-            {
-                id: 'prod_70',
-                name: 'The chef Tomato  Sauce 295gm',
-                rate: 86.20
-            },
-            {
-                id: 'prod_71',
-                name: 'The Chef Hot Tomato Sauce-1000gm',
-                rate: 229.62
-            },
-            {
-                id: 'prod_72',
-                name: 'The Chef Hot Tomato Sauce 3 Kg',
-                rate: 467.03
-            },
-            {
-                id: 'prod_73',
-                name: 'The chef White Vinager 330 ml',
-                rate: 26.40
-            },
-            {
-                id: 'prod_74',
-                name: 'The  chef White  vinager 650 ml',
-                rate: 43.56
-            },
-            {
-                id: 'prod_75',
-                name: 'The chef white vinager  5 ltr',
-                rate: 213.18
-            },
-            {
-                id: 'prod_76',
-                name: 'Love Jello-18 pcs Poly',
-                rate: 40.00
-            },
-            {
-                id: 'prod_77',
-                name: 'Love Jelly-100pcs',
-                rate: 215.00
-            },
-            {
-                id: 'prod_78',
-                name: 'The Chef Rose Water 200 ML',
-                rate: 15.94
-            },
-            {
-                id: 'prod_79',
-                name: 'The Chef Kewra Water 200 ML',
-                rate: 15.11
-            },
-            {
-                id: 'prod_80',
-                name: 'The Chef Rose Water 160 ML',
-                rate: 12.00
-            },
-            {
-                id: 'prod_81',
-                name: 'The Chef Chinigura Rice 1 Kg',
-                rate: 136.00
-            }
+        let messaging;
+        let state = {}; 
+        let alarmIntervalId = null;
+        let adminNotificationIntervalId = null;
+        let logoutClickCounter = 0;
+        let logoutClickTimer = null;
+        
+        const defaultProducts = [
+            { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11 },
+            { id: 'prod_2', name: 'Chili Powder 100gm NEW', rate: 57.60 },
+            { id: 'prod_3', name: 'Chili Powder - 200gm', rate: 108.00 },
+            { id: 'prod_4', name: 'Chili Powder-500gm x 24', rate: 254.57 },
+            { id: 'prod_5', name: 'Chili Powder-1kg', rate: 556.45 },
+            { id: 'prod_6', name: 'Chili powder 200 gm jar', rate: 132.96 },
+            { id: 'prod_7', name: 'Chili powder 5 kg-New', rate: 1530 },
+            { id: 'prod_8', name: '16 Ana Chilli-15Kg (Bulk)', rate: 4380 },
+            { id: 'prod_9', name: 'Turmeric Powder 15gm New', rate: 9.95 },
+            { id: 'prod_10', name: 'Turmeric Powder 50gm NEW', rate: 30.67 },
+            { id: 'prod_11', name: 'Turmeric Powder 100gm NEW', rate: 57.78 },
+            { id: 'prod_12', name: 'Turmeric Powder 200 gm', rate: 112.00 },
+            { id: 'prod_13', name: 'Turmeric Powder 500gmX24 Pouch', rate: 249.43 },
+            { id: 'prod_14', name: 'Turmeric Powder-1kg', rate: 533.33 },
+            { id: 'prod_15', name: 'Turmeric powder 200 gm jar', rate: 135.36 },
+            { id: 'prod_16', name: 'Turmeric Powder- 5kg', rate: 1310 },
+            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 0.00 },
+            { id: 'prod_18', name: 'Pran Coriander Powder 50 gm pouch', rate: 23.57 },
+            { id: 'prod_19', name: 'Pran Coriander Powder 100 gm pouch', rate: 44.14 },
+            { id: 'prod_20', name: 'Pran Coriander Powder 200 gm pouch', rate: 83.33 },
+            { id: 'prod_21', name: 'Pran Coriander Powder 500 gm pouch', rate: 180.00 },
+            { id: 'prod_22', name: 'Pran Coriander Powder 200 gm Jar', rate: 92.57 },
+            { id: 'prod_23', name: 'Pran Cumin Powder 15gm pouch', rate: 22.05 },
+            { id: 'prod_24', name: 'Pran Cumin Powder 50gm pouch', rate: 66.67 },
+            { id: 'prod_25', name: 'Pran Cumin Powder 100gm pouch', rate: 129.09 },
+            { id: 'prod_26', name: 'Pran Cumin Powder 200gm pouch', rate: 247.11 },
+            { id: 'prod_27', name: 'Pran Cumin Powder 200gm Jar', rate: 268.18 },
+            { id: 'prod_28', name: 'Pran Cumin Powder 500gm pouch', rate: 578.57 },
+            { id: 'prod_29', name: 'Fish Masala 20gm Foil NEW', rate: 15.00 },
+            { id: 'prod_30', name: 'Beef Masala 20gm Foil NEW', rate: 15.45 },
+            { id: 'prod_31', name: 'Chicken Masala 20gm Foil NEW', rate: 15.11 },
+            { id: 'prod_32', name: 'Meat Masala 20gm Foil NEW', rate: 15.45 },
+            { id: 'prod_33', name: 'Biriyani Masala Mix 25 gm', rate: 30.74 },
+            { id: 'prod_34', name: 'Meat Masala 100gm×48pcs P.Box', rate: 76.36 },
+            { id: 'prod_35', name: 'Chicken Masala 100gm×48pcs P.Box', rate: 75.00 },
+            { id: 'prod_36', name: 'Chicken Roast Masala 35gm×48pcs P.Box', rate: 48.89 },
+            { id: 'prod_37', name: 'Tehari Masala 40gm×48pcs P.Box', rate: 44.16 },
+            { id: 'prod_38', name: 'Bombay Biryani Masala 45gm×48pcs P.Box', rate: 48.00 },
+            { id: 'prod_39', name: 'Biryani Masala 40gm×48pcs P.Box', rate: 46.15 },
+            { id: 'prod_40', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00 },
+            { id: 'prod_41', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00 },
+            { id: 'prod_42', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40 },
+            { id: 'prod_43', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77 },
+            { id: 'prod_44', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53 },
+            { id: 'prod_45', name: 'Haleem Mix  200 gm', rate: 54.67 },
+            { id: 'prod_46', name: 'Curry powder 20gm', rate: 90.10 },
+            { id: 'prod_47', name: 'Garam Masala 15gm Foil New', rate: 27.50 },
+            { id: 'prod_48', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78 },
+            { id: 'prod_49', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53 },
+            { id: 'prod_50', name: 'Beef Kala Bhuna 80 gm', rate: 91.58 },
+            { id: 'prod_51', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31 },
+            { id: 'prod_52', name: 'Khichuri Masala 50 gm', rate: 48.96 },
+            { id: 'prod_53', name: 'Mustard Oil-80ml', rate: 23.56 },
+            { id: 'prod_54', name: 'Mustard Oil-200-mL', rate: 52.89 },
+            { id: 'prod_55', name: 'Mustard Oil-250ml', rate: 66.00 },
+            { id: 'prod_56', name: 'Mustard Oil-500 ml', rate: 136.89 },
+            { id: 'prod_57', name: 'Mustard Oil 500ml-CP', rate: 118.34 },
+            { id: 'prod_58', name: 'Mustard Oil-1000ml', rate: 265.71 },
+            { id: 'prod_59', name: 'Mustard Oil 1000ml-CP', rate: 255.11 },
+            { id: 'prod_60', name: 'Mustard oil 2 liter', rate: 528.89 },
+            { id: 'prod_61', name: 'M . Oil 5 Liter', rate: 1102.22 },
+            { id: 'prod_62', name: 'Mughal 150 ml', rate: 43.00 },
+            { id: 'prod_63', name: 'Mustard oil 16kg Tin', rate: 3270.00 },
+            { id: 'prod_64', name: 'Testing salt 20 gm', rate: 7.08 },
+            { id: 'prod_65', name: 'T-Salt-40 gm New', rate: 14.17 },
+            { id: 'prod_66', name: 'T-Salt-100 gm New', rate: 35.00 },
+            { id: 'prod_67', name: 'T-Salt 450 gm', rate: 137.89 },
+            { id: 'prod_68', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40 },
+            { id: 'prod_69', name: 'Whole Panchforan 50gm New', rate: 23.41 },
+            { id: 'prod_70', name: 'The chef Tomato  Sauce 295gm', rate: 86.20 },
+            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62 },
+            { id: 'prod_72', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03 },
+            { id: 'prod_73', name: 'The chef White Vinager 330 ml', rate: 26.40 },
+            { id: 'prod_74', name: 'The  chef White  vinager 650 ml', rate: 43.56 },
+            { id: 'prod_75', name: 'The chef white vinager  5 ltr', rate: 213.18 },
+            { id: 'prod_76', name: 'Love Jello-18 pcs Poly', rate: 40.00 },
+            { id: 'prod_77', name: 'Love Jelly-100pcs', rate: 215.00 },
+            { id: 'prod_78', name: 'The Chef Rose Water 200 ML', rate: 15.94 },
+            { id: 'prod_79', name: 'The Chef Kewra Water 200 ML', rate: 15.11 },
+            { id: 'prod_80', name: 'The Chef Rose Water 160 ML', rate: 12.00 },
+            { id: 'prod_81', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00 }
         ];
 
         const productGroups = {};
@@ -1007,8 +717,8 @@
             productGroups['Rice'] = [];
 
             const chiliProducts = new Set([
-                'Chili Powder 50gm NEW', 'Chili Powder 100gm NEW', 'Chili Powder - 200gm',
-                'Chili Powder-500gm x 24', 'Chili Powder-1kg', 'Chili powder 200 gm jar',
+                'Chili Powder 50gm NEW', 'Chili Powder 100gm NEW', 'Chili Powder - 200gm', 
+                'Chili Powder-500gm x 24', 'Chili Powder-1kg', 'Chili powder 200 gm jar', 
                 'Chili powder 5 kg-New', '16 Ana Chilli-15Kg (Bulk)'
             ]);
             const turmericProducts = new Set([
@@ -1033,7 +743,7 @@
                 'Curry powder 20gm', 'Garam Masala 15gm Foil New', 'Payes Mix 150gmX48pcs P.Box', 'Kacchi Biryani Masala 40 gm',
                 'Beef Kala Bhuna 80 gm', 'Shindhi Biriany Masala 45 gm', 'Khichuri Masala 50 gm'
             ]);
-            const mustardOilProducts = new Set([
+             const mustardOilProducts = new Set([
                 'Mustard Oil-80ml', 'Mustard Oil-200-mL', 'Mustard Oil-250ml', 'Mustard Oil-500 ml',
                 'Mustard Oil 500ml-CP', 'Mustard Oil-1000ml', 'Mustard Oil 1000ml-CP', 'Mustard oil 2 liter',
                 'M . Oil 5 Liter', 'Mughal 150 ml', 'Mustard oil 16kg Tin'
@@ -1053,8 +763,8 @@
             const productToGroupMap = new Map();
 
             state.products.forEach(p => {
-                if (p.category) {
-                    if (!productGroups[p.category]) {
+                if(p.category) {
+                     if (!productGroups[p.category]) {
                         productGroups[p.category] = [];
                     }
                     productGroups[p.category].push(p);
@@ -1063,7 +773,7 @@
             });
 
             state.products.forEach(p => {
-                if (productToGroupMap.has(p.id)) return;
+                 if (productToGroupMap.has(p.id)) return;
 
                 if (chiliProducts.has(p.name)) productGroups['Chili Powder'].push(p);
                 else if (turmericProducts.has(p.name.trim())) productGroups['Turmeric Powder'].push(p);
@@ -1078,28 +788,28 @@
                 else if (riceProducts.has(p.name)) productGroups['Rice'].push(p);
                 else productGroups['Mixed Spice and box'].push(p);
             });
-
-            groupOrder.length = 0;
+            
+            groupOrder.length = 0; 
             const sortedGroupKeys = Object.keys(productGroups).sort();
 
-            groupOrder.push(...sortedGroupKeys.map(key => ({
-                label: key,
-                key: key
-            })));
+            groupOrder.push(...sortedGroupKeys.map(key => ({label: key, key: key})));
         }
 
         function resetLocalState() {
-            state = {
+             state = {
                 loggedInUser: null,
                 loggedInUserName: null,
                 loggedInUserUsername: null,
                 loggedInUserRole: null,
                 loggedInUserTeam: null,
+                loggedInUserTeamId: null,
                 currentReportItems: [],
                 superAdminPassword: 'shohel2nt',
                 teamAdmins: [],
                 salesReports: [],
                 products: [],
+                notificationSettings: {},
+                logoutSettings: {},
                 advertisements: {
                     popunder: '',
                     banner: '',
@@ -1119,30 +829,22 @@
 
                 const firebaseObjectToArray = (fbObject) => {
                     if (!fbObject) return [];
-                    return Object.keys(fbObject).map(key => ({
-                        id: key,
-                        ...fbObject[key]
-                    }));
+                    return Object.keys(fbObject).map(key => ({ id: key, ...fbObject[key] }));
                 };
-
+                
                 state.teamAdmins = firebaseObjectToArray(dbState.teamAdmins);
                 state.salesReports = firebaseObjectToArray(dbState.salesReports);
                 state.products = firebaseObjectToArray(dbState.products);
-                state.advertisements = dbState.advertisements || {
-                    popunder: '',
-                    banner: '',
-                    nativeBanner: ''
-                };
+                state.advertisements = dbState.advertisements || { popunder: '', banner: '', nativeBanner: ''};
                 state.superAdminNotice = dbState.superAdminNotice || '';
                 state.notices = dbState.notices || {};
+                state.notificationSettings = dbState.notificationSettings || {};
+                state.logoutSettings = dbState.logoutSettings || {};
 
 
                 if (!dbState.products || state.products.length === 0) {
                     const productsToPush = defaultProducts.reduce((obj, item) => {
-                        const {
-                            id,
-                            ...rest
-                        } = item;
+                        const { id, ...rest } = item;
                         obj[item.id] = rest;
                         return obj;
                     }, {});
@@ -1154,13 +856,13 @@
                 if (dbState.superAdmin && dbState.superAdmin.password) {
                     state.superAdminPassword = dbState.superAdmin.password;
                 } else {
-                    await db.ref('superAdmin/password').set(state.superAdminPassword);
+                     await db.ref('superAdmin/password').set(state.superAdminPassword);
                 }
 
-                if (!dbState.advertisements) {
+                 if (!dbState.advertisements) {
                     await db.ref('advertisements').set(state.advertisements);
                 }
-
+                
                 groupAllProducts();
 
             } catch (error) {
@@ -1169,34 +871,86 @@
             }
         }
 
-
+        
         // --- Utility Functions ---
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             const page = document.getElementById(pageId);
-            if (page) {
+             if (page) {
                 page.classList.add('active');
             }
+            document.querySelector('#app').style.overflowY = pageId === 'teamAdminDashboard' ? 'auto' : 'hidden';
+
             renderAdvertisements(pageId);
         }
 
-        async function logout() {
+        async function performLogout() {
+            if (alarmIntervalId) clearInterval(alarmIntervalId);
+            if (adminNotificationIntervalId) clearInterval(adminNotificationIntervalId);
+            alarmIntervalId = null;
+            adminNotificationIntervalId = null;
+
+            localStorage.removeItem('loggedInUser');
             resetLocalState();
-            await getFullState();
+            await getFullState(); 
             document.querySelectorAll('input[type="password"], input[type="text"]').forEach(input => input.value = '');
             showPage('mainLoginPage');
         }
 
+        function handleLogoutClick(event) {
+            let requiredClicks = 1;
+            const button = event.target;
+            
+            if (state.loggedInUserRole === 'teammember') {
+                const adminSettings = state.logoutSettings[state.loggedInUserTeamId];
+                requiredClicks = (adminSettings && adminSettings.clickCount) ? parseInt(adminSettings.clickCount, 10) : 10;
+            } else if (state.loggedInUserRole === 'teamadmin') {
+                 const adminSettings = state.logoutSettings[state.loggedInUser];
+                 requiredClicks = (adminSettings && adminSettings.clickCount) ? parseInt(adminSettings.clickCount, 10) : 10;
+            } else if (state.loggedInUserRole === 'superadmin') {
+                requiredClicks = 1;
+            }
+
+            if(requiredClicks <= 1) {
+                performLogout();
+                return;
+            }
+
+            logoutClickCounter++;
+            
+            clearTimeout(logoutClickTimer);
+            logoutClickTimer = setTimeout(() => {
+                logoutClickCounter = 0;
+                 button.innerText = 'Logout';
+            }, 2000); 
+
+            if (logoutClickCounter >= requiredClicks) {
+                clearTimeout(logoutClickTimer);
+                performLogout();
+            } else {
+                 // Do not show remaining clicks
+                 // button.innerText = `Click ${requiredClicks - logoutClickCounter} more times`;
+            }
+        }
+
+
         function showAlert(message) {
             alert(message);
         }
-
+        
         // --- Super Admin Functions ---
         function loginSuperAdmin() {
             const password = document.getElementById('superAdminPassword').value;
             if (password === state.superAdminPassword) {
-                state.loggedInUser = 'superadmin';
-                state.loggedInUserRole = 'superadmin';
+                const user = {
+                    id: 'superadmin',
+                    role: 'superadmin'
+                };
+                localStorage.setItem('loggedInUser', JSON.stringify(user));
+                
+                state.loggedInUser = user.id;
+                state.loggedInUserRole = user.role;
+                
                 renderSuperAdminDashboard();
                 showPage('superAdminDashboard');
             } else {
@@ -1213,17 +967,13 @@
             if (state.teamAdmins.find(admin => admin.username === username)) {
                 return showAlert('This username already exists.');
             }
-
-            const newAdminData = {
-                username,
-                password,
-                status: 'active'
-            };
+            
+            const newAdminData = { username, password, status: 'active' };
             await db.ref('teamAdmins').push(newAdminData);
 
             document.getElementById('newTeamAdminUsername').value = '';
             document.getElementById('newTeamAdminPassword').value = '';
-
+            
             await getFullState();
             renderSuperAdminDashboard();
             showAlert('Team Admin created successfully!');
@@ -1243,18 +993,12 @@
 
             try {
                 if (type === 'admin') {
-                    await db.ref(`teamAdmins/${adminId}`).update({
-                        username: newUsername,
-                        password: newPassword
-                    });
+                    await db.ref(`teamAdmins/${adminId}`).update({ username: newUsername, password: newPassword });
                 } else if (type === 'member' && memberId) {
-                    await db.ref(`teamAdmins/${adminId}/teamMembers/${memberId}`).update({
-                        username: newUsername,
-                        password: newPassword
-                    });
+                    await db.ref(`teamAdmins/${adminId}/teamMembers/${memberId}`).update({ username: newUsername, password: newPassword });
                 }
                 await getFullState();
-
+                
                 if (state.loggedInUserRole === 'superadmin') {
                     renderSuperAdminDashboard();
                 } else if (state.loggedInUserRole === 'teamadmin') {
@@ -1267,17 +1011,17 @@
                 showAlert('Failed to update credentials.');
             }
         }
-
+        
         async function deleteTeamAdmin(adminId, adminUsername) {
             if (confirm(`Are you sure you want to delete ${adminUsername}? This will also delete all their team members and sales reports.`)) {
                 await db.ref(`teamAdmins/${adminId}`).remove();
-
+                
                 const reportsToDelete = state.salesReports.filter(r => r.team === adminUsername);
                 const updates = {};
                 reportsToDelete.forEach(r => {
                     updates[`/salesReports/${r.id}`] = null;
                 });
-                if (Object.keys(updates).length > 0) {
+                if(Object.keys(updates).length > 0) {
                     await db.ref().update(updates);
                 }
 
@@ -1301,13 +1045,9 @@
             const banner = document.getElementById('bannerAd').value.trim();
             const nativeBanner = document.getElementById('nativeBannerAd').value.trim();
 
-            const newAds = {
-                popunder,
-                banner,
-                nativeBanner
-            };
+            const newAds = { popunder, banner, nativeBanner };
             await db.ref('advertisements').set(newAds);
-
+            
             state.advertisements = newAds;
             showAlert('Advertisements saved successfully!');
         }
@@ -1320,14 +1060,14 @@
         }
 
         async function deleteSuperAdminNotice() {
-            if (confirm('Are you sure you want to delete the notice for team admins?')) {
+             if (confirm('Are you sure you want to delete the notice for team admins?')) {
                 await db.ref('superAdminNotice').remove();
                 state.superAdminNotice = '';
                 document.getElementById('superAdminNotice').value = '';
                 showAlert('Notice deleted successfully.');
             }
         }
-
+        
         async function changeSuperAdminPassword() {
             const newPassword = document.getElementById('newSuperAdminPassword').value;
             const confirmPassword = document.getElementById('confirmSuperAdminPassword').value;
@@ -1344,7 +1084,7 @@
 
             await db.ref('superAdmin/password').set(newPassword);
             state.superAdminPassword = newPassword;
-
+            
             document.getElementById('newSuperAdminPassword').value = '';
             document.getElementById('confirmSuperAdminPassword').value = '';
 
@@ -1371,17 +1111,15 @@
                 state.teamAdmins.forEach(admin => {
                     const div = document.createElement('div');
                     div.className = 'p-3 border rounded';
-
+                    
                     const statusClass = admin.status === 'active' ? 'text-green-600' : 'text-red-600';
                     const toggleButtonText = admin.status === 'active' ? 'Deactivate' : 'Activate';
                     const toggleButtonClass = admin.status === 'active' ? 'btn-warning' : 'btn-success';
-
-                    const members = admin.teamMembers && typeof admin.teamMembers === 'object' ?
-                        Object.keys(admin.teamMembers).map(key => ({
-                            id: key,
-                            ...admin.teamMembers[key]
-                        })) : [];
-
+                    
+                    const members = admin.teamMembers && typeof admin.teamMembers === 'object' 
+                        ? Object.keys(admin.teamMembers).map(key => ({id: key, ...admin.teamMembers[key]})) 
+                        : [];
+                    
                     let membersHtml = '<p class="text-sm text-gray-500 mt-2">No team members yet.</p>';
                     if (members.length > 0) {
                         membersHtml = `
@@ -1417,7 +1155,7 @@
                     teamAdminsList.appendChild(div);
                 });
             }
-
+            
             document.getElementById('newSuperAdminPassword').value = '';
             document.getElementById('confirmSuperAdminPassword').value = '';
             renderAdvertisementManagement();
@@ -1429,21 +1167,29 @@
             const username = document.getElementById('teamAdminUsername').value.trim();
             const password = document.getElementById('teamAdminPassword').value.trim();
             const admin = state.teamAdmins.find(a => a.username === username && a.password === password);
-
+            
             if (admin) {
                 if (admin.status === 'deactivated') {
                     return showAlert('Your account has been deactivated. Please contact the super admin.');
                 }
-                state.loggedInUser = admin.id;
-                state.loggedInUserName = admin.username;
-                state.loggedInUserRole = 'teamadmin';
+                const user = {
+                    id: admin.id,
+                    username: admin.username,
+                    role: 'teamadmin'
+                };
+                localStorage.setItem('loggedInUser', JSON.stringify(user));
+
+                state.loggedInUser = user.id;
+                state.loggedInUserName = user.username;
+                state.loggedInUserRole = user.role;
+                await setupNotifications(user.role, null, user.id);
                 renderTeamAdminDashboard();
                 showPage('teamAdminDashboard');
             } else {
                 showAlert('Invalid username or password.');
             }
         }
-
+        
         async function createTeamMember() {
             const name = document.getElementById('newTeamMemberName').value.trim();
             const username = document.getElementById('newTeamMemberUsername').value.trim();
@@ -1453,10 +1199,10 @@
             if (!name || !username || !password) {
                 return showAlert('Name, username and password cannot be empty.');
             }
-
+            
             let usernameExists = false;
-            for (const admin of state.teamAdmins) {
-                if (admin.username === username) { // Check against admin usernames too
+            for(const admin of state.teamAdmins) {
+                 if (admin.username === username) { // Check against admin usernames too
                     usernameExists = true;
                     break;
                 }
@@ -1467,23 +1213,18 @@
                     break;
                 }
             }
-
+            
             if (usernameExists) {
                 return showAlert('This username is already taken.');
             }
-
-            const newMemberData = {
-                name,
-                username,
-                password,
-                status: 'active'
-            };
+            
+            const newMemberData = { name, username, password, status: 'active' };
             await db.ref(`teamAdmins/${adminId}/teamMembers`).push(newMemberData);
-
+            
             document.getElementById('newTeamMemberName').value = '';
             document.getElementById('newTeamMemberUsername').value = '';
             document.getElementById('newTeamMemberPassword').value = '';
-
+            
             await getFullState();
             renderTeamAdminDashboard();
             showAlert('Team Member created successfully!');
@@ -1493,21 +1234,21 @@
         async function deleteTeamMember(memberId) {
             const adminId = state.loggedInUser;
             const admin = state.teamAdmins.find(a => a.id === adminId);
-            if (!admin || !admin.teamMembers) return;
-
+             if (!admin || !admin.teamMembers) return;
+            
             const memberKey = Object.keys(admin.teamMembers).find(key => key === memberId);
 
             if (memberKey && confirm(`Are you sure you want to delete this member?`)) {
-                await db.ref(`teamAdmins/${adminId}/teamMembers/${memberKey}`).remove();
-                await getFullState();
-                renderTeamAdminDashboard();
+                 await db.ref(`teamAdmins/${adminId}/teamMembers/${memberKey}`).remove();
+                 await getFullState();
+                 renderTeamAdminDashboard();
             }
         }
 
         async function toggleTeamMemberStatus(memberId) {
             const adminId = state.loggedInUser;
             const admin = state.teamAdmins.find(a => a.id === adminId);
-            if (!admin || !admin.teamMembers) return;
+             if (!admin || !admin.teamMembers) return;
 
             const memberKey = Object.keys(admin.teamMembers).find(key => key === memberId);
             if (!memberKey) return;
@@ -1525,12 +1266,12 @@
             if (newRate !== '' && !isNaN(newRate)) {
                 await db.ref(`products/${productId}/rate`).set(parseFloat(newRate));
                 await getFullState();
-                filterProductsForAdmin(document.getElementById('adminProductSearch').value);
+                filterProductsForAdmin(document.getElementById('adminProductSearch').value); 
             }
         }
-
+        
         async function deleteProduct(productId, productName) {
-            if (confirm(`Are you sure you want to delete the product "${productName}"? This action cannot be undone.`)) {
+             if (confirm(`Are you sure you want to delete the product "${productName}"? This action cannot be undone.`)) {
                 await db.ref(`products/${productId}`).remove();
                 await getFullState();
                 filterProductsForAdmin(document.getElementById('adminProductSearch').value);
@@ -1540,7 +1281,7 @@
 
         function filterProductsForAdmin(searchTerm) {
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            const filteredProducts = state.products.filter(product =>
+            const filteredProducts = state.products.filter(product => 
                 product.name.toLowerCase().includes(lowerCaseSearchTerm)
             );
             renderProductManagement(filteredProducts);
@@ -1572,36 +1313,64 @@
                 container.appendChild(div);
             });
         }
+        
+        function handleExistingCategorySelect() {
+            const select = document.getElementById('existingCategorySelect');
+            const input = document.getElementById('newProductCategory');
+            if (select.value) {
+                input.value = '';
+                input.disabled = true;
+            } else {
+                input.disabled = false;
+            }
+        }
+
+        function handleNewCategoryInput() {
+            const select = document.getElementById('existingCategorySelect');
+            const input = document.getElementById('newProductCategory');
+            if (input.value.trim() !== '') {
+                select.value = '';
+                select.disabled = true;
+            } else {
+                select.disabled = false;
+            }
+        }
 
         async function addNewProduct() {
             const name = document.getElementById('newProductName').value.trim();
             const rate = parseFloat(document.getElementById('newProductRate').value);
-            const category = document.getElementById('newProductCategory').value.trim();
+            
+            const existingCategory = document.getElementById('existingCategorySelect').value;
+            const newCategory = document.getElementById('newProductCategory').value.trim();
 
-            if (!name || isNaN(rate) || !category) {
-                return showAlert('Please fill in all fields: Product Name, Rate, and Category.');
+            const category = newCategory || existingCategory;
+
+            if (!name || isNaN(rate)) {
+                return showAlert('Please fill in Product Name and Rate.');
+            }
+            if (!category) {
+                 return showAlert('Please select an existing category or type a new one.');
             }
             if (state.products.find(p => p.name.toLowerCase() === name.toLowerCase())) {
                 return showAlert('A product with this name already exists.');
             }
-
-            const newProductData = {
-                name,
-                rate,
-                category
-            };
+            
+            const newProductData = { name, rate, category };
 
             const newProductRef = await db.ref('products').push(newProductData);
-
+            
             document.getElementById('newProductName').value = '';
             document.getElementById('newProductRate').value = '';
+            document.getElementById('existingCategorySelect').value = '';
             document.getElementById('newProductCategory').value = '';
-
+            document.getElementById('newProductCategory').disabled = false;
+            document.getElementById('existingCategorySelect').disabled = false;
+            
             await getFullState();
             filterProductsForAdmin(''); // Re-render product list
             showAlert('New product added successfully!');
         }
-
+        
         async function saveTeamAdminNotice() {
             const adminId = state.loggedInUser;
             const notice = document.getElementById('teamAdminNotice').value;
@@ -1619,23 +1388,23 @@
                 showAlert('Notice deleted successfully.');
             }
         }
-
+        
         function setupToggle(buttonId, sectionId, showByDefault = false) {
-            const button = document.getElementById(buttonId);
-            const section = document.getElementById(sectionId);
-            if (!button || !section) return;
+             const button = document.getElementById(buttonId);
+             const section = document.getElementById(sectionId);
+             if(!button || !section) return;
 
-            const updateVisibility = (isVisible) => {
+             let isVisible = showByDefault;
+             const updateVisibility = () => {
                 section.style.display = isVisible ? 'block' : 'none';
                 button.innerText = isVisible ? '[Hide]' : '[Show]';
-            }
+             }
+             updateVisibility();
 
-            updateVisibility(showByDefault);
-
-            button.addEventListener('click', () => {
-                const isVisible = section.style.display === 'block';
-                updateVisibility(!isVisible);
-            });
+             button.addEventListener('click', () => {
+                isVisible = !isVisible;
+                updateVisibility();
+             });
         }
 
 
@@ -1644,7 +1413,7 @@
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
             if (!admin) return;
 
-            const superAdminNoticeContainer = document.getElementById('superAdminNoticeContainer');
+            const superAdminNoticeContainer = document.getElementById('superAdminNoticeContainerForAdmin');
             if (state.superAdminNotice) {
                 superAdminNoticeContainer.innerHTML = `
                     <div class="p-4 mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
@@ -1659,15 +1428,13 @@
 
             const teamMembersList = document.getElementById('teamMembersList');
             teamMembersList.innerHTML = '';
-
-            const members = admin.teamMembers && typeof admin.teamMembers === 'object' ?
-                Object.keys(admin.teamMembers).map(key => ({
-                    id: key,
-                    ...admin.teamMembers[key]
-                })) : [];
+            
+            const members = admin.teamMembers && typeof admin.teamMembers === 'object' 
+                ? Object.keys(admin.teamMembers).map(key => ({id: key, ...admin.teamMembers[key]})) 
+                : [];
 
             if (members.length === 0) {
-                teamMembersList.innerHTML = '<p class="text-gray-500">No team members created yet.</p>';
+                 teamMembersList.innerHTML = '<p class="text-gray-500">No team members created yet.</p>';
             } else {
                 members.forEach(member => {
                     const div = document.createElement('div');
@@ -1690,15 +1457,27 @@
                     teamMembersList.appendChild(div);
                 });
             }
+            
+            const categorySelect = document.getElementById('existingCategorySelect');
+            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
+            categorySelect.innerHTML = '<option value="">-- Select Existing --</option>';
+            uniqueCategories.forEach(cat => {
+                categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
 
-            setupToggle('toggleTeamMembers', 'teamMembersList', false);
+            setupToggle('toggleTeamMembers', 'teamMembersList', true);
             setupToggle('toggleAdminNotice', 'teamAdminNoticeSection', false);
             setupToggle('toggleManageProducts', 'manageProductSection', false);
             setupToggle('toggleAddProduct', 'addProductSection', false);
+            setupToggle('toggleNotificationSystem', 'notificationSystemSection', false);
+            setupToggle('toggleLogoutSettings', 'logoutSettingsSection', false);
+
 
             document.getElementById('adminProductSearch').value = '';
             renderProductManagement(state.products);
-
+            renderNotificationSettings();
+            renderLogoutSettings();
+            
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('reportDate').value = today;
             document.getElementById('reportStartDate').value = today;
@@ -1717,14 +1496,14 @@
                 });
             }
         }
-
+        
         async function copyTable() {
             const table = document.getElementById('reportTable');
             try {
                 let text = '';
                 for (const row of table.rows) {
                     let rowText = [];
-                    for (const cell of row.cells) {
+                    for(const cell of row.cells) {
                         rowText.push(cell.innerText);
                     }
                     text += rowText.join('\t') + '\n';
@@ -1740,17 +1519,12 @@
 
         function getReportDataForDateRange(startDateStr, endDateStr) {
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
-            if (!admin) return {
-                productData: {},
-                reportingMembers: [],
-                submittedProducts: new Set(),
-                notSubmittedMembers: [],
-                submittedMemberUsernames: new Set()
-            };
+            if (!admin) return { productData: {}, reportingMembers: [], submittedProducts: new Set(), notSubmittedMembers: [], submittedMemberUsernames: new Set() };
 
-            const reportingMembers = admin.teamMembers && typeof admin.teamMembers === 'object' ?
-                Object.values(admin.teamMembers).filter(m => m.status === 'active') : [];
-
+            const reportingMembers = admin.teamMembers && typeof admin.teamMembers === 'object'
+                ? Object.values(admin.teamMembers).filter(m => m.status === 'active') 
+                : [];
+            
             const startDate = new Date(startDateStr);
             startDate.setHours(0, 0, 0, 0);
             const endDate = new Date(endDateStr);
@@ -1775,16 +1549,9 @@
             submittedProducts.forEach(productName => {
                 const productInfo = state.products.find(p => p.name === productName);
                 if (productInfo) {
-                    productData[productName] = {
-                        rate: productInfo.rate,
-                        members: {}
-                    };
+                    productData[productName] = { rate: productInfo.rate, members: {} };
                     reportingMembers.forEach(m => {
-                        productData[productName].members[m.name] = {
-                            tgt: 0,
-                            sales: 0,
-                            amount: 0
-                        };
+                        productData[productName].members[m.name] = { tgt: 0, sales: 0, amount: 0 };
                     });
                 }
             });
@@ -1802,16 +1569,10 @@
                     });
                 }
             });
-
-            return {
-                productData,
-                reportingMembers,
-                submittedProducts,
-                notSubmittedMembers,
-                submittedMemberUsernames
-            };
+            
+            return { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames };
         }
-
+        
         function renderTeamAdminReportsForDateRange() {
             const startDate = document.getElementById('reportStartDate').value;
             const endDate = document.getElementById('reportEndDate').value;
@@ -1827,24 +1588,17 @@
         function renderTeamAdminReports(startDate, endDate) {
             const isDateRange = startDate && endDate;
             const selectedDateValue = startDate || document.getElementById('reportDate').value;
-
-            const {
-                productData,
-                reportingMembers,
-                submittedProducts,
-                notSubmittedMembers,
-                submittedMemberUsernames
-            } = isDateRange
-                ?
-                getReportDataForDateRange(startDate, endDate) :
-                getReportDataForDateRange(selectedDateValue, selectedDateValue);
+            
+            const { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames } = isDateRange
+                ? getReportDataForDateRange(startDate, endDate)
+                : getReportDataForDateRange(selectedDateValue, selectedDateValue);
 
 
             const statusContainer = document.getElementById('reportSubmissionStatus');
             if (isDateRange) {
                 statusContainer.innerHTML = `<p class="font-bold">Displaying aggregated report from ${startDate} to ${endDate}</p>`;
             } else {
-                const totalMembers = reportingMembers.length;
+                 const totalMembers = reportingMembers.length;
                 const submittedCount = submittedMemberUsernames.size;
                 let notSubmittedNames = notSubmittedMembers.map(m => m.name).join(', ');
                 if (notSubmittedNames) {
@@ -1879,7 +1633,7 @@
                 return;
             }
 
-            memberRow.innerHTML = '<th rowspan="2" style="width: 150px; min-width: 150px;">Product</th><th rowspan="2">Rate</th>';
+            memberRow.innerHTML = '<th rowspan="2" style="white-space: normal;">Product</th><th rowspan="2">Rate</th>';
             subHeaderRow.innerHTML = '';
 
             reportingMembers.forEach(m => {
@@ -1893,16 +1647,10 @@
             Array.from(submittedProducts).sort().forEach(productName => {
                 const productInfo = productData[productName];
                 let rowHtml = `<tr><td style="white-space: normal;">${productName}</td><td>${productInfo.rate.toFixed(2)}</td>`;
-                let summaryTgt = 0,
-                    summarySales = 0,
-                    summaryAmount = 0;
+                let summaryTgt = 0, summarySales = 0, summaryAmount = 0;
 
                 reportingMembers.forEach(member => {
-                    const data = productInfo.members[member.name] || {
-                        tgt: 0,
-                        sales: 0,
-                        amount: 0
-                    };
+                    const data = productInfo.members[member.name] || { tgt: 0, sales: 0, amount: 0 };
                     rowHtml += `<td>${data.tgt}</td><td>${data.sales}</td><td>${Math.round(data.amount)}</td>`;
                     summaryTgt += data.tgt;
                     summarySales += data.sales;
@@ -1917,27 +1665,13 @@
             tableFoot.innerHTML = '';
             let footerHtml = '<tr><td colspan="2"><b>Total</b></td>';
             const memberTotals = {};
-            reportingMembers.forEach(m => {
-                memberTotals[m.name] = {
-                    tgt: 0,
-                    sales: 0,
-                    amount: 0
-                };
-            });
-            let grandTotal = {
-                tgt: 0,
-                sales: 0,
-                amount: 0
-            };
-
+            reportingMembers.forEach(m => { memberTotals[m.name] = { tgt: 0, sales: 0, amount: 0 }; });
+            let grandTotal = { tgt: 0, sales: 0, amount: 0 };
+            
             submittedProducts.forEach(productName => {
                 const productInfo = productData[productName];
                 reportingMembers.forEach(member => {
-                    const data = productInfo.members[member.name] || {
-                        tgt: 0,
-                        sales: 0,
-                        amount: 0
-                    };
+                    const data = productInfo.members[member.name] || { tgt: 0, sales: 0, amount: 0 };
                     memberTotals[member.name].tgt += data.tgt;
                     memberTotals[member.name].sales += data.sales;
                     memberTotals[member.name].amount += data.amount;
@@ -1959,72 +1693,75 @@
         function exportReportToExcel() {
             const table = document.getElementById('reportTable');
             if (!table || table.querySelector('td')?.innerText.includes('No reports')) {
-                return showAlert('No data available to export.');
+                 return showAlert('No data available to export.');
             }
-            const wb = XLSX.utils.table_to_book(table, {
-                sheet: "Report"
-            });
-
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Report"});
+            
             const selectedDate = document.getElementById('reportDate').value;
             const startDate = document.getElementById('reportStartDate').value;
             const endDate = document.getElementById('reportEndDate').value;
-
+            
             let fileName = `SalesReport_${selectedDate}.xlsx`;
             if (startDate && endDate && (startDate !== selectedDate || endDate !== selectedDate)) {
-                fileName = `SalesReport_${startDate}_to_${endDate}.xlsx`;
+                 fileName = `SalesReport_${startDate}_to_${endDate}.xlsx`;
             }
 
             XLSX.writeFile(wb, fileName);
         }
 
         // --- Team Member Functions ---
-        function loginTeamMember() {
+        async function loginTeamMember() {
             const username = document.getElementById('teamMemberUsername').value.trim();
             const password = document.getElementById('teamMemberPassword').value.trim();
-
+            
             let foundMember = null;
             let teamAdminInfo = null;
 
             for (const admin of state.teamAdmins) {
                 if (admin.teamMembers && typeof admin.teamMembers === 'object') {
-                    const memberKey = Object.keys(admin.teamMembers).find(key =>
+                    const memberKey = Object.keys(admin.teamMembers).find(key => 
                         admin.teamMembers[key].username === username && admin.teamMembers[key].password === password
                     );
-                    if (memberKey) {
-                        foundMember = {
-                            id: memberKey,
-                            ...admin.teamMembers[memberKey]
-                        };
-                        teamAdminInfo = {
-                            id: admin.id,
-                            username: admin.username,
-                            status: admin.status
-                        };
+                    if(memberKey){
+                        foundMember = {id: memberKey, ...admin.teamMembers[memberKey]};
+                        teamAdminInfo = {id: admin.id, username: admin.username, status: admin.status };
                         break;
                     }
                 }
             }
 
             if (foundMember) {
-                if (foundMember.status === 'deactivated') {
+                 if (foundMember.status === 'deactivated') {
                     return showAlert('Your account has been deactivated. Please contact your team admin.');
                 }
                 if (teamAdminInfo.status === 'deactivated') {
                     return showAlert('Your team is currently deactivated. Please contact the super admin.');
                 }
-                state.loggedInUser = foundMember.id;
-                state.loggedInUserName = foundMember.name;
-                state.loggedInUserUsername = foundMember.username;
-                state.loggedInUserRole = 'teammember';
-                state.loggedInUserTeam = teamAdminInfo.username;
+                const user = {
+                    id: foundMember.id,
+                    name: foundMember.name,
+                    username: foundMember.username,
+                    team: teamAdminInfo.username,
+                    teamId: teamAdminInfo.id,
+                    role: 'teammember'
+                };
+                localStorage.setItem('loggedInUser', JSON.stringify(user));
+
+                state.loggedInUser = user.id;
+                state.loggedInUserName = user.name;
+                state.loggedInUserUsername = user.username; 
+                state.loggedInUserRole = user.role;
+                state.loggedInUserTeam = user.team;
                 state.loggedInUserTeamId = teamAdminInfo.id;
+                
+                await setupNotifications(user.role, user.teamId, user.id);
                 renderTeamMemberDashboard();
                 showPage('teamMemberDashboard');
             } else {
                 showAlert('Invalid username or password.');
             }
         }
-
+        
         function updateAmountOnRow(productId) {
             const product = state.products.find(p => p.id === productId);
             if (!product) return;
@@ -2032,7 +1769,7 @@
             const rate = product.rate;
             const salesInput = document.getElementById(`sales-${productId}`);
             const amountCell = document.getElementById(`amount-${productId}`);
-
+            
             if (salesInput && amountCell) {
                 const sales = parseFloat(salesInput.value) || 0;
                 const amount = rate * sales;
@@ -2043,27 +1780,27 @@
         function addItemsFromProductListToReport(containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
-
+            
             let itemsToAdd = [];
 
             const productRows = container.querySelectorAll('tr[data-product-id]');
-
+            
             productRows.forEach(row => {
-                const productId = row.dataset.productId;
-                const product = state.products.find(p => p.id === productId);
-                if (!product) return;
+                 const productId = row.dataset.productId;
+                 const product = state.products.find(p => p.id === productId);
+                 if(!product) return;
 
-                const tgtInput = document.getElementById(`tgt-${productId}`);
-                const salesInput = document.getElementById(`sales-${productId}`);
+                 const tgtInput = document.getElementById(`tgt-${productId}`);
+                 const salesInput = document.getElementById(`sales-${productId}`);
+                 
+                 const tgt = parseFloat(tgtInput.value) || 0;
+                 const sales = parseFloat(salesInput.value) || 0;
 
-                const tgt = parseFloat(tgtInput.value) || 0;
-                const sales = parseFloat(salesInput.value) || 0;
-
-                if (tgt > 0 || sales > 0) {
-                    const rate = product.rate;
-                    const amount = rate * sales;
-
-                    if (state.currentReportItems.find(item => item.name === product.name)) {
+                 if (tgt > 0 || sales > 0) {
+                     const rate = product.rate;
+                     const amount = rate * sales;
+                     
+                     if (state.currentReportItems.find(item => item.name === product.name)) {
                         showAlert(`Product "${product.name}" is already in the report. Please remove the existing one to add again.`);
                         itemsToAdd = []; // stop processing
                         return;
@@ -2076,11 +1813,11 @@
                         sales: sales,
                         amount: amount
                     });
-                }
+                 }
             });
 
 
-            if (itemsToAdd.length > 0) {
+            if(itemsToAdd.length > 0) {
                 state.currentReportItems.push(...itemsToAdd);
                 renderCurrentReportItems();
                 // Clear the inputs after adding
@@ -2109,10 +1846,10 @@
         function renderCurrentReportItems() {
             const itemsContainer = document.getElementById('currentReportItems');
             itemsContainer.innerHTML = '';
-
+            
             if (!state.currentReportItems || state.currentReportItems.length === 0) {
-                itemsContainer.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">No items added yet.</td></tr>';
-                return;
+                 itemsContainer.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">No items added yet.</td></tr>';
+                 return;
             }
 
             state.currentReportItems.forEach((item, index) => {
@@ -2142,7 +1879,7 @@
 
             if (!state.loggedInUserUsername) return showAlert('Could not verify your user. Please log out and log in again.');
 
-            const hasSubmittedToday = state.salesReports.some(r =>
+            const hasSubmittedToday = state.salesReports.some(r => 
                 r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
             );
 
@@ -2161,22 +1898,30 @@
                 items: [...state.currentReportItems],
                 grandTotal: grandTotal,
             };
-
+            
             const newReport = {
                 reportData: reportData,
                 submittedBy: state.loggedInUserUsername,
                 team: state.loggedInUserTeam,
                 date: new Date().toISOString()
             };
-
+            
             await db.ref('salesReports').push(newReport);
-
+            
             state.currentReportItems = [];
-
+            
             showAlert('Report submitted successfully!');
 
+            const settings = state.notificationSettings[state.loggedInUserTeamId];
+            if (settings && settings.enabled) {
+                 setTimeout(() => {
+                    playVoice(settings.thankYouMessage, 'bn-BD');
+                }, 10 * 60 * 1000); // 10 minutes
+            }
+
+
             // Show popunder ad
-            if (state.advertisements.popunder) {
+            if(state.advertisements.popunder) {
                 window.open(state.advertisements.popunder, '_blank');
             }
 
@@ -2189,13 +1934,13 @@
             if (currentHour >= 23) {
                 return showAlert('You cannot delete reports after 11 PM.');
             }
-            if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+             if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
                 await db.ref(`salesReports/${reportId}`).remove();
                 await getFullState();
                 renderTeamMemberDashboard();
             }
         }
-
+        
         function renderProductTableForMember(products, containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -2208,7 +1953,7 @@
 
             let tableHtml = '<table class="w-full grouped-product-table"><thead><tr><th>Product</th><th class="text-right">Rate</th><th>TGT</th><th>Sales</th><th class="text-right">Amount</th></tr></thead><tbody>';
 
-            products.sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
+            products.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
                 tableHtml += `
                     <tr data-product-id="${p.id}">
                         <td>${p.name}</td>
@@ -2238,7 +1983,7 @@
                 renderProductTableForMember(products, 'memberProductListContainer');
             }
         }
-
+        
         function handleProductSearchForMember(searchTerm) {
             document.getElementById('productCategorySelect').value = ''; // Reset category dropdown
             const container = document.getElementById('memberProductListContainer');
@@ -2246,7 +1991,7 @@
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
             if (lowerCaseSearchTerm.length > 1) {
-                const filteredProducts = state.products.filter(product =>
+                const filteredProducts = state.products.filter(product => 
                     product.name.toLowerCase().includes(lowerCaseSearchTerm)
                 );
                 renderProductTableForMember(filteredProducts, 'memberProductListContainer');
@@ -2256,7 +2001,7 @@
 
         function renderTeamMemberDashboard() {
             document.getElementById('loggedInTeamMemberName').innerText = state.loggedInUserName;
-
+            
             const noticeContainer = document.getElementById('teamAdminNoticeContainer');
             const teamNotice = state.notices[state.loggedInUserTeamId] || '';
             if (teamNotice) {
@@ -2268,16 +2013,16 @@
             } else {
                 noticeContainer.innerHTML = '';
             }
-
+            
             // Populate category dropdown
             const categorySelect = document.getElementById('productCategorySelect');
             categorySelect.innerHTML = '<option value="">-- Select a Category --</option>';
             groupOrder.forEach(groupInfo => {
-                if (productGroups[groupInfo.key] && productGroups[groupInfo.key].length > 0) {
-                    categorySelect.innerHTML += `<option value="${groupInfo.key}">${groupInfo.label}</option>`;
-                }
+                 if (productGroups[groupInfo.key] && productGroups[groupInfo.key].length > 0) {
+                     categorySelect.innerHTML += `<option value="${groupInfo.key}">${groupInfo.label}</option>`;
+                 }
             });
-
+            
             // Clear previous results
             document.getElementById('memberProductSearch').value = '';
             document.getElementById('memberProductListContainer').innerHTML = '';
@@ -2285,7 +2030,7 @@
 
             const todayStart = new Date();
             todayStart.setHours(0, 0, 0, 0);
-            const hasSubmittedToday = state.salesReports.some(r =>
+            const hasSubmittedToday = state.salesReports.some(r => 
                 r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
             );
             document.getElementById('submitReportContainer').style.display = hasSubmittedToday ? 'none' : 'block';
@@ -2295,18 +2040,18 @@
             const myReports = state.salesReports.filter(report => report.submittedBy === state.loggedInUserUsername);
 
             if (myReports.length === 0) {
-                mySalesReportsList.innerHTML = '<p class="text-gray-500">You have not submitted any reports yet.</p>';
+                 mySalesReportsList.innerHTML = '<p class="text-gray-500">You have not submitted any reports yet.</p>';
             } else {
                 [...myReports].reverse().forEach(report => {
                     const div = document.createElement('div');
                     div.className = 'p-3 border rounded';
-
+                    
                     const reportDate = new Date(report.date);
                     const today = new Date();
                     const isToday = reportDate.getFullYear() === today.getFullYear() &&
-                        reportDate.getMonth() === today.getMonth() &&
-                        reportDate.getDate() === today.getDate();
-
+                                  reportDate.getMonth() === today.getMonth() &&
+                                  reportDate.getDate() === today.getDate();
+                                  
                     const canDelete = isToday && today.getHours() < 23;
 
                     div.innerHTML = `
@@ -2356,34 +2101,231 @@
             state.currentReportItems = [];
             renderCurrentReportItems();
         }
-
+        
         function renderAdvertisements(pageId) {
             const adContainer = document.getElementById('adContainer');
             adContainer.innerHTML = '';
             if (pageId === 'superAdminDashboard') {
-                return;
+                return; 
             }
 
             let adHtml = '';
-            if (state.advertisements.banner) {
+            if(state.advertisements.banner) {
                 adHtml += `<img src="${state.advertisements.banner}" alt="Banner Ad" class="mx-auto my-2" style="max-width: 100%; height: auto;">`;
             }
-            if (state.advertisements.nativeBanner) {
+            if(state.advertisements.nativeBanner) {
                 adHtml += `<img src="${state.advertisements.nativeBanner}" alt="Native Banner Ad" class="mx-auto my-2" style="max-width: 100%; height: auto;">`;
             }
 
             adContainer.innerHTML = adHtml;
         }
 
+        // --- Notification and Alarm System ---
+        function playVoice(text, lang = 'en-US') {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.log("Speech synthesis not supported.");
+            }
+        }
+
+        function startMemberAlarmSystem() {
+            if (alarmIntervalId) clearInterval(alarmIntervalId); 
+
+            alarmIntervalId = setInterval(async () => {
+                const settings = state.notificationSettings[state.loggedInUserTeamId];
+                if (!settings || !settings.enabled) return;
+
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const hasSubmittedToday = state.salesReports.some(r => 
+                    r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
+                );
+
+                if (hasSubmittedToday) {
+                    clearInterval(alarmIntervalId);
+                    alarmIntervalId = null;
+                    return;
+                }
+                
+                const now = new Date();
+                const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                
+                if (currentTime === settings.reminderTime1 || currentTime === settings.reminderTime2) {
+                    playVoice(settings.reminderMessage, 'bn-BD');
+                }
+            }, 60000); // Check every minute
+        }
+
+        function startAdminNotificationSystem() {
+            if (adminNotificationIntervalId) clearInterval(adminNotificationIntervalId);
+
+            adminNotificationIntervalId = setInterval(async () => {
+                const now = new Date();
+                const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+                if (currentTime === "23:02") {
+                    await getFullState(); // Refresh data
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const { reportingMembers, submittedMemberUsernames, productData } = getReportDataForDateRange(todayStr, todayStr);
+                    
+                    const submittedCount = submittedMemberUsernames.size;
+                    const notSubmittedCount = reportingMembers.length - submittedCount;
+                    
+                    let grandTotalAmount = 0;
+                    Object.values(productData).forEach(pInfo => {
+                        Object.values(pInfo.members).forEach(mData => {
+                            grandTotalAmount += mData.amount;
+                        });
+                    });
+
+                    const title = "Daily Report Summary";
+                    const body = `Submitted: ${submittedCount}, Not Submitted: ${notSubmittedCount}. Total Amount: ${Math.round(grandTotalAmount)}.`;
+
+                    // Send to self
+                    const adminUser = state.teamAdmins.find(a => a.id === state.loggedInUser);
+                    if (adminUser && adminUser.fcmToken) {
+                       sendPushNotification(adminUser.fcmToken, title, body);
+                    }
+                }
+            }, 60000);
+        }
+
+        async function setupNotifications(role, teamId, userId) {
+             if (!('Notification' in window) || !('serviceWorker' in navigator) || !firebase.messaging.isSupported()) {
+                console.log("This browser does not support notifications.");
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    console.log('Notification permission granted.');
+                    const fcmToken = await messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY_HERE' }); // Replace with your actual VAPID key from Firebase Console
+
+                    if (fcmToken) {
+                        if (role === 'teammember') {
+                            await db.ref(`teamAdmins/${teamId}/teamMembers/${userId}/fcmToken`).set(fcmToken);
+                            startMemberAlarmSystem();
+                        } else if (role === 'teamadmin') {
+                            await db.ref(`teamAdmins/${userId}/fcmToken`).set(fcmToken);
+                            startAdminNotificationSystem();
+                        }
+                    } else {
+                        console.log('No registration token available. Request permission to generate one.');
+                    }
+                } else {
+                    console.log('Unable to get permission to notify.');
+                }
+            } catch(err) {
+                console.error('An error occurred while setting up notifications.', err)
+            }
+        }
+        
+        async function sendPushNotification(token, title, body) {
+            console.log(`Simulating sending push to ${token}: Title: ${title}, Body: ${body}`);
+        }
+
+        function renderNotificationSettings() {
+            const adminId = state.loggedInUser;
+            const settings = state.notificationSettings[adminId] || {};
+            
+            document.getElementById('enableNotifications').checked = settings.enabled || false;
+            document.getElementById('reminderMessage').value = settings.reminderMessage || "আপনি এখনো আগামীকালের টার্গেট ও আজকের সেলস রিপোর্ট জমা দেন নি, দয়া করে রাত 11 তার মধ্যে রিপোর্ট জমা দিন নয়তো নিজের জবাব প্রস্তুত রাখুন সকাল বেলার মিটিংয়ে দেয়ার জন্য";
+            document.getElementById('reminderTime1').value = settings.reminderTime1 || "21:30";
+            document.getElementById('reminderTime2').value = settings.reminderTime2 || "22:20";
+            document.getElementById('thankYouMessage').value = settings.thankYouMessage || "আপনাকে ধন্যবাদ রিপোর্ট জমাদানের জন্য";
+        }
+
+        async function saveNotificationSettings() {
+            const adminId = state.loggedInUser;
+            const settings = {
+                enabled: document.getElementById('enableNotifications').checked,
+                reminderMessage: document.getElementById('reminderMessage').value,
+                reminderTime1: document.getElementById('reminderTime1').value,
+                reminderTime2: document.getElementById('reminderTime2').value,
+                thankYouMessage: document.getElementById('thankYouMessage').value,
+            };
+
+            await db.ref(`notificationSettings/${adminId}`).set(settings);
+            state.notificationSettings[adminId] = settings;
+            showAlert('Notification settings saved successfully!');
+        }
+
+        function renderLogoutSettings() {
+            const adminId = state.loggedInUser;
+            const settings = state.logoutSettings[adminId] || {};
+            document.getElementById('logoutClickCount').value = settings.clickCount || 10;
+        }
+
+        async function saveLogoutSettings() {
+            const adminId = state.loggedInUser;
+            const clickCount = parseInt(document.getElementById('logoutClickCount').value, 10);
+            
+            if(isNaN(clickCount) || clickCount < 1) {
+                return showAlert('Please enter a valid number greater than 0.');
+            }
+
+            const settings = { clickCount };
+            await db.ref(`logoutSettings/${adminId}`).set(settings);
+            state.logoutSettings[adminId] = settings;
+            showAlert('Logout settings saved successfully!');
+        }
+
+
         // --- App Initialization ---
         async function initializeApp() {
             resetLocalState();
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
-            await getFullState();
-            showPage('mainLoginPage');
 
-            // Hide suggestions box if clicked outside
+            if (firebase.messaging.isSupported()) {
+                messaging = firebase.messaging();
+                messaging.onMessage((payload) => {
+                    console.log('Message received. ', payload);
+                    const notificationTitle = payload.notification.title;
+                    const notificationOptions = {
+                        body: payload.notification.body,
+                        icon: '/firebase-logo.png' // Optional: add an icon
+                    };
+                    new Notification(notificationTitle, notificationOptions);
+                });
+            }
+            
+            await getFullState();
+
+            // Check for saved user in localStorage
+            const savedUserJSON = localStorage.getItem('loggedInUser');
+            if (savedUserJSON) {
+                const savedUser = JSON.parse(savedUserJSON);
+                state.loggedInUser = savedUser.id;
+                state.loggedInUserRole = savedUser.role;
+
+                if (savedUser.role === 'superadmin') {
+                    renderSuperAdminDashboard();
+                    showPage('superAdminDashboard');
+                } else if (savedUser.role === 'teamadmin') {
+                    state.loggedInUserName = savedUser.username;
+                    await setupNotifications(savedUser.role, null, savedUser.id);
+                    renderTeamAdminDashboard();
+                    showPage('teamAdminDashboard');
+                } else if (savedUser.role === 'teammember') {
+                    state.loggedInUserName = savedUser.name;
+                    state.loggedInUserUsername = savedUser.username;
+                    state.loggedInUserTeam = savedUser.team;
+                    state.loggedInUserTeamId = savedUser.teamId;
+                    await setupNotifications(savedUser.role, savedUser.teamId, savedUser.id);
+                    renderTeamMemberDashboard();
+                    showPage('teamMemberDashboard');
+                }
+            } else {
+                 showPage('mainLoginPage');
+            }
+
+
             document.addEventListener('click', function(event) {
                 const suggestionsContainer = document.getElementById('memberProductSuggestions');
                 const searchInput = document.getElementById('memberProductSearch');
@@ -2394,8 +2336,10 @@
         }
 
         window.onload = initializeApp;
+
     </script>
 
 </body>
-
 </html>
+
+    
