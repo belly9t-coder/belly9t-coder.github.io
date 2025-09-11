@@ -1172,7 +1172,7 @@
                 state.loggedInUser = user.id;
                 state.loggedInUserName = user.username;
                 state.loggedInUserRole = user.role;
-                await setupNotifications(user.role, null, user.id);
+                setupNotifications(user.role, null, user.id);
                 renderTeamAdminDashboard();
                 showPage('teamAdminDashboard');
             } else {
@@ -1755,7 +1755,7 @@
                 state.loggedInUserTeam = user.team;
                 state.loggedInUserTeamId = teamAdminInfo.id;
                 
-                await setupNotifications(user.role, user.teamId, user.id);
+                setupNotifications(user.role, user.teamId, user.id);
                 renderTeamMemberDashboard();
                 showPage('teamMemberDashboard');
             } else {
@@ -2154,6 +2154,20 @@
                 console.log("Speech synthesis not supported.");
             }
         }
+        
+        function unlockAudio() {
+            if ('speechSynthesis' in window) {
+                // Play a silent utterance to unlock audio
+                const utterance = new SpeechSynthesisUtterance('');
+                utterance.volume = 0;
+                window.speechSynthesis.speak(utterance);
+                
+                // Also ensures voices are loaded.
+                window.speechSynthesis.getVoices();
+            }
+        }
+
+
         // This function is needed to load voices on some browsers
         window.speechSynthesis.onvoiceschanged = () => {
              window.speechSynthesis.getVoices();
@@ -2233,7 +2247,7 @@
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    const fcmToken = await messaging.getToken({ vapidKey: 'BC0oXNNGZG8Qq43Wuo6YRidw6ZF7vNQMOXhQwTPun7rVRqSu9UIbh0w84CH3_01XcXih4LKstYWsUF0laM13710' });
+                    const fcmToken = await messaging.getToken({ vapidKey: 'BC0oXNNGZG8Qq43Wuo6YRidw6ZF7vNQMOXhQwTPun7rVRqSu9Ulbh0w84CH3_01XcXih4LKstYWsUF0laM13710' });
                     if (fcmToken) {
                         if (role === 'teammember') {
                             await db.ref(`teamAdmins/${teamId}/teamMembers/${userId}/fcmToken`).set(fcmToken);
@@ -2248,14 +2262,8 @@
         }
         
         async function setupNotifications(role, teamId, userId) {
-            // Setup voice alarms (which don't require permission)
-            if (role === 'teammember') {
-                startMemberAlarmSystem();
-            } else if (role === 'teamadmin') {
-                startAdminNotificationSystem();
-            }
-
-            // Setup push notifications (which require user permission)
+            startMemberAlarmSystem();
+            startAdminNotificationSystem();
             await setupPushNotifications(role, teamId, userId);
         }
         
@@ -2385,7 +2393,7 @@
                     showPage('superAdminDashboard');
                 } else if (savedUser.role === 'teamadmin') {
                     state.loggedInUserName = savedUser.username;
-                    await setupNotifications(savedUser.role, null, savedUser.id);
+                    setupNotifications(savedUser.role, null, savedUser.id);
                     renderTeamAdminDashboard();
                     showPage('teamAdminDashboard');
                 } else if (savedUser.role === 'teammember') {
@@ -2393,13 +2401,16 @@
                     state.loggedInUserUsername = savedUser.username;
                     state.loggedInUserTeam = savedUser.team;
                     state.loggedInUserTeamId = savedUser.teamId;
-                    await setupNotifications(savedUser.role, savedUser.teamId, savedUser.id);
+                    setupNotifications(savedUser.role, savedUser.teamId, savedUser.id);
                     renderTeamMemberDashboard();
                     showPage('teamMemberDashboard');
                 }
             } else {
                  showPage('mainLoginPage');
             }
+
+            // Unlock audio on the first user interaction
+            document.addEventListener('click', unlockAudio, { once: true });
 
 
             document.addEventListener('click', function(event) {
@@ -2414,8 +2425,3 @@
         window.onload = initializeApp;
 
     </script>
-
-</body>
-</html>
-
-    
