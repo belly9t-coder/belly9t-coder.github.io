@@ -427,15 +427,12 @@
                             <textarea id="reminderMessage" rows="3" class="input-field !mb-0" placeholder="Message for members who have not submitted their report..."></textarea>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="reminderTime1" class="block text-sm font-medium text-gray-700 mb-1">First Reminder Time</label>
-                                <input type="time" id="reminderTime1" class="input-field !mb-0">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Times</label>
+                            <div id="reminderTimesContainer" class="space-y-2">
+                                <!-- Reminder time inputs will be here -->
                             </div>
-                             <div>
-                                <label for="reminderTime2" class="block text-sm font-medium text-gray-700 mb-1">Second Reminder Time</label>
-                                <input type="time" id="reminderTime2" class="input-field !mb-0">
-                            </div>
+                            <button onclick="addReminderTimeInput()" class="btn btn-secondary btn-sm mt-2">Add More Time</button>
                         </div>
 
                         <div>
@@ -899,7 +896,6 @@
 
         function handleLogoutClick(event) {
             let requiredClicks = 1;
-            const button = event.target;
             
             if (state.loggedInUserRole === 'teammember') {
                 const adminSettings = state.logoutSettings[state.loggedInUserTeamId];
@@ -907,8 +903,6 @@
             } else if (state.loggedInUserRole === 'teamadmin') {
                  const adminSettings = state.logoutSettings[state.loggedInUser];
                  requiredClicks = (adminSettings && adminSettings.clickCount) ? parseInt(adminSettings.clickCount, 10) : 10;
-            } else if (state.loggedInUserRole === 'superadmin') {
-                requiredClicks = 1;
             }
 
             if(requiredClicks <= 1) {
@@ -921,15 +915,11 @@
             clearTimeout(logoutClickTimer);
             logoutClickTimer = setTimeout(() => {
                 logoutClickCounter = 0;
-                 button.innerText = 'Logout';
             }, 2000); 
 
             if (logoutClickCounter >= requiredClicks) {
                 clearTimeout(logoutClickTimer);
                 performLogout();
-            } else {
-                 // Do not show remaining clicks
-                 // button.innerText = `Click ${requiredClicks - logoutClickCounter} more times`;
             }
         }
 
@@ -1482,6 +1472,17 @@
             document.getElementById('reportDate').value = today;
             document.getElementById('reportStartDate').value = today;
             document.getElementById('reportEndDate').value = today;
+            
+            // Voice alerts for admin
+            playVoice("Welcome admin", 'en-US', false);
+            setTimeout(() => {
+                const { notSubmittedMembers } = getReportDataForDateRange(today, today);
+                if (notSubmittedMembers.length > 0) {
+                    playVoice(`${notSubmittedMembers.length} members have not submitted the report yet.`, 'en-US', false);
+                }
+            }, 2000);
+
+
             renderTeamAdminReports();
         }
 
@@ -1602,7 +1603,7 @@
                 const submittedCount = submittedMemberUsernames.size;
                 let notSubmittedNames = notSubmittedMembers.map(m => m.name).join(', ');
                 if (notSubmittedNames) {
-                    notSubmittedNames = "যারা এখনো রিপোর্ট দেননি তাদের নাম দেয়া হলো, অনুগ্রহ পূর্বক রিপোর্ট দেন !!! " + notSubmittedNames;
+                    notSubmittedNames = "যারা এখনো রিপোর্ট দেননি তাদের নাম দেয়া হলো, অনুগ্রহ পূর্বক রিপোর্ট দেন !!! " + notSubmittedNames;
                 }
 
 
@@ -1910,15 +1911,8 @@
             
             state.currentReportItems = [];
             
+            playVoice("ধন্যবাদ, আপনি সফলভাবে আজকের রিপোর্ট সাবমিট করেছেন", 'bn-BD', true);
             showAlert('Report submitted successfully!');
-
-            const settings = state.notificationSettings[state.loggedInUserTeamId];
-            if (settings && settings.enabled) {
-                 setTimeout(() => {
-                    playVoice(settings.thankYouMessage, 'bn-BD');
-                }, 10 * 60 * 1000); // 10 minutes
-            }
-
 
             // Show popunder ad
             if(state.advertisements.popunder) {
@@ -2035,6 +2029,20 @@
             );
             document.getElementById('submitReportContainer').style.display = hasSubmittedToday ? 'none' : 'block';
 
+            // Special 25-second reminder
+            if (!hasSubmittedToday) {
+                setTimeout(() => {
+                    // Re-check submission status in case user submitted within the 25 seconds
+                     const hasSubmittedNow = state.salesReports.some(r => 
+                        r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
+                    );
+                    if (!hasSubmittedNow) {
+                        playVoice("আপনি আজকের রিপোর্ট এখনো সাবমিট করেননি, তাই আপনাকে স্মরণ করানো হলো", 'bn-BD', false);
+                    }
+                }, 25000);
+            }
+
+
             const mySalesReportsList = document.getElementById('mySalesReportsList');
             mySalesReportsList.innerHTML = '';
             const myReports = state.salesReports.filter(report => report.submittedBy === state.loggedInUserUsername);
@@ -2121,16 +2129,35 @@
         }
 
         // --- Notification and Alarm System ---
-        function playVoice(text, lang = 'en-US') {
+        function playVoice(text, lang = 'en-US', isFemale = true) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = lang;
                 utterance.rate = 0.9;
+                
+                // Try to find a specific female voice
+                if (isFemale) {
+                    const voices = window.speechSynthesis.getVoices();
+                    let femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google UK English Female'));
+                     if (lang === 'bn-BD') {
+                        // For Bengali, there might not be a standard "Female" name, find one that works
+                        femaleVoice = voices.find(v => v.lang === 'bn-BD');
+                    }
+                    if (femaleVoice) {
+                        utterance.voice = femaleVoice;
+                    }
+                }
+                
+                window.speechSynthesis.cancel(); // Stop any previous speech
                 window.speechSynthesis.speak(utterance);
             } else {
                 console.log("Speech synthesis not supported.");
             }
         }
+        // This function is needed to load voices on some browsers
+        window.speechSynthesis.onvoiceschanged = () => {
+             window.speechSynthesis.getVoices();
+        };
 
         function startMemberAlarmSystem() {
             if (alarmIntervalId) clearInterval(alarmIntervalId); 
@@ -2141,7 +2168,12 @@
 
                 const todayStart = new Date();
                 todayStart.setHours(0, 0, 0, 0);
-                const hasSubmittedToday = state.salesReports.some(r => 
+                
+                // We need to refresh sales reports from DB to get the latest status
+                const salesReportsSnapshot = await db.ref('salesReports').once('value');
+                const liveSalesReports = salesReportsSnapshot.val() ? Object.values(salesReportsSnapshot.val()) : [];
+
+                const hasSubmittedToday = liveSalesReports.some(r => 
                     r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
                 );
 
@@ -2154,8 +2186,8 @@
                 const now = new Date();
                 const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
                 
-                if (currentTime === settings.reminderTime1 || currentTime === settings.reminderTime2) {
-                    playVoice(settings.reminderMessage, 'bn-BD');
+                if (settings.reminderTimes && settings.reminderTimes.includes(currentTime)) {
+                    playVoice(settings.reminderMessage, 'bn-BD', true);
                 }
             }, 60000); // Check every minute
         }
@@ -2184,8 +2216,7 @@
 
                     const title = "Daily Report Summary";
                     const body = `Submitted: ${submittedCount}, Not Submitted: ${notSubmittedCount}. Total Amount: ${Math.round(grandTotalAmount)}.`;
-
-                    // Send to self
+                    
                     const adminUser = state.teamAdmins.find(a => a.id === state.loggedInUser);
                     if (adminUser && adminUser.fcmToken) {
                        sendPushNotification(adminUser.fcmToken, title, body);
@@ -2194,39 +2225,74 @@
             }, 60000);
         }
 
-        async function setupNotifications(role, teamId, userId) {
-             if (!('Notification' in window) || !('serviceWorker' in navigator) || !firebase.messaging.isSupported()) {
-                console.log("This browser does not support notifications.");
+        async function setupPushNotifications(role, teamId, userId) {
+            if (!('Notification' in window) || !('serviceWorker' in navigator) || !firebase.messaging.isSupported()) {
+                console.log("This browser does not support push notifications.");
                 return;
             }
-
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    console.log('Notification permission granted.');
-                    const fcmToken = await messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY_HERE' }); // Replace with your actual VAPID key from Firebase Console
-
+                    const fcmToken = await messaging.getToken({ vapidKey: 'BC0oXNNGZG8Qq43Wuo6YRidw6ZF7vNQMOXhQwTPun7rVRqSu9UIbh0w84CH3_01XcXih4LKstYWsUF0laM13710' });
                     if (fcmToken) {
                         if (role === 'teammember') {
                             await db.ref(`teamAdmins/${teamId}/teamMembers/${userId}/fcmToken`).set(fcmToken);
-                            startMemberAlarmSystem();
                         } else if (role === 'teamadmin') {
                             await db.ref(`teamAdmins/${userId}/fcmToken`).set(fcmToken);
-                            startAdminNotificationSystem();
                         }
-                    } else {
-                        console.log('No registration token available. Request permission to generate one.');
                     }
-                } else {
-                    console.log('Unable to get permission to notify.');
                 }
             } catch(err) {
-                console.error('An error occurred while setting up notifications.', err)
+                console.error('An error occurred while setting up push notifications.', err);
             }
         }
         
+        async function setupNotifications(role, teamId, userId) {
+            // Setup voice alarms (which don't require permission)
+            if (role === 'teammember') {
+                startMemberAlarmSystem();
+            } else if (role === 'teamadmin') {
+                startAdminNotificationSystem();
+            }
+
+            // Setup push notifications (which require user permission)
+            await setupPushNotifications(role, teamId, userId);
+        }
+        
         async function sendPushNotification(token, title, body) {
+            // This is a client-side simulation. For a real app, this should be done from a server.
             console.log(`Simulating sending push to ${token}: Title: ${title}, Body: ${body}`);
+            // In a real implementation, you would make an HTTP POST request to FCM API endpoint.
+            // Example:
+            /*
+            const message = {
+                to: token,
+                notification: {
+                    title: title,
+                    body: body,
+                    icon: '/firebase-logo.png'
+                }
+            };
+            fetch('https://fcm.googleapis.com/fcm/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'key=YOUR_SERVER_KEY', // Get this from Firebase Console
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(message)
+            });
+            */
+        }
+
+        function addReminderTimeInput(time = '') {
+            const container = document.getElementById('reminderTimesContainer');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2';
+            div.innerHTML = `
+                <input type="time" class="input-field !mb-0 reminder-time-input" value="${time}">
+                <button onclick="this.parentElement.remove()" class="btn btn-danger btn-sm">X</button>
+            `;
+            container.appendChild(div);
         }
 
         function renderNotificationSettings() {
@@ -2235,18 +2301,28 @@
             
             document.getElementById('enableNotifications').checked = settings.enabled || false;
             document.getElementById('reminderMessage').value = settings.reminderMessage || "আপনি এখনো আগামীকালের টার্গেট ও আজকের সেলস রিপোর্ট জমা দেন নি, দয়া করে রাত 11 তার মধ্যে রিপোর্ট জমা দিন নয়তো নিজের জবাব প্রস্তুত রাখুন সকাল বেলার মিটিংয়ে দেয়ার জন্য";
-            document.getElementById('reminderTime1').value = settings.reminderTime1 || "21:30";
-            document.getElementById('reminderTime2').value = settings.reminderTime2 || "22:20";
+            
+            const timesContainer = document.getElementById('reminderTimesContainer');
+            timesContainer.innerHTML = '';
+            const reminderTimes = settings.reminderTimes || ["21:30", "22:20"];
+            reminderTimes.forEach(time => addReminderTimeInput(time));
+            if(reminderTimes.length === 0){ // Add one empty if none exist
+                 addReminderTimeInput();
+            }
+
             document.getElementById('thankYouMessage').value = settings.thankYouMessage || "আপনাকে ধন্যবাদ রিপোর্ট জমাদানের জন্য";
         }
 
         async function saveNotificationSettings() {
             const adminId = state.loggedInUser;
+            const reminderTimes = Array.from(document.querySelectorAll('.reminder-time-input'))
+                                     .map(input => input.value)
+                                     .filter(value => value !== '');
+
             const settings = {
                 enabled: document.getElementById('enableNotifications').checked,
                 reminderMessage: document.getElementById('reminderMessage').value,
-                reminderTime1: document.getElementById('reminderTime1').value,
-                reminderTime2: document.getElementById('reminderTime2').value,
+                reminderTimes: reminderTimes,
                 thankYouMessage: document.getElementById('thankYouMessage').value,
             };
 
