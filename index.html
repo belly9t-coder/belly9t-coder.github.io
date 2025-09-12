@@ -16,32 +16,24 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow-y: hidden;
             background-color: #f0f2f5;
         }
         #app-container {
             width: 100%;
             height: 100vh;
             background-color: white;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
          #app {
             flex-grow: 1;
             overflow-y: auto;
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
         #app::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
-        }
-        #teamAdminDashboard #app {
-            -ms-overflow-style: auto;
-            scrollbar-width: auto;
-        }
-        #teamAdminDashboard #app::-webkit-scrollbar {
-            display: block;
+            display: none;
         }
         .page {
             display: none;
@@ -52,6 +44,12 @@
         .card {
             background-color: white;
             padding: 24px;
+        }
+        .dashboard-section {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
         .btn {
             padding: 10px 20px;
@@ -274,42 +272,41 @@
 
         <!-- Super Admin Dashboard -->
         <div id="superAdminDashboard" class="page">
-            <div class="card">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Super Admin Dashboard</h2>
-                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
+             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <h2 class="text-2xl font-bold mb-4 md:mb-0">Super Admin Dashboard</h2>
+                <div class="flex space-x-2">
+                    <button onclick="showPage('createTeamAdminPage')" class="btn btn-primary">Create Team Admin</button>
+                    <button onclick="handleLogoutClick(event)" class="btn btn-danger">Logout</button>
                 </div>
-
-                <div class="mb-8">
-                    <button onclick="showPage('createTeamAdminPage')" class="btn btn-primary">Create New Team Admin</button>
-                </div>
-
-                <div class="mb-8">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="dashboard-section lg:col-span-2">
                     <h3 class="text-lg font-semibold mb-2">Manage Team Admins (<span id="teamAdminCount">0</span>)</h3>
                     <div id="teamAdminsList" class="space-y-2"></div>
                 </div>
                 
-                 <div class="mb-8">
+                 <div class="dashboard-section">
                     <h3 class="text-lg font-semibold mb-2">Change Super Admin Password</h3>
-                    <div class="p-4 border rounded-lg space-y-4 max-w-md">
+                    <div class="space-y-4">
                         <input type="password" id="newSuperAdminPassword" class="input-field" placeholder="New Password">
                         <input type="password" id="confirmSuperAdminPassword" class="input-field" placeholder="Confirm New Password">
                         <button onclick="changeSuperAdminPassword()" class="btn btn-warning w-full">Change Password</button>
                     </div>
                 </div>
 
-                <div class="mb-8">
+                <div class="dashboard-section">
                     <h3 class="text-lg font-semibold mb-2">Notice for Team Admins</h3>
-                    <div class="p-4 border rounded-lg space-y-4">
+                    <div class="space-y-4">
                         <textarea id="superAdminNotice" class="input-field !mb-0" placeholder="Write notice for team admins..."></textarea>
                         <button onclick="saveSuperAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
                          <button onclick="deleteSuperAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
                     </div>
                 </div>
 
-                <div class="mb-8">
+                <div class="dashboard-section">
                     <h3 class="text-lg font-semibold mb-2">Manage Advertisements</h3>
-                    <div class="p-4 border rounded-lg space-y-4">
+                    <div class="space-y-4">
                         <div>
                             <label for="popunderAd" class="font-semibold text-sm">Popunder Ad URL</label>
                             <input type="text" id="popunderAd" class="input-field !mb-0" placeholder="https://example.com/popunder">
@@ -325,7 +322,6 @@
                         <button onclick="saveAdvertisements()" class="btn btn-primary w-full">Save Advertisements</button>
                     </div>
                 </div>
-
             </div>
         </div>
         
@@ -342,19 +338,20 @@
 
         <!-- Team Admin Dashboard -->
         <div id="teamAdminDashboard" class="page">
-             <div class="card">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Admin Dashboard</h2>
-                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold mb-1">Team Admin Dashboard</h2>
+                    <p class="mb-4 md:mb-0">Welcome, <span id="loggedInTeamAdminUsername" class="font-semibold"></span>!</p>
                 </div>
-                <p class="mb-6">Welcome, <span id="loggedInTeamAdminUsername" class="font-semibold"></span>!</p>
-                <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
-
-                <div class="mb-8">
-                     <button onclick="showPage('createTeamMemberPage')" class="btn btn-primary">Create New Team Member</button>
+                <div class="flex space-x-2">
+                     <button onclick="showPage('createTeamMemberPage')" class="btn btn-primary">Create Member</button>
+                     <button onclick="handleLogoutClick(event)" class="btn btn-danger">Logout</button>
                 </div>
+            </div>
+            <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
 
-                <div class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="dashboard-section lg:col-span-3">
                     <div class="flex items-center mb-2">
                         <h3 class="text-lg font-semibold">Manage Team Members</h3>
                         <span id="toggleTeamMembers" class="toggle-btn text-sm">[Hide]</span>
@@ -362,30 +359,29 @@
                     <div id="teamMembersList" class="space-y-2"></div>
                 </div>
 
-                <div class="mb-8">
+                <div class="dashboard-section">
                      <div class="flex items-center mb-2">
                         <h3 class="text-lg font-semibold">Notice for Team Members</h3>
                         <span id="toggleAdminNotice" class="toggle-btn text-sm">[Hide]</span>
                     </div>
-                    <div id="teamAdminNoticeSection" class="p-4 border rounded-lg space-y-4">
+                    <div id="teamAdminNoticeSection" class="space-y-4">
                         <textarea id="teamAdminNotice" class="input-field !mb-0" placeholder="Write notice for team members..."></textarea>
                         <button onclick="saveTeamAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
                         <button onclick="deleteTeamAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
                     </div>
                 </div>
 
-                 <div class="mb-8">
+                 <div class="dashboard-section">
                     <div class="flex items-center mb-2">
                         <h3 class="text-lg font-semibold">Add New Product</h3>
                         <span id="toggleAddProduct" class="toggle-btn text-sm">[Show]</span>
                     </div>
-                    <div id="addProductSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
+                    <div id="addProductSection" class="space-y-4" style="display: none;">
                         <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
                         <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
                         
                         <label for="existingCategorySelect" class="text-sm font-medium text-gray-700">Select Existing Category</label>
                         <select id="existingCategorySelect" class="input-field" onchange="handleExistingCategorySelect()">
-                           <!-- Options will be populated by JS -->
                         </select>
                         
                         <label for="newProductCategory" class="text-sm font-medium text-gray-700">Or, Add New Category</label>
@@ -395,7 +391,7 @@
                     </div>
                 </div>
 
-                <div class="mb-8">
+                <div class="dashboard-section">
                      <div class="flex items-center mb-2">
                         <h3 class="text-lg font-semibold">Manage Products</h3>
                         <span id="toggleManageProducts" class="toggle-btn text-sm">[Hide]</span>
@@ -408,12 +404,12 @@
                     </div>
                 </div>
 
-                <div class="mb-8">
+                <div class="dashboard-section">
                     <div class="flex items-center mb-2">
                         <h3 class="text-lg font-semibold">Manage Notification System</h3>
                         <span id="toggleNotificationSystem" class="toggle-btn text-sm">[Show]</span>
                     </div>
-                    <div id="notificationSystemSection" class="p-4 border rounded-lg space-y-6" style="display: none;">
+                    <div id="notificationSystemSection" class="space-y-6" style="display: none;">
                         <div class="flex items-center justify-between">
                             <label for="enableNotifications" class="font-semibold text-gray-700">Enable Notification System</label>
                             <label class="relative inline-flex items-center cursor-pointer">
@@ -423,33 +419,31 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Message (for non-submitters)</label>
-                            <textarea id="reminderMessage" rows="3" class="input-field !mb-0" placeholder="Message for members who have not submitted their report..."></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Message</label>
+                            <textarea id="reminderMessage" rows="3" class="input-field !mb-0" placeholder="Message for non-submitters..."></textarea>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Times</label>
-                            <div id="reminderTimesContainer" class="space-y-2">
-                                <!-- Reminder time inputs will be here -->
-                            </div>
+                            <div id="reminderTimesContainer" class="space-y-2"></div>
                             <button onclick="addReminderTimeInput()" class="btn btn-secondary btn-sm mt-2">Add More Time</button>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Thank You Message (for submitters)</label>
-                            <textarea id="thankYouMessage" rows="2" class="input-field !mb-0" placeholder="Message for members who have submitted their report..."></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Thank You Message</label>
+                            <textarea id="thankYouMessage" rows="2" class="input-field !mb-0" placeholder="Message for submitters..."></textarea>
                         </div>
 
                         <button onclick="saveNotificationSettings()" class="btn btn-primary w-full">Save Settings</button>
                     </div>
                 </div>
                 
-                 <div class="mb-8">
+                 <div class="dashboard-section">
                     <div class="flex items-center mb-2">
                         <h3 class="text-lg font-semibold">Manage Logout Settings</h3>
                         <span id="toggleLogoutSettings" class="toggle-btn text-sm">[Show]</span>
                     </div>
-                    <div id="logoutSettingsSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
+                    <div id="logoutSettingsSection" class="space-y-4" style="display: none;">
                         <div>
                             <label for="logoutClickCount" class="block text-sm font-medium text-gray-700 mb-1">Required Clicks to Logout</label>
                             <input type="number" id="logoutClickCount" class="input-field !mb-0" placeholder="e.g., 10">
@@ -458,9 +452,23 @@
                     </div>
                 </div>
 
+                <div class="dashboard-section lg:col-span-3">
+                    <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div>
+                            <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
+                            <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
+                        </div>
+                         <div>
+                            <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
+                            <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
+                        </div>
+                    </div>
+                    <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full mt-4">View Report</button>
+                </div>
 
                 <!-- Team Report Section -->
-                <div id="teamReportSection" class="mb-8">
+                <div id="teamReportSection" class="dashboard-section lg:col-span-3">
                     <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
                     
                     <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
@@ -473,7 +481,6 @@
                     </div>
 
                     <div id="reportSubmissionStatus" class="mb-4 p-4 border rounded-lg bg-gray-50">
-                        <!-- Submission status will be rendered here -->
                     </div>
 
                     <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
@@ -491,22 +498,6 @@
                         </table>
                     </div>
                 </div>
-
-                 <div class="mt-8">
-                    <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
-                    <div class="grid grid-cols-2 gap-4 items-center">
-                        <div>
-                            <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
-                            <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
-                        </div>
-                         <div>
-                            <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
-                            <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
-                        </div>
-                    </div>
-                    <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full mt-4">View Report</button>
-                </div>
-
             </div>
         </div>
         
@@ -524,14 +515,15 @@
 
         <!-- Team Member Dashboard -->
         <div id="teamMemberDashboard" class="page">
-            <div class="card">
-                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Member Dashboard</h2>
-                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
-                </div>
-                <p class="mb-6">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
-
-                <div id="submitReportContainer" class="mb-8 p-4 border rounded-lg">
+             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Member Dashboard</h2>
+                <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
+            </div>
+            <p class="mb-6">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
+            <div id="teamAdminNoticeContainer" class="mb-4"></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="submitReportContainer" class="dashboard-section lg:col-span-3">
                     <h3 class="text-lg font-semibold mb-2">Submit Daily Sales Report</h3>
                     
                      <div class="border-t pt-4">
@@ -540,12 +532,10 @@
                         <div class="flex flex-col md:flex-row gap-4 mb-4">
                             <input type="text" id="memberProductSearch" oninput="handleProductSearchForMember(this.value)" class="input-field !mb-0 flex-grow" placeholder="Search for a product by name...">
                             <select id="productCategorySelect" onchange="handleCategorySelect(this.value)" class="input-field !mb-0 md:w-1/3">
-                                <!-- Categories will be populated here -->
                             </select>
                         </div>
 
                         <div id="memberProductListContainer" class="max-h-[60vh] overflow-y-auto mb-6">
-                            <!-- Product list for selected category or search will be rendered here -->
                         </div>
                     </div>
 
@@ -573,12 +563,10 @@
                     <button onclick="submitSalesReport()" class="btn btn-success mt-4 w-full">Submit Final Report</button>
                 </div>
 
-                <div>
+                <div class="dashboard-section lg:col-span-3">
                     <h3 class="text-lg font-semibold mb-2">My Submitted Reports</h3>
                     <div id="mySalesReportsList" class="space-y-4"></div>
                 </div>
-
-                 <div id="teamAdminNoticeContainer" class="mt-8"></div>
             </div>
         </div>
 
@@ -876,7 +864,6 @@
              if (page) {
                 page.classList.add('active');
             }
-            document.querySelector('#app').style.overflowY = pageId === 'teamAdminDashboard' ? 'auto' : 'hidden';
 
             renderAdvertisements(pageId);
         }
@@ -2425,5 +2412,9 @@
         window.onload = initializeApp;
 
     </script>
+
+    
+
+    
 
     
