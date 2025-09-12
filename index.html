@@ -362,7 +362,55 @@
             <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
 
             <div class="space-y-6">
-                <!-- New Collapsible Section -->
+
+                <!-- Team Report Section -->
+                <div id="teamReportSection" class="dashboard-section">
+                    <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
+                    
+                    <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
+                        <div class="flex items-center space-x-2">
+                            <label for="reportDate" class="font-semibold whitespace-nowrap">Select Date:</label>
+                            <input type="date" id="reportDate" onchange="renderTeamAdminReports()" class="input-field !mb-0 w-auto">
+                        </div>
+                         <button onclick="exportReportToExcel()" class="btn btn-success">Export</button>
+                         <button onclick="copyTable()" class="btn btn-secondary">Copy</button>
+                    </div>
+
+                    <div id="reportSubmissionStatus" class="mb-4 p-4 border rounded-lg bg-gray-50">
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
+                        <table id="reportTable">
+                            <thead>
+                              <tr id="memberRow">
+                              </tr>
+                              <tr id="subHeaderRow">
+                              </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                            <tfoot id="tableFoot">
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-center">
+                        <div class="w-full">
+                            <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
+                            <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
+                        </div>
+                         <div class="w-full">
+                            <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
+                            <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
+                        </div>
+                    </div>
+                    <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full mt-4">View Report</button>
+                </div>
+
+                <!-- New Collapsible Section at the bottom -->
                 <div class="dashboard-section">
                     <div id="allSectionsToggle" class="flex items-center justify-between cursor-pointer">
                         <h3 class="text-lg font-semibold">All section mange</h3>
@@ -424,6 +472,27 @@
 
                         <div class="dashboard-section bg-gray-50">
                             <div class="flex items-center mb-2">
+                                <h3 class="text-lg font-semibold">Manage Categories</h3>
+                                <span id="toggleManageCategories" class="toggle-btn text-sm">[Show]</span>
+                            </div>
+                            <div id="manageCategoriesSection" class="space-y-4" style="display: none;">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Add New Category</label>
+                                    <input type="text" id="categoryNameToAdd" class="input-field" placeholder="New category name">
+                                    <button onclick="addCategory()" class="btn btn-primary w-full">Add Category</button>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Delete Existing Category</label>
+                                    <select id="categoryToDelete" class="input-field">
+                                        <option value="">-- Select Category to Delete --</option>
+                                    </select>
+                                    <button onclick="deleteCategory()" class="btn btn-danger w-full mt-2">Delete Category</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-section bg-gray-50">
+                            <div class="flex items-center mb-2">
                                 <h3 class="text-lg font-semibold">Manage Notification System</h3>
                                 <span id="toggleNotificationSystem" class="toggle-btn text-sm">[Show]</span>
                             </div>
@@ -455,6 +524,20 @@
                                 <button onclick="saveNotificationSettings()" class="btn btn-primary w-full">Save Settings</button>
                             </div>
                         </div>
+
+                        <div class="dashboard-section bg-gray-50">
+                            <div class="flex items-center mb-2">
+                                <h3 class="text-lg font-semibold">Manage Voice Settings</h3>
+                                <span id="toggleVoiceSettings" class="toggle-btn text-sm">[Show]</span>
+                            </div>
+                            <div id="voiceSettingsSection" class="space-y-4" style="display: none;">
+                                <div>
+                                    <label for="summaryRepeatCount" class="block text-sm font-medium text-gray-700 mb-1">Summary Voice Repeat Count</label>
+                                    <input type="number" id="summaryRepeatCount" class="input-field !mb-0" placeholder="e.g., 2">
+                                </div>
+                                <button onclick="saveVoiceSettings()" class="btn btn-primary w-full">Save Voice Settings</button>
+                            </div>
+                        </div>
                         
                         <div class="dashboard-section bg-gray-50">
                             <div class="flex items-center mb-2">
@@ -469,55 +552,10 @@
                                 <button onclick="saveLogoutSettings()" class="btn btn-primary w-full">Save Logout Clicks</button>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
-                <!-- Team Report Section -->
-                <div id="teamReportSection" class="dashboard-section">
-                    <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
-                    
-                    <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
-                        <div class="flex items-center space-x-2">
-                            <label for="reportDate" class="font-semibold whitespace-nowrap">Select Date:</label>
-                            <input type="date" id="reportDate" onchange="renderTeamAdminReports()" class="input-field !mb-0 w-auto">
-                        </div>
-                         <button onclick="exportReportToExcel()" class="btn btn-success">Export</button>
-                         <button onclick="copyTable()" class="btn btn-secondary">Copy</button>
-                    </div>
-
-                    <div id="reportSubmissionStatus" class="mb-4 p-4 border rounded-lg bg-gray-50">
-                    </div>
-
-                    <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
-                        <table id="reportTable">
-                            <thead>
-                              <tr id="memberRow">
-                              </tr>
-                              <tr id="subHeaderRow">
-                              </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                            </tbody>
-                            <tfoot id="tableFoot">
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="dashboard-section">
-                    <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
-                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                        <div class="w-full">
-                            <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
-                            <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
-                        </div>
-                         <div class="w-full">
-                            <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
-                            <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
-                        </div>
-                    </div>
-                    <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full mt-4">View Report</button>
-                </div>
             </div>
         </div>
         
@@ -621,197 +659,137 @@
         let logoutClickTimer = null;
         
         const defaultProducts = [
-            { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11 },
-            { id: 'prod_2', name: 'Chili Powder 100gm NEW', rate: 57.60 },
-            { id: 'prod_3', name: 'Chili Powder - 200gm', rate: 108.00 },
-            { id: 'prod_4', name: 'Chili Powder-500gm x 24', rate: 254.57 },
-            { id: 'prod_5', name: 'Chili Powder-1kg', rate: 556.45 },
-            { id: 'prod_6', name: 'Chili powder 200 gm jar', rate: 132.96 },
-            { id: 'prod_7', name: 'Chili powder 5 kg-New', rate: 1530 },
-            { id: 'prod_8', name: '16 Ana Chilli-15Kg (Bulk)', rate: 4380 },
-            { id: 'prod_9', name: 'Turmeric Powder 15gm New', rate: 9.95 },
-            { id: 'prod_10', name: 'Turmeric Powder 50gm NEW', rate: 30.67 },
-            { id: 'prod_11', name: 'Turmeric Powder 100gm NEW', rate: 57.78 },
-            { id: 'prod_12', name: 'Turmeric Powder 200 gm', rate: 112.00 },
-            { id: 'prod_13', name: 'Turmeric Powder 500gmX24 Pouch', rate: 249.43 },
-            { id: 'prod_14', name: 'Turmeric Powder-1kg', rate: 533.33 },
-            { id: 'prod_15', name: 'Turmeric powder 200 gm jar', rate: 135.36 },
-            { id: 'prod_16', name: 'Turmeric Powder- 5kg', rate: 1310 },
-            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 0.00 },
-            { id: 'prod_18', name: 'Pran Coriander Powder 50 gm pouch', rate: 23.57 },
-            { id: 'prod_19', name: 'Pran Coriander Powder 100 gm pouch', rate: 44.14 },
-            { id: 'prod_20', name: 'Pran Coriander Powder 200 gm pouch', rate: 83.33 },
-            { id: 'prod_21', name: 'Pran Coriander Powder 500 gm pouch', rate: 180.00 },
-            { id: 'prod_22', name: 'Pran Coriander Powder 200 gm Jar', rate: 92.57 },
-            { id: 'prod_23', name: 'Pran Cumin Powder 15gm pouch', rate: 22.05 },
-            { id: 'prod_24', name: 'Pran Cumin Powder 50gm pouch', rate: 66.67 },
-            { id: 'prod_25', name: 'Pran Cumin Powder 100gm pouch', rate: 129.09 },
-            { id: 'prod_26', name: 'Pran Cumin Powder 200gm pouch', rate: 247.11 },
-            { id: 'prod_27', name: 'Pran Cumin Powder 200gm Jar', rate: 268.18 },
-            { id: 'prod_28', name: 'Pran Cumin Powder 500gm pouch', rate: 578.57 },
-            { id: 'prod_29', name: 'Fish Masala 20gm Foil NEW', rate: 15.00 },
-            { id: 'prod_30', name: 'Beef Masala 20gm Foil NEW', rate: 15.45 },
-            { id: 'prod_31', name: 'Chicken Masala 20gm Foil NEW', rate: 15.11 },
-            { id: 'prod_32', name: 'Meat Masala 20gm Foil NEW', rate: 15.45 },
-            { id: 'prod_33', name: 'Biriyani Masala Mix 25 gm', rate: 30.74 },
-            { id: 'prod_34', name: 'Meat Masala 100gm×48pcs P.Box', rate: 76.36 },
-            { id: 'prod_35', name: 'Chicken Masala 100gm×48pcs P.Box', rate: 75.00 },
-            { id: 'prod_36', name: 'Chicken Roast Masala 35gm×48pcs P.Box', rate: 48.89 },
-            { id: 'prod_37', name: 'Tehari Masala 40gm×48pcs P.Box', rate: 44.16 },
-            { id: 'prod_38', name: 'Bombay Biryani Masala 45gm×48pcs P.Box', rate: 48.00 },
-            { id: 'prod_39', name: 'Biryani Masala 40gm×48pcs P.Box', rate: 46.15 },
-            { id: 'prod_40', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00 },
-            { id: 'prod_41', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00 },
-            { id: 'prod_42', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40 },
-            { id: 'prod_43', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77 },
-            { id: 'prod_44', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53 },
-            { id: 'prod_45', name: 'Haleem Mix  200 gm', rate: 54.67 },
-            { id: 'prod_46', name: 'Curry powder 20gm', rate: 90.10 },
-            { id: 'prod_47', name: 'Garam Masala 15gm Foil New', rate: 27.50 },
-            { id: 'prod_48', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78 },
-            { id: 'prod_49', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53 },
-            { id: 'prod_50', name: 'Beef Kala Bhuna 80 gm', rate: 91.58 },
-            { id: 'prod_51', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31 },
-            { id: 'prod_52', name: 'Khichuri Masala 50 gm', rate: 48.96 },
-            { id: 'prod_53', name: 'Mustard Oil-80ml', rate: 23.56 },
-            { id: 'prod_54', name: 'Mustard Oil-200-mL', rate: 52.89 },
-            { id: 'prod_55', name: 'Mustard Oil-250ml', rate: 66.00 },
-            { id: 'prod_56', name: 'Mustard Oil-500 ml', rate: 136.89 },
-            { id: 'prod_57', name: 'Mustard Oil 500ml-CP', rate: 118.34 },
-            { id: 'prod_58', name: 'Mustard Oil-1000ml', rate: 265.71 },
-            { id: 'prod_59', name: 'Mustard Oil 1000ml-CP', rate: 255.11 },
-            { id: 'prod_60', name: 'Mustard oil 2 liter', rate: 528.89 },
-            { id: 'prod_61', name: 'M . Oil 5 Liter', rate: 1102.22 },
-            { id: 'prod_62', name: 'Mughal 150 ml', rate: 43.00 },
-            { id: 'prod_63', name: 'Mustard oil 16kg Tin', rate: 3270.00 },
-            { id: 'prod_64', name: 'Testing salt 20 gm', rate: 7.08 },
-            { id: 'prod_65', name: 'T-Salt-40 gm New', rate: 14.17 },
-            { id: 'prod_66', name: 'T-Salt-100 gm New', rate: 35.00 },
-            { id: 'prod_67', name: 'T-Salt 450 gm', rate: 137.89 },
-            { id: 'prod_68', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40 },
-            { id: 'prod_69', name: 'Whole Panchforan 50gm New', rate: 23.41 },
-            { id: 'prod_70', name: 'The chef Tomato  Sauce 295gm', rate: 86.20 },
-            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62 },
-            { id: 'prod_72', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03 },
-            { id: 'prod_73', name: 'The chef White Vinager 330 ml', rate: 26.40 },
-            { id: 'prod_74', name: 'The  chef White  vinager 650 ml', rate: 43.56 },
-            { id: 'prod_75', name: 'The chef white vinager  5 ltr', rate: 213.18 },
-            { id: 'prod_76', name: 'Love Jello-18 pcs Poly', rate: 40.00 },
-            { id: 'prod_77', name: 'Love Jelly-100pcs', rate: 215.00 },
-            { id: 'prod_78', name: 'The Chef Rose Water 200 ML', rate: 15.94 },
-            { id: 'prod_79', name: 'The Chef Kewra Water 200 ML', rate: 15.11 },
-            { id: 'prod_80', name: 'The Chef Rose Water 160 ML', rate: 12.00 },
-            { id: 'prod_81', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00 }
+            { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11, category: 'Chili Powder' },
+            { id: 'prod_2', name: 'Chili Powder 100gm NEW', rate: 57.60, category: 'Chili Powder' },
+            { id: 'prod_3', name: 'Chili Powder - 200gm', rate: 108.00, category: 'Chili Powder' },
+            { id: 'prod_4', name: 'Chili Powder-500gm x 24', rate: 254.57, category: 'Chili Powder' },
+            { id: 'prod_5', name: 'Chili Powder-1kg', rate: 556.45, category: 'Chili Powder' },
+            { id: 'prod_6', name: 'Chili powder 200 gm jar', rate: 132.96, category: 'Chili Powder' },
+            { id: 'prod_7', name: 'Chili powder 5 kg-New', rate: 1530, category: 'Chili Powder' },
+            { id: 'prod_8', name: '16 Ana Chilli-15Kg (Bulk)', rate: 4380, category: 'Chili Powder' },
+            { id: 'prod_9', name: 'Turmeric Powder 15gm New', rate: 9.95, category: 'Turmeric Powder' },
+            { id: 'prod_10', name: 'Turmeric Powder 50gm NEW', rate: 30.67, category: 'Turmeric Powder' },
+            { id: 'prod_11', name: 'Turmeric Powder 100gm NEW', rate: 57.78, category: 'Turmeric Powder' },
+            { id: 'prod_12', name: 'Turmeric Powder 200 gm', rate: 112.00, category: 'Turmeric Powder' },
+            { id: 'prod_13', name: 'Turmeric Powder 500gmX24 Pouch', rate: 249.43, category: 'Turmeric Powder' },
+            { id: 'prod_14', name: 'Turmeric Powder-1kg', rate: 533.33, category: 'Turmeric Powder' },
+            { id: 'prod_15', name: 'Turmeric powder 200 gm jar', rate: 135.36, category: 'Turmeric Powder' },
+            { id: 'prod_16', name: 'Turmeric Powder- 5kg', rate: 1310, category: 'Turmeric Powder' },
+            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 0.00, category: 'Turmeric Powder' },
+            { id: 'prod_18', name: 'Pran Coriander Powder 50 gm pouch', rate: 23.57, category: 'Coriander Powder' },
+            { id: 'prod_19', name: 'Pran Coriander Powder 100 gm pouch', rate: 44.14, category: 'Coriander Powder' },
+            { id: 'prod_20', name: 'Pran Coriander Powder 200 gm pouch', rate: 83.33, category: 'Coriander Powder' },
+            { id: 'prod_21', name: 'Pran Coriander Powder 500 gm pouch', rate: 180.00, category: 'Coriander Powder' },
+            { id: 'prod_22', name: 'Pran Coriander Powder 200 gm Jar', rate: 92.57, category: 'Coriander Powder' },
+            { id: 'prod_23', name: 'Pran Cumin Powder 15gm pouch', rate: 22.05, category: 'Cumin Powder' },
+            { id: 'prod_24', name: 'Pran Cumin Powder 50gm pouch', rate: 66.67, category: 'Cumin Powder' },
+            { id: 'prod_25', name: 'Pran Cumin Powder 100gm pouch', rate: 129.09, category: 'Cumin Powder' },
+            { id: 'prod_26', name: 'Pran Cumin Powder 200gm pouch', rate: 247.11, category: 'Cumin Powder' },
+            { id: 'prod_27', name: 'Pran Cumin Powder 200gm Jar', rate: 268.18, category: 'Cumin Powder' },
+            { id: 'prod_28', name: 'Pran Cumin Powder 500gm pouch', rate: 578.57, category: 'Cumin Powder' },
+            { id: 'prod_29', name: 'Fish Masala 20gm Foil NEW', rate: 15.00, category: 'Mixed Spice and box' },
+            { id: 'prod_30', name: 'Beef Masala 20gm Foil NEW', rate: 15.45, category: 'Mixed Spice and box' },
+            { id: 'prod_31', name: 'Chicken Masala 20gm Foil NEW', rate: 15.11, category: 'Mixed Spice and box' },
+            { id: 'prod_32', name: 'Meat Masala 20gm Foil NEW', rate: 15.45, category: 'Mixed Spice and box' },
+            { id: 'prod_33', name: 'Biriyani Masala Mix 25 gm', rate: 30.74, category: 'Mixed Spice and box' },
+            { id: 'prod_34', name: 'Meat Masala 100gm×48pcs P.Box', rate: 76.36, category: 'Mixed Spice and box' },
+            { id: 'prod_35', name: 'Chicken Masala 100gm×48pcs P.Box', rate: 75.00, category: 'Mixed Spice and box' },
+            { id: 'prod_36', name: 'Chicken Roast Masala 35gm×48pcs P.Box', rate: 48.89, category: 'Mixed Spice and box' },
+            { id: 'prod_37', name: 'Tehari Masala 40gm×48pcs P.Box', rate: 44.16, category: 'Mixed Spice and box' },
+            { id: 'prod_38', name: 'Bombay Biryani Masala 45gm×48pcs P.Box', rate: 48.00, category: 'Mixed Spice and box' },
+            { id: 'prod_39', name: 'Biryani Masala 40gm×48pcs P.Box', rate: 46.15, category: 'Mixed Spice and box' },
+            { id: 'prod_40', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00, category: 'Mixed Spice and box' },
+            { id: 'prod_41', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00, category: 'Mixed Spice and box' },
+            { id: 'prod_42', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40, category: 'Mixed Spice and box' },
+            { id: 'prod_43', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77, category: 'Mixed Spice and box' },
+            { id: 'prod_44', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53, category: 'Mixed Spice and box' },
+            { id: 'prod_45', name: 'Haleem Mix  200 gm', rate: 54.67, category: 'Mixed Spice and box' },
+            { id: 'prod_46', name: 'Curry powder 20gm', rate: 90.10, category: 'Mixed Spice and box' },
+            { id: 'prod_47', name: 'Garam Masala 15gm Foil New', rate: 27.50, category: 'Mixed Spice and box' },
+            { id: 'prod_48', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78, category: 'Mixed Spice and box' },
+            { id: 'prod_49', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53, category: 'Mixed Spice and box' },
+            { id: 'prod_50', name: 'Beef Kala Bhuna 80 gm', rate: 91.58, category: 'Mixed Spice and box' },
+            { id: 'prod_51', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31, category: 'Mixed Spice and box' },
+            { id: 'prod_52', name: 'Khichuri Masala 50 gm', rate: 48.96, category: 'Mixed Spice and box' },
+            { id: 'prod_53', name: 'Mustard Oil-80ml', rate: 23.56, category: 'Mustard Oil' },
+            { id: 'prod_54', name: 'Mustard Oil-200-mL', rate: 52.89, category: 'Mustard Oil' },
+            { id: 'prod_55', name: 'Mustard Oil-250ml', rate: 66.00, category: 'Mustard Oil' },
+            { id: 'prod_56', name: 'Mustard Oil-500 ml', rate: 136.89, category: 'Mustard Oil' },
+            { id: 'prod_57', name: 'Mustard Oil 500ml-CP', rate: 118.34, category: 'Mustard Oil' },
+            { id: 'prod_58', name: 'Mustard Oil-1000ml', rate: 265.71, category: 'Mustard Oil' },
+            { id: 'prod_59', name: 'Mustard Oil 1000ml-CP', rate: 255.11, category: 'Mustard Oil' },
+            { id: 'prod_60', name: 'Mustard oil 2 liter', rate: 528.89, category: 'Mustard Oil' },
+            { id: 'prod_61', name: 'M . Oil 5 Liter', rate: 1102.22, category: 'Mustard Oil' },
+            { id: 'prod_62', name: 'Mughal 150 ml', rate: 43.00, category: 'Mustard Oil' },
+            { id: 'prod_63', name: 'Mustard oil 16kg Tin', rate: 3270.00, category: 'Mustard Oil' },
+            { id: 'prod_64', name: 'Testing salt 20 gm', rate: 7.08, category: 'Testing salt' },
+            { id: 'prod_65', name: 'T-Salt-40 gm New', rate: 14.17, category: 'Testing salt' },
+            { id: 'prod_66', name: 'T-Salt-100 gm New', rate: 35.00, category: 'Testing salt' },
+            { id: 'prod_67', name: 'T-Salt 450 gm', rate: 137.89, category: 'Testing salt' },
+            { id: 'prod_68', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40, category: 'Shader Masala ' },
+            { id: 'prod_69', name: 'Whole Panchforan 50gm New', rate: 23.41, category: 'Panchforan and Jello' },
+            { id: 'prod_70', name: 'The chef Tomato  Sauce 295gm', rate: 86.20, category: 'Sauce and Vinegar' },
+            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62, category: 'Sauce and Vinegar' },
+            { id: 'prod_72', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
+            { id: 'prod_73', name: 'The chef White Vinager 330 ml', rate: 26.40, category: 'Sauce and Vinegar' },
+            { id: 'prod_74', name: 'The  chef White  vinager 650 ml', rate: 43.56, category: 'Sauce and Vinegar' },
+            { id: 'prod_75', name: 'The chef white vinager  5 ltr', rate: 213.18, category: 'Sauce and Vinegar' },
+            { id: 'prod_76', name: 'Love Jello-18 pcs Poly', rate: 40.00, category: 'Panchforan and Jello' },
+            { id: 'prod_77', name: 'Love Jelly-100pcs', rate: 215.00, category: 'Panchforan and Jello' },
+            { id: 'prod_78', name: 'The Chef Rose Water 200 ML', rate: 15.94, category: 'Rose and Kewra' },
+            { id: 'prod_79', name: 'The Chef Kewra Water 200 ML', rate: 15.11, category: 'Rose and Kewra' },
+            { id: 'prod_80', name: 'The Chef Rose Water 160 ML', rate: 12.00, category: 'Rose and Kewra' },
+            { id: 'prod_81', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00, category: 'Rice' }
         ];
 
         const productGroups = {};
 
         const groupOrder = [];
 
+        function getUniqueCategories() {
+            return [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
+        }
+
+
         function groupAllProducts() {
             // Reset groups
             for (const key in productGroups) {
                 delete productGroups[key];
             }
-            productGroups['Chili Powder'] = [];
-            productGroups['Turmeric Powder'] = [];
-            productGroups['Coriander Powder'] = [];
-            productGroups['Cumin Powder'] = [];
-            productGroups['Mixed Spice and box'] = [];
-            productGroups['Mustard Oil'] = [];
-            productGroups['Testing salt'] = [];
-            productGroups['Shader Masala '] = [];
-            productGroups['Sauce and Vinegar'] = [];
-            productGroups['Panchforan and Jello'] = [];
-            productGroups['Rose and Kewra'] = [];
-            productGroups['Rice'] = [];
+            
+            // Explicitly define group keys to control order and inclusion
+            const groupKeys = [
+                'Chili Powder', 'Turmeric Powder', 'Coriander Powder', 'Cumin Powder', 
+                'Mixed Spice and box', 'Mustard Oil', 'Testing salt', 'Shader Masala ', 
+                'Sauce and Vinegar', 'Panchforan and Jello', 'Rose and Kewra', 'Rice'
+            ];
 
-            const chiliProducts = new Set([
-                'Chili Powder 50gm NEW', 'Chili Powder 100gm NEW', 'Chili Powder - 200gm', 
-                'Chili Powder-500gm x 24', 'Chili Powder-1kg', 'Chili powder 200 gm jar', 
-                'Chili powder 5 kg-New', '16 Ana Chilli-15Kg (Bulk)'
-            ]);
-            const turmericProducts = new Set([
-                'Turmeric Powder 15gm New', 'Turmeric Powder 50gm NEW', 'Turmeric Powder 100gm NEW',
-                'Turmeric Powder 200 gm', 'Turmeric Powder 500gmX24 Pouch', 'Turmeric Powder-1kg',
-                'Turmeric powder 200 gm jar', 'Turmeric Powder- 5kg', '16 Ana Turmeric 15kg (Bulk)'
-            ]);
-            const corianderProducts = new Set([
-                'Pran Coriander Powder 50 gm pouch', 'Pran Coriander Powder 100 gm pouch', 'Pran Coriander Powder 200 gm pouch',
-                'Pran Coriander Powder 500 gm pouch', 'Pran Coriander Powder 200 gm Jar'
-            ]);
-            const cuminProducts = new Set([
-                'Pran Cumin Powder 15gm pouch', 'Pran Cumin Powder 50gm pouch', 'Pran Cumin Powder 100gm pouch',
-                'Pran Cumin Powder 200gm pouch', 'Pran Cumin Powder 200gm Jar', 'Pran Cumin Powder 500gm pouch'
-            ]);
-            const mixedSpiceProducts = new Set([
-                'Fish Masala 20gm Foil NEW', 'Beef Masala 20gm Foil NEW', 'Chicken Masala 20gm Foil NEW', 'Meat Masala 20gm Foil NEW',
-                'Biriyani Masala Mix 25 gm', 'Meat Masala 100gm×48pcs P.Box', 'Chicken Masala 100gm×48pcs P.Box',
-                'Chicken Roast Masala 35gm×48pcs P.Box', 'Tehari Masala 40gm×48pcs P.Box', 'Bombay Biryani Masala 45gm×48pcs P.Box',
-                'Biryani Masala 40gm×48pcs P.Box', 'Chatpati Masala 45gm×48pcs P.Box', 'Firni Mix 150gm×48pcs P.Box',
-                'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', 'Kacchi Biryani Masala 45gm×48pcs P.Box', 'Haleem Mix  200 gm',
-                'Curry powder 20gm', 'Garam Masala 15gm Foil New', 'Payes Mix 150gmX48pcs P.Box', 'Kacchi Biryani Masala 40 gm',
-                'Beef Kala Bhuna 80 gm', 'Shindhi Biriany Masala 45 gm', 'Khichuri Masala 50 gm'
-            ]);
-             const mustardOilProducts = new Set([
-                'Mustard Oil-80ml', 'Mustard Oil-200-mL', 'Mustard Oil-250ml', 'Mustard Oil-500 ml',
-                'Mustard Oil 500ml-CP', 'Mustard Oil-1000ml', 'Mustard Oil 1000ml-CP', 'Mustard oil 2 liter',
-                'M . Oil 5 Liter', 'Mughal 150 ml', 'Mustard oil 16kg Tin'
-            ]);
-            const testingSaltProducts = new Set([
-                'Testing salt 20 gm', 'T-Salt-40 gm New', 'T-Salt-100 gm New', 'T-Salt 450 gm'
-            ]);
-            const shaderMasalaProducts = new Set(['Shader Masala 4gmX480 Pcs']);
-            const sauceVinegarProducts = new Set([
-                'The chef Tomato  Sauce 295gm', 'The Chef Hot Tomato Sauce-1000gm', 'The Chef Hot Tomato Sauce 3 Kg',
-                'The chef White Vinager 330 ml', 'The  chef White  vinager 650 ml', 'The chef white vinager  5 ltr'
-            ]);
-            const panchforanJelloProducts = new Set(['Love Jello-18 pcs Poly', 'Love Jelly-100pcs', 'Whole Panchforan 50gm New']);
-            const roseKewraProducts = new Set(['The Chef Rose Water 200 ML', 'The Chef Kewra Water 200 ML', 'The Chef Rose Water 160 ML']);
-            const riceProducts = new Set(['The Chef Chinigura Rice 1 Kg']);
-
-            const productToGroupMap = new Map();
-
+            // Initialize all group keys
+            groupKeys.forEach(key => {
+                productGroups[key] = [];
+            });
+            
+            // Assign products to their groups
             state.products.forEach(p => {
-                let assignedGroup = null;
-                if (chiliProducts.has(p.name)) assignedGroup = 'Chili Powder';
-                else if (turmericProducts.has(p.name.trim())) assignedGroup = 'Turmeric Powder';
-                else if (corianderProducts.has(p.name)) assignedGroup = 'Coriander Powder';
-                else if (cuminProducts.has(p.name)) assignedGroup = 'Cumin Powder';
-                else if (mustardOilProducts.has(p.name)) assignedGroup = 'Mustard Oil';
-                else if (testingSaltProducts.has(p.name)) assignedGroup = 'Testing salt';
-                else if (shaderMasalaProducts.has(p.name)) assignedGroup = 'Shader Masala ';
-                else if (sauceVinegarProducts.has(p.name)) assignedGroup = 'Sauce and Vinegar';
-                else if (panchforanJelloProducts.has(p.name)) assignedGroup = 'Panchforan and Jello';
-                else if (roseKewraProducts.has(p.name)) assignedGroup = 'Rose and Kewra';
-                else if (riceProducts.has(p.name)) assignedGroup = 'Rice';
-                else if (p.category && productGroups[p.category]) assignedGroup = p.category;
-                else assignedGroup = 'Mixed Spice and box';
-
-                if(assignedGroup) {
-                    if (!p.category) p.category = assignedGroup; // Assign category if not present
-                    
-                    if (!productGroups[assignedGroup]) {
-                        productGroups[assignedGroup] = [];
+                const category = p.category;
+                if (category) {
+                    if (!productGroups[category]) {
+                        productGroups[category] = []; // Create group if it doesn't exist from the hardcoded list
                     }
-                    productGroups[assignedGroup].push(p);
-                    productToGroupMap.set(p.id, assignedGroup);
+                    productGroups[category].push(p);
+                } else {
+                    // Fallback for products without a category (though defaultProducts all have one)
+                    const fallbackGroup = 'Mixed Spice and box';
+                     if (!productGroups[fallbackGroup]) {
+                        productGroups[fallbackGroup] = [];
+                    }
+                    productGroups[fallbackGroup].push(p);
                 }
             });
             
-            // Handle newly added products that might not have a hardcoded group
-            state.products.forEach(p => {
-                if (!productToGroupMap.has(p.id) && p.category) {
-                     if (!productGroups[p.category]) {
-                        productGroups[p.category] = [];
-                    }
-                    productGroups[p.category].push(p);
-                    productToGroupMap.set(p.id, p.category);
-                }
-            });
-
+            // Finalize group order based on what has products and sort alphabetically
             groupOrder.length = 0; 
-            const sortedGroupKeys = Object.keys(productGroups).sort();
+            const sortedGroupKeys = Object.keys(productGroups).filter(key => productGroups[key].length > 0).sort();
             groupOrder.push(...sortedGroupKeys.map(key => ({label: key, key: key})));
         }
 
@@ -828,8 +806,10 @@
                 teamAdmins: [],
                 salesReports: [],
                 products: [],
+                categories: [],
                 notificationSettings: {},
                 logoutSettings: {},
+                voiceSettings: {},
                 advertisements: {
                     popunder: '',
                     banner: '',
@@ -860,6 +840,8 @@
                 state.notices = dbState.notices || {};
                 state.notificationSettings = dbState.notificationSettings || {};
                 state.logoutSettings = dbState.logoutSettings || {};
+                state.voiceSettings = dbState.voiceSettings || {};
+                state.categories = dbState.categories || getUniqueCategories();
 
 
                 if (!dbState.products || state.products.length === 0) {
@@ -872,6 +854,13 @@
                     await getFullState();
                     return;
                 }
+                
+                if (!dbState.categories || state.categories.length === 0) {
+                    const initialCategories = getUniqueCategories();
+                    await db.ref('categories').set(initialCategories);
+                    state.categories = initialCategories;
+                }
+
 
                 if (dbState.superAdmin && dbState.superAdmin.password) {
                     state.superAdminPassword = dbState.superAdmin.password;
@@ -1470,12 +1459,9 @@
                 });
             }
             
-            const categorySelect = document.getElementById('existingCategorySelect');
-            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
-            categorySelect.innerHTML = '<option value="">-- Select Existing --</option>';
-            uniqueCategories.forEach(cat => {
-                categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
+            // Populate category dropdowns
+            populateCategoryDropdowns();
+
 
             // Setup for the new main collapsible toggle
             document.getElementById('allSectionsToggle').addEventListener('click', () => {
@@ -1488,7 +1474,9 @@
             setupToggle('toggleAdminNotice', 'teamAdminNoticeSection', false);
             setupToggle('toggleManageProducts', 'manageProductSection', false);
             setupToggle('toggleAddProduct', 'addProductSection', false);
+            setupToggle('toggleManageCategories', 'manageCategoriesSection', false);
             setupToggle('toggleNotificationSystem', 'notificationSystemSection', false);
+            setupToggle('toggleVoiceSettings', 'voiceSettingsSection', false);
             setupToggle('toggleLogoutSettings', 'logoutSettingsSection', false);
 
 
@@ -1496,6 +1484,7 @@
             renderProductManagement(state.products);
             renderNotificationSettings();
             renderLogoutSettings();
+            renderVoiceSettings();
             
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('reportDate').value = today;
@@ -1505,14 +1494,22 @@
             // Voice alerts for admin
             playVoice("টিম অ্যাডমিন হিসেবে আপনাকে স্বাগতম।", 'bn-BD', true);
             setTimeout(() => {
-                const { notSubmittedMembers } = getReportDataForDateRange(today, today);
+                const { notSubmittedMembers, grandTotal } = getReportDataForDateRange(today, today);
                 let summaryMessage;
                 if (notSubmittedMembers.length > 0) {
-                    summaryMessage = `আপনার ${notSubmittedMembers.length} জন মেম্বার এখনো রিপোর্ট দেননি।`;
+                    summaryMessage = `আপনার ${notSubmittedMembers.length} জন মেম্বার এখনো রিপোর্ট দেননি। `;
                 } else {
-                    summaryMessage = "আপনার সকল মেম্বার আজ রিপোর্ট জমা দিয়েছেন।";
+                    summaryMessage = "আপনার সকল মেম্বার আজ রিপোর্ট জমা দিয়েছেন। ";
                 }
-                playVoice(summaryMessage, 'bn-BD', true);
+                summaryMessage += `আজকের রিপোর্টের সারাংশ: মোট টার্গেট ${grandTotal.tgt}, মোট সেলস ${grandTotal.sales}, এবং মোট অ্যামাউন্ট ${Math.round(grandTotal.amount)} টাকা।`;
+
+                const adminVoiceSettings = state.voiceSettings[state.loggedInUser] || {};
+                const repeatCount = parseInt(adminVoiceSettings.summaryRepeatCount, 10) || 1;
+
+                for (let i = 0; i < repeatCount; i++) {
+                    setTimeout(() => playVoice(summaryMessage, 'bn-BD', true), i * 10000); // 10s delay between repeats
+                }
+
             }, 3000); // 3 second delay for the second message
 
 
@@ -1553,7 +1550,7 @@
 
         function getReportDataForDateRange(startDateStr, endDateStr) {
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
-            if (!admin) return { productData: {}, reportingMembers: [], submittedProducts: new Set(), notSubmittedMembers: [], submittedMemberUsernames: new Set() };
+            if (!admin) return { productData: {}, reportingMembers: [], submittedProducts: new Set(), notSubmittedMembers: [], submittedMemberUsernames: new Set(), grandTotal: { tgt: 0, sales: 0, amount: 0 } };
 
             const reportingMembers = admin.teamMembers && typeof admin.teamMembers === 'object'
                 ? Object.values(admin.teamMembers).filter(m => m.status === 'active') 
@@ -1603,8 +1600,19 @@
                     });
                 }
             });
+
+            const grandTotal = { tgt: 0, sales: 0, amount: 0 };
+            submittedProducts.forEach(productName => {
+                const productInfo = productData[productName];
+                reportingMembers.forEach(member => {
+                    const data = productInfo.members[member.name] || { tgt: 0, sales: 0, amount: 0 };
+                    grandTotal.tgt += data.tgt;
+                    grandTotal.sales += data.sales;
+                    grandTotal.amount += data.amount;
+                });
+            });
             
-            return { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames };
+            return { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames, grandTotal };
         }
         
         function renderTeamAdminReportsForDateRange() {
@@ -1623,7 +1631,7 @@
             const isDateRange = startDate && endDate;
             const selectedDateValue = startDate || document.getElementById('reportDate').value;
             
-            const { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames } = isDateRange
+            const { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames, grandTotal } = isDateRange
                 ? getReportDataForDateRange(startDate, endDate)
                 : getReportDataForDateRange(selectedDateValue, selectedDateValue);
 
@@ -1671,8 +1679,8 @@
             subHeaderRow.innerHTML = '';
 
             reportingMembers.forEach(m => {
-                memberRow.innerHTML += `<th colspan="3">${m.name}</th>`;
-                subHeaderRow.innerHTML += '<th>TGT</th><th>Sales</th><th>Amount</th>';
+                memberRow.innerHTML += `<th colspan="3" style="width: auto;">${m.name}</th>`;
+                subHeaderRow.innerHTML += '<th style="width: 5%;">TGT</th><th style="width: auto;">Sales</th><th style="width: auto;">Amount</th>';
             });
             memberRow.innerHTML += `<th colspan="3" class="summary-header">Summary</th>`;
             subHeaderRow.innerHTML += '<th class="summary-header">TGT</th><th class="summary-header">Sales</th><th class="summary-header">Amount</th>';
@@ -1700,7 +1708,6 @@
             let footerHtml = '<tr><td colspan="2"><b>Total</b></td>';
             const memberTotals = {};
             reportingMembers.forEach(m => { memberTotals[m.name] = { tgt: 0, sales: 0, amount: 0 }; });
-            let grandTotal = { tgt: 0, sales: 0, amount: 0 };
             
             submittedProducts.forEach(productName => {
                 const productInfo = productData[productName];
@@ -1714,9 +1721,6 @@
 
             reportingMembers.forEach(member => {
                 footerHtml += `<td><b>${memberTotals[member.name].tgt}</b></td><td><b>${memberTotals[member.name].sales}</b></td><td><b>${Math.round(memberTotals[member.name].amount)}</b></td>`;
-                grandTotal.tgt += memberTotals[member.name].tgt;
-                grandTotal.sales += memberTotals[member.name].sales;
-                grandTotal.amount += memberTotals[member.name].amount;
             });
 
             footerHtml += `<td class="summary-col"><b>${grandTotal.tgt}</b></td><td class="summary-col"><b>${grandTotal.sales}</b></td><td class="summary-col"><b>${Math.round(grandTotal.amount)}</b></td>`;
@@ -1757,7 +1761,7 @@
                         admin.teamMembers[key].username === username && admin.teamMembers[key].password === password
                     );
                     if(memberKey){
-                        foundMember = {id: memberKey, ...admin.teamMembers[memberKey]};
+                        foundMember = {id: memberKey, ...admin.teamMembers[key]};
                         teamAdminInfo = {id: admin.id, username: admin.username, status: admin.status };
                         break;
                     }
@@ -1968,7 +1972,7 @@
             }
         }
         
-        function renderProductTableForMember(products, containerId) {
+        function renderProductTableForMember(products, containerId, groupBy = null) {
             const container = document.getElementById(containerId);
             if (!container) return;
             container.innerHTML = '';
@@ -1980,17 +1984,39 @@
 
             let tableHtml = '<table class="w-full grouped-product-table"><thead><tr><th>Product</th><th class="text-right">Rate</th><th>TGT</th><th>Sales</th><th class="text-right">Amount</th></tr></thead><tbody>';
 
-            products.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
-                tableHtml += `
-                    <tr data-product-id="${p.id}">
-                        <td>${p.name}</td>
-                        <td class="text-right">${p.rate.toFixed(2)}</td>
-                        <td><input type="number" id="tgt-${p.id}" class="inline-input" placeholder="TGT"></td>
-                        <td><input type="number" id="sales-${p.id}" class="inline-input" placeholder="Sales" oninput="updateAmountOnRow('${p.id}')"></td>
-                        <td class="text-right" id="amount-${p.id}">0</td>
-                    </tr>
-                `;
-            });
+            if(groupBy === 'category') {
+                const uniqueCategories = [...new Set(products.map(p => p.category))].sort();
+                uniqueCategories.forEach(category => {
+                    const productsInGroup = products.filter(p => p.category === category);
+                    if(productsInGroup.length > 0) {
+                        tableHtml += `<tr><td colspan="5" class="group-header">${category}</td></tr>`;
+                        productsInGroup.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                            tableHtml += `
+                                <tr data-product-id="${p.id}">
+                                    <td>${p.name}</td>
+                                    <td class="text-right">${p.rate.toFixed(2)}</td>
+                                    <td><input type="number" id="tgt-${p.id}" class="inline-input" placeholder="TGT"></td>
+                                    <td><input type="number" id="sales-${p.id}" class="inline-input" placeholder="Sales" oninput="updateAmountOnRow('${p.id}')"></td>
+                                    <td class="text-right" id="amount-${p.id}">0</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                });
+            } else {
+                 products.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                    tableHtml += `
+                        <tr data-product-id="${p.id}">
+                            <td>${p.name}</td>
+                            <td class="text-right">${p.rate.toFixed(2)}</td>
+                            <td><input type="number" id="tgt-${p.id}" class="inline-input" placeholder="TGT"></td>
+                            <td><input type="number" id="sales-${p.id}" class="inline-input" placeholder="Sales" oninput="updateAmountOnRow('${p.id}')"></td>
+                            <td class="text-right" id="amount-${p.id}">0</td>
+                        </tr>
+                    `;
+                });
+            }
+
 
             tableHtml += '</tbody></table>';
 
@@ -2006,8 +2032,12 @@
             const container = document.getElementById('memberProductListContainer');
             container.innerHTML = '';
             if (categoryKey) {
-                const products = productGroups[categoryKey];
-                renderProductTableForMember(products, 'memberProductListContainer');
+                if (categoryKey === 'all') {
+                    renderProductTableForMember(state.products, 'memberProductListContainer', 'category');
+                } else {
+                    const products = state.products.filter(p => p.category === categoryKey);
+                    renderProductTableForMember(products, 'memberProductListContainer');
+                }
             }
         }
         
@@ -2044,10 +2074,9 @@
             // Populate category dropdown
             const categorySelect = document.getElementById('productCategorySelect');
             categorySelect.innerHTML = '<option value="">-- Select a Category --</option>';
-            groupOrder.forEach(groupInfo => {
-                 if (productGroups[groupInfo.key] && productGroups[groupInfo.key].length > 0) {
-                     categorySelect.innerHTML += `<option value="${groupInfo.key}">${groupInfo.label}</option>`;
-                 }
+            categorySelect.innerHTML += '<option value="all">All</option>'; // Add "All" option
+            state.categories.forEach(cat => {
+                 categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
             
             // Clear previous results
@@ -2062,18 +2091,15 @@
             );
             document.getElementById('submitReportContainer').style.display = hasSubmittedToday ? 'none' : 'block';
 
-            // Special 25-second reminder
-            if (!hasSubmittedToday) {
-                setTimeout(() => {
-                    // Re-check submission status in case user submitted within the 25 seconds
-                     const hasSubmittedNow = state.salesReports.some(r => 
-                        r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
-                    );
-                    if (!hasSubmittedNow) {
-                        playVoice("আপনি আজকের রিপোর্ট এখনো সাবমিট করেননি, তাই আপনাকে স্মরণ করানো হলো", 'bn-BD', false);
-                    }
-                }, 25000);
-            }
+            // Reminder on login
+            setTimeout(() => {
+                const hasSubmittedNow = state.salesReports.some(r => 
+                    r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
+                );
+                if (!hasSubmittedNow) {
+                    playVoice("আপনি আজকের রিপোর্ট এখনো সাবমিট করেননি, তাই আপনাকে স্মরণ করানো হলো", 'bn-BD', false);
+                }
+            }, 1000); // 1-second delay to allow dashboard to render
 
 
             const mySalesReportsList = document.getElementById('mySalesReportsList');
@@ -2311,7 +2337,7 @@
                 notification: {
                     title: title,
                     body: body,
-                    icon: '/firebase-logo.png'
+                    icon: '/firebase-logo.png' // Optional: add an icon
                 }
             };
             fetch('https://fcm.googleapis.com/fcm/send', {
@@ -2391,6 +2417,78 @@
             state.logoutSettings[adminId] = settings;
             showAlert('Logout settings saved successfully!');
         }
+        
+        function renderVoiceSettings() {
+            const adminId = state.loggedInUser;
+            const settings = state.voiceSettings[adminId] || {};
+            document.getElementById('summaryRepeatCount').value = settings.summaryRepeatCount || 1;
+        }
+
+        async function saveVoiceSettings() {
+            const adminId = state.loggedInUser;
+            const repeatCount = parseInt(document.getElementById('summaryRepeatCount').value, 10);
+            
+            if(isNaN(repeatCount) || repeatCount < 1) {
+                return showAlert('Please enter a valid number greater than 0.');
+            }
+
+            const settings = { summaryRepeatCount: repeatCount };
+            await db.ref(`voiceSettings/${adminId}`).set(settings);
+            state.voiceSettings[adminId] = settings;
+            showAlert('Voice settings saved successfully!');
+        }
+
+        function populateCategoryDropdowns() {
+            const existingCategorySelect = document.getElementById('existingCategorySelect');
+            const categoryToDeleteSelect = document.getElementById('categoryToDelete');
+
+            const categories = state.categories;
+
+            existingCategorySelect.innerHTML = '<option value="">-- Select Existing --</option>';
+            categoryToDeleteSelect.innerHTML = '<option value="">-- Select Category to Delete --</option>';
+
+            categories.forEach(cat => {
+                existingCategorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+                categoryToDeleteSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+        }
+        
+        async function addCategory() {
+            const newCategoryName = document.getElementById('categoryNameToAdd').value.trim();
+            if (!newCategoryName) {
+                return showAlert('Category name cannot be empty.');
+            }
+            if (state.categories.includes(newCategoryName)) {
+                return showAlert('This category already exists.');
+            }
+
+            const updatedCategories = [...state.categories, newCategoryName].sort();
+            await db.ref('categories').set(updatedCategories);
+            await getFullState(); // Refresh state
+            populateCategoryDropdowns();
+            document.getElementById('categoryNameToAdd').value = '';
+            showAlert('Category added successfully!');
+        }
+
+        async function deleteCategory() {
+            const categoryToDelete = document.getElementById('categoryToDelete').value;
+            if (!categoryToDelete) {
+                return showAlert('Please select a category to delete.');
+            }
+
+            const isCategoryInUse = state.products.some(p => p.category === categoryToDelete);
+            if (isCategoryInUse) {
+                return showAlert('This category cannot be deleted because it is currently assigned to one or more products.');
+            }
+
+            if (confirm(`Are you sure you want to delete the category "${categoryToDelete}"? This action cannot be undone.`)) {
+                const updatedCategories = state.categories.filter(c => c !== categoryToDelete);
+                await db.ref('categories').set(updatedCategories);
+                await getFullState(); // Refresh state
+                populateCategoryDropdowns();
+                showAlert('Category deleted successfully!');
+            }
+        }
 
 
         // --- App Initialization ---
@@ -2464,6 +2562,13 @@
     
 
     
+
+    
+
+    
+
+
+
 
     
 
