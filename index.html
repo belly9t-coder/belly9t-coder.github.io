@@ -1,9 +1,11 @@
+
+      
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sales Report App</title>
+    <title>Sales Report with SHOHEL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -1617,8 +1619,8 @@
             subHeaderRow.innerHTML = '';
 
             reportingMembers.forEach(m => {
-                memberRow.innerHTML += `<th colspan="3">${m.name}</th>`;
-                subHeaderRow.innerHTML += '<th>TGT</th><th>Sales</th><th>Amount</th>';
+                memberRow.innerHTML += `<th colspan="3" style="width: auto;">${m.name}</th>`;
+                subHeaderRow.innerHTML += '<th style="width: 5%;">TGT</th><th style="width: auto;">Sales</th><th style="width: auto;">Amount</th>';
             });
             memberRow.innerHTML += `<th colspan="3" class="summary-header">Summary</th>`;
             subHeaderRow.innerHTML += '<th class="summary-header">TGT</th><th class="summary-header">Sales</th><th class="summary-header">Amount</th>';
@@ -2031,17 +2033,16 @@
             );
             document.getElementById('submitReportContainer').style.display = hasSubmittedToday ? 'none' : 'block';
 
-            // Special 25-second reminder
+            // Reminder on login
             if (!hasSubmittedToday) {
                 setTimeout(() => {
-                    // Re-check submission status in case user submitted within the 25 seconds
-                     const hasSubmittedNow = state.salesReports.some(r => 
+                    const hasSubmittedNow = state.salesReports.some(r => 
                         r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
                     );
                     if (!hasSubmittedNow) {
                         playVoice("আপনি আজকের রিপোর্ট এখনো সাবমিট করেননি, তাই আপনাকে স্মরণ করানো হলো", 'bn-BD', false);
                     }
-                }, 25000);
+                }, 1000); // 1-second delay to allow dashboard to render
             }
 
 
@@ -2444,3 +2445,4 @@
     
 
     
+
