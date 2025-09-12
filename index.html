@@ -1,4 +1,5 @@
 
+      
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +17,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow-y: hidden;
+            overflow: hidden; /* Prevent scrolling on the body */
             background-color: #f0f2f5;
         }
         #app-container {
@@ -25,10 +26,11 @@
             background-color: white;
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* Prevent scrolling on the container */
         }
          #app {
             flex-grow: 1;
-            overflow-y: auto;
+            overflow-y: auto; /* Allow scrolling only on the main content area */
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
@@ -280,8 +282,8 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="dashboard-section lg:col-span-2">
+            <div class="space-y-6">
+                <div class="dashboard-section">
                     <h3 class="text-lg font-semibold mb-2">Manage Team Admins (<span id="teamAdminCount">0</span>)</h3>
                     <div id="teamAdminsList" class="space-y-2"></div>
                 </div>
@@ -350,8 +352,8 @@
             </div>
             <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="dashboard-section lg:col-span-3">
+            <div class="space-y-6">
+                <div class="dashboard-section">
                     <div class="flex items-center mb-2">
                         <h3 class="text-lg font-semibold">Manage Team Members</h3>
                         <span id="toggleTeamMembers" class="toggle-btn text-sm">[Hide]</span>
@@ -452,7 +454,7 @@
                     </div>
                 </div>
 
-                <div class="dashboard-section lg:col-span-3">
+                <div class="dashboard-section">
                     <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                         <div>
@@ -468,7 +470,7 @@
                 </div>
 
                 <!-- Team Report Section -->
-                <div id="teamReportSection" class="dashboard-section lg:col-span-3">
+                <div id="teamReportSection" class="dashboard-section">
                     <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
                     
                     <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
@@ -522,8 +524,8 @@
             <p class="mb-6">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
             <div id="teamAdminNoticeContainer" class="mb-4"></div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div id="submitReportContainer" class="dashboard-section lg:col-span-3">
+            <div class="space-y-6">
+                <div id="submitReportContainer" class="dashboard-section">
                     <h3 class="text-lg font-semibold mb-2">Submit Daily Sales Report</h3>
                     
                      <div class="border-t pt-4">
@@ -563,7 +565,7 @@
                     <button onclick="submitSalesReport()" class="btn btn-success mt-4 w-full">Submit Final Report</button>
                 </div>
 
-                <div class="dashboard-section lg:col-span-3">
+                <div class="dashboard-section">
                     <h3 class="text-lg font-semibold mb-2">My Submitted Reports</h3>
                     <div id="mySalesReportsList" class="space-y-4"></div>
                 </div>
@@ -1461,13 +1463,17 @@
             document.getElementById('reportEndDate').value = today;
             
             // Voice alerts for admin
-            playVoice("Welcome admin", 'en-US', false);
+            playVoice("টিম অ্যাডমিন হিসেবে আপনাকে স্বাগতম।", 'bn-BD', true);
             setTimeout(() => {
                 const { notSubmittedMembers } = getReportDataForDateRange(today, today);
+                let summaryMessage;
                 if (notSubmittedMembers.length > 0) {
-                    playVoice(`${notSubmittedMembers.length} members have not submitted the report yet.`, 'en-US', false);
+                    summaryMessage = `আপনার ${notSubmittedMembers.length} জন মেম্বার এখনো রিপোর্ট দেননি।`;
+                } else {
+                    summaryMessage = "আপনার সকল মেম্বার আজ রিপোর্ট জমা দিয়েছেন।";
                 }
-            }, 2000);
+                playVoice(summaryMessage, 'bn-BD', true);
+            }, 3000); // 3 second delay for the second message
 
 
             renderTeamAdminReports();
@@ -2420,3 +2426,6 @@
     
 
     
+
+    
+
