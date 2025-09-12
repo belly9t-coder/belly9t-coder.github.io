@@ -447,12 +447,8 @@
                         <div id="addProductSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
                             <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
                             <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
-                            <label for="existingCategorySelect" class="text-sm font-medium text-gray-700">Select Existing Category</label>
-                            <select id="existingCategorySelect" class="input-field" onchange="handleExistingCategorySelect()">
-                               <!-- Options will be populated by JS -->
-                            </select>
-                            <label for="newProductCategory" class="text-sm font-medium text-gray-700">Or, Add New Category</label>
-                            <input type="text" id="newProductCategory" class="input-field" placeholder="Type new category name..." oninput="handleNewCategoryInput()">
+                            <label for="newProductCategory" class="text-sm font-medium text-gray-700">Add New Category</label>
+                            <input type="text" id="newProductCategory" class="input-field" placeholder="Type new category name...">
                             <button onclick="addNewProduct()" class="btn btn-primary w-full">Add Product</button>
                         </div>
         
@@ -651,154 +647,101 @@
         let logoutClickTimer = null;
         
         const defaultProducts = [
-            { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11 },
-            { id: 'prod_2', name: 'Chili Powder 100gm NEW', rate: 57.60 },
-            { id: 'prod_3', name: 'Chili Powder - 200gm', rate: 108.00 },
-            { id: 'prod_4', name: 'Chili Powder-500gm x 24', rate: 254.57 },
-            { id: 'prod_5', name: 'Chili Powder-1kg', rate: 556.45 },
-            { id: 'prod_6', name: 'Chili powder 200 gm jar', rate: 132.96 },
-            { id: 'prod_7', name: 'Chili powder 5 kg-New', rate: 1530 },
-            { id: 'prod_8', name: '16 Ana Chilli-15Kg (Bulk)', rate: 4380 },
-            { id: 'prod_9', name: 'Turmeric Powder 15gm New', rate: 9.95 },
-            { id: 'prod_10', name: 'Turmeric Powder 50gm NEW', rate: 30.67 },
-            { id: 'prod_11', name: 'Turmeric Powder 100gm NEW', rate: 57.78 },
-            { id: 'prod_12', name: 'Turmeric Powder 200 gm', rate: 112.00 },
-            { id: 'prod_13', name: 'Turmeric Powder 500gmX24 Pouch', rate: 249.43 },
-            { id: 'prod_14', name: 'Turmeric Powder-1kg', rate: 533.33 },
-            { id: 'prod_15', name: 'Turmeric powder 200 gm jar', rate: 135.36 },
-            { id: 'prod_16', name: 'Turmeric Powder- 5kg', rate: 1310 },
-            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 0.00 },
-            { id: 'prod_18', name: 'Pran Coriander Powder 50 gm pouch', rate: 23.57 },
-            { id: 'prod_19', name: 'Pran Coriander Powder 100 gm pouch', rate: 44.14 },
-            { id: 'prod_20', name: 'Pran Coriander Powder 200 gm pouch', rate: 83.33 },
-            { id: 'prod_21', name: 'Pran Coriander Powder 500 gm pouch', rate: 180.00 },
-            { id: 'prod_22', name: 'Pran Coriander Powder 200 gm Jar', rate: 92.57 },
-            { id: 'prod_23', name: 'Pran Cumin Powder 15gm pouch', rate: 22.05 },
-            { id: 'prod_24', name: 'Pran Cumin Powder 50gm pouch', rate: 66.67 },
-            { id: 'prod_25', name: 'Pran Cumin Powder 100gm pouch', rate: 129.09 },
-            { id: 'prod_26', name: 'Pran Cumin Powder 200gm pouch', rate: 247.11 },
-            { id: 'prod_27', name: 'Pran Cumin Powder 200gm Jar', rate: 268.18 },
-            { id: 'prod_28', name: 'Pran Cumin Powder 500gm pouch', rate: 578.57 },
-            { id: 'prod_29', name: 'Fish Masala 20gm Foil NEW', rate: 15.00 },
-            { id: 'prod_30', name: 'Beef Masala 20gm Foil NEW', rate: 15.45 },
-            { id: 'prod_31', name: 'Chicken Masala 20gm Foil NEW', rate: 15.11 },
-            { id: 'prod_32', name: 'Meat Masala 20gm Foil NEW', rate: 15.45 },
-            { id: 'prod_33', name: 'Biriyani Masala Mix 25 gm', rate: 30.74 },
-            { id: 'prod_34', name: 'Meat Masala 100gm×48pcs P.Box', rate: 76.36 },
-            { id: 'prod_35', name: 'Chicken Masala 100gm×48pcs P.Box', rate: 75.00 },
-            { id: 'prod_36', name: 'Chicken Roast Masala 35gm×48pcs P.Box', rate: 48.89 },
-            { id: 'prod_37', name: 'Tehari Masala 40gm×48pcs P.Box', rate: 44.16 },
-            { id: 'prod_38', name: 'Bombay Biryani Masala 45gm×48pcs P.Box', rate: 48.00 },
-            { id: 'prod_39', name: 'Biryani Masala 40gm×48pcs P.Box', rate: 46.15 },
-            { id: 'prod_40', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00 },
-            { id: 'prod_41', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00 },
-            { id: 'prod_42', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40 },
-            { id: 'prod_43', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77 },
-            { id: 'prod_44', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53 },
-            { id: 'prod_45', name: 'Haleem Mix  200 gm', rate: 54.67 },
-            { id: 'prod_46', name: 'Curry powder 20gm', rate: 90.10 },
-            { id: 'prod_47', name: 'Garam Masala 15gm Foil New', rate: 27.50 },
-            { id: 'prod_48', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78 },
-            { id: 'prod_49', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53 },
-            { id: 'prod_50', name: 'Beef Kala Bhuna 80 gm', rate: 91.58 },
-            { id: 'prod_51', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31 },
-            { id: 'prod_52', name: 'Khichuri Masala 50 gm', rate: 48.96 },
-            { id: 'prod_53', name: 'Mustard Oil-80ml', rate: 23.56 },
-            { id: 'prod_54', name: 'Mustard Oil-200-mL', rate: 52.89 },
-            { id: 'prod_55', name: 'Mustard Oil-250ml', rate: 66.00 },
-            { id: 'prod_56', name: 'Mustard Oil-500 ml', rate: 136.89 },
-            { id: 'prod_57', name: 'Mustard Oil 500ml-CP', rate: 118.34 },
-            { id: 'prod_58', name: 'Mustard Oil-1000ml', rate: 265.71 },
-            { id: 'prod_59', name: 'Mustard Oil 1000ml-CP', rate: 255.11 },
-            { id: 'prod_60', name: 'Mustard oil 2 liter', rate: 528.89 },
-            { id: 'prod_61', name: 'M . Oil 5 Liter', rate: 1102.22 },
-            { id: 'prod_62', name: 'Mughal 150 ml', rate: 43.00 },
-            { id: 'prod_63', name: 'Mustard oil 16kg Tin', rate: 3270.00 },
-            { id: 'prod_64', name: 'Testing salt 20 gm', rate: 7.08 },
-            { id: 'prod_65', name: 'T-Salt-40 gm New', rate: 14.17 },
-            { id: 'prod_66', name: 'T-Salt-100 gm New', rate: 35.00 },
-            { id: 'prod_67', name: 'T-Salt 450 gm', rate: 137.89 },
-            { id: 'prod_68', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40 },
-            { id: 'prod_69', name: 'Whole Panchforan 50gm New', rate: 23.41 },
-            { id: 'prod_70', name: 'The chef Tomato  Sauce 295gm', rate: 86.20 },
-            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62 },
-            { id: 'prod_72', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03 },
-            { id: 'prod_73', name: 'The chef White Vinager 330 ml', rate: 26.40 },
-            { id: 'prod_74', name: 'The  chef White  vinager 650 ml', rate: 43.56 },
-            { id: 'prod_75', name: 'The chef white vinager  5 ltr', rate: 213.18 },
-            { id: 'prod_76', name: 'Love Jello-18 pcs Poly', rate: 40.00 },
-            { id: 'prod_77', name: 'Love Jelly-100pcs', rate: 215.00 },
-            { id: 'prod_78', name: 'The Chef Rose Water 200 ML', rate: 15.94 },
-            { id: 'prod_79', name: 'The Chef Kewra Water 200 ML', rate: 15.11 },
-            { id: 'prod_80', name: 'The Chef Rose Water 160 ML', rate: 12.00 },
-            { id: 'prod_81', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00 }
+            { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11, category: 'Chili Powder' },
+            { id: 'prod_2', name: 'Chili Powder 100gm NEW', rate: 57.60, category: 'Chili Powder' },
+            { id: 'prod_3', name: 'Chili Powder - 200gm', rate: 108.00, category: 'Chili Powder' },
+            { id: 'prod_4', name: 'Chili Powder-500gm x 24', rate: 254.57, category: 'Chili Powder' },
+            { id: 'prod_5', name: 'Chili Powder-1kg', rate: 556.45, category: 'Chili Powder' },
+            { id: 'prod_6', name: 'Chili powder 200 gm jar', rate: 132.96, category: 'Chili Powder' },
+            { id: 'prod_7', name: 'Chili powder 5 kg-New', rate: 1530, category: 'Chili Powder' },
+            { id: 'prod_8', name: '16 Ana Chilli-15Kg (Bulk)', rate: 4380, category: 'Chili Powder' },
+            { id: 'prod_9', name: 'Turmeric Powder 15gm New', rate: 9.95, category: 'Turmeric Powder' },
+            { id: 'prod_10', name: 'Turmeric Powder 50gm NEW', rate: 30.67, category: 'Turmeric Powder' },
+            { id: 'prod_11', name: 'Turmeric Powder 100gm NEW', rate: 57.78, category: 'Turmeric Powder' },
+            { id: 'prod_12', name: 'Turmeric Powder 200 gm', rate: 112.00, category: 'Turmeric Powder' },
+            { id: 'prod_13', name: 'Turmeric Powder 500gmX24 Pouch', rate: 249.43, category: 'Turmeric Powder' },
+            { id: 'prod_14', name: 'Turmeric Powder-1kg', rate: 533.33, category: 'Turmeric Powder' },
+            { id: 'prod_15', name: 'Turmeric powder 200 gm jar', rate: 135.36, category: 'Turmeric Powder' },
+            { id: 'prod_16', name: 'Turmeric Powder- 5kg', rate: 1310, category: 'Turmeric Powder' },
+            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 0.00, category: 'Turmeric Powder' },
+            { id: 'prod_18', name: 'Pran Coriander Powder 50 gm pouch', rate: 23.57, category: 'Coriander Powder' },
+            { id: 'prod_19', name: 'Pran Coriander Powder 100 gm pouch', rate: 44.14, category: 'Coriander Powder' },
+            { id: 'prod_20', name: 'Pran Coriander Powder 200 gm pouch', rate: 83.33, category: 'Coriander Powder' },
+            { id: 'prod_21', name: 'Pran Coriander Powder 500 gm pouch', rate: 180.00, category: 'Coriander Powder' },
+            { id: 'prod_22', name: 'Pran Coriander Powder 200 gm Jar', rate: 92.57, category: 'Coriander Powder' },
+            { id: 'prod_23', name: 'Pran Cumin Powder 15gm pouch', rate: 22.05, category: 'Cumin Powder' },
+            { id: 'prod_24', name: 'Pran Cumin Powder 50gm pouch', rate: 66.67, category: 'Cumin Powder' },
+            { id: 'prod_25', name: 'Pran Cumin Powder 100gm pouch', rate: 129.09, category: 'Cumin Powder' },
+            { id: 'prod_26', name: 'Pran Cumin Powder 200gm pouch', rate: 247.11, category: 'Cumin Powder' },
+            { id: 'prod_27', name: 'Pran Cumin Powder 200gm Jar', rate: 268.18, category: 'Cumin Powder' },
+            { id: 'prod_28', name: 'Pran Cumin Powder 500gm pouch', rate: 578.57, category: 'Cumin Powder' },
+            { id: 'prod_29', name: 'Fish Masala 20gm Foil NEW', rate: 15.00, category: 'Mixed Spice and box' },
+            { id: 'prod_30', name: 'Beef Masala 20gm Foil NEW', rate: 15.45, category: 'Mixed Spice and box' },
+            { id: 'prod_31', name: 'Chicken Masala 20gm Foil NEW', rate: 15.11, category: 'Mixed Spice and box' },
+            { id: 'prod_32', name: 'Meat Masala 20gm Foil NEW', rate: 15.45, category: 'Mixed Spice and box' },
+            { id: 'prod_33', name: 'Biriyani Masala Mix 25 gm', rate: 30.74, category: 'Mixed Spice and box' },
+            { id: 'prod_34', name: 'Meat Masala 100gm×48pcs P.Box', rate: 76.36, category: 'Mixed Spice and box' },
+            { id: 'prod_35', name: 'Chicken Masala 100gm×48pcs P.Box', rate: 75.00, category: 'Mixed Spice and box' },
+            { id: 'prod_36', name: 'Chicken Roast Masala 35gm×48pcs P.Box', rate: 48.89, category: 'Mixed Spice and box' },
+            { id: 'prod_37', name: 'Tehari Masala 40gm×48pcs P.Box', rate: 44.16, category: 'Mixed Spice and box' },
+            { id: 'prod_38', name: 'Bombay Biryani Masala 45gm×48pcs P.Box', rate: 48.00, category: 'Mixed Spice and box' },
+            { id: 'prod_39', name: 'Biryani Masala 40gm×48pcs P.Box', rate: 46.15, category: 'Mixed Spice and box' },
+            { id: 'prod_40', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00, category: 'Mixed Spice and box' },
+            { id: 'prod_41', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00, category: 'Mixed Spice and box' },
+            { id: 'prod_42', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40, category: 'Mixed Spice and box' },
+            { id: 'prod_43', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77, category: 'Mixed Spice and box' },
+            { id: 'prod_44', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53, category: 'Mixed Spice and box' },
+            { id: 'prod_45', name: 'Haleem Mix  200 gm', rate: 54.67, category: 'Mixed Spice and box' },
+            { id: 'prod_46', name: 'Curry powder 20gm', rate: 90.10, category: 'Mixed Spice and box' },
+            { id: 'prod_47', name: 'Garam Masala 15gm Foil New', rate: 27.50, category: 'Mixed Spice and box' },
+            { id: 'prod_48', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78, category: 'Mixed Spice and box' },
+            { id: 'prod_49', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53, category: 'Mixed Spice and box' },
+            { id: 'prod_50', name: 'Beef Kala Bhuna 80 gm', rate: 91.58, category: 'Mixed Spice and box' },
+            { id: 'prod_51', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31, category: 'Mixed Spice and box' },
+            { id: 'prod_52', name: 'Khichuri Masala 50 gm', rate: 48.96, category: 'Mixed Spice and box' },
+            { id: 'prod_53', name: 'Mustard Oil-80ml', rate: 23.56, category: 'Mustard Oil' },
+            { id: 'prod_54', name: 'Mustard Oil-200-mL', rate: 52.89, category: 'Mustard Oil' },
+            { id: 'prod_55', name: 'Mustard Oil-250ml', rate: 66.00, category: 'Mustard Oil' },
+            { id: 'prod_56', name: 'Mustard Oil-500 ml', rate: 136.89, category: 'Mustard Oil' },
+            { id: 'prod_57', name: 'Mustard Oil 500ml-CP', rate: 118.34, category: 'Mustard Oil' },
+            { id: 'prod_58', name: 'Mustard Oil-1000ml', rate: 265.71, category: 'Mustard Oil' },
+            { id: 'prod_59', name: 'Mustard Oil 1000ml-CP', rate: 255.11, category: 'Mustard Oil' },
+            { id: 'prod_60', name: 'Mustard oil 2 liter', rate: 528.89, category: 'Mustard Oil' },
+            { id: 'prod_61', name: 'M . Oil 5 Liter', rate: 1102.22, category: 'Mustard Oil' },
+            { id: 'prod_62', name: 'Mughal 150 ml', rate: 43.00, category: 'Mustard Oil' },
+            { id: 'prod_63', name: 'Mustard oil 16kg Tin', rate: 3270.00, category: 'Mustard Oil' },
+            { id: 'prod_64', name: 'Testing salt 20 gm', rate: 7.08, category: 'Testing salt' },
+            { id: 'prod_65', name: 'T-Salt-40 gm New', rate: 14.17, category: 'Testing salt' },
+            { id: 'prod_66', name: 'T-Salt-100 gm New', rate: 35.00, category: 'Testing salt' },
+            { id: 'prod_67', name: 'T-Salt 450 gm', rate: 137.89, category: 'Testing salt' },
+            { id: 'prod_68', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40, category: 'Shader Masala ' },
+            { id: 'prod_69', name: 'Whole Panchforan 50gm New', rate: 23.41, category: 'Panchforan and Jello' },
+            { id: 'prod_70', name: 'The chef Tomato  Sauce 295gm', rate: 86.20, category: 'Sauce and Vinegar' },
+            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62, category: 'Sauce and Vinegar' },
+            { id: 'prod_72', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
+            { id: 'prod_73', name: 'The chef White Vinager 330 ml', rate: 26.40, category: 'Sauce and Vinegar' },
+            { id: 'prod_74', name: 'The  chef White  vinager 650 ml', rate: 43.56, category: 'Sauce and Vinegar' },
+            { id: 'prod_75', name: 'The chef white vinager  5 ltr', rate: 213.18, category: 'Sauce and Vinegar' },
+            { id: 'prod_76', name: 'Love Jello-18 pcs Poly', rate: 40.00, category: 'Panchforan and Jello' },
+            { id: 'prod_77', name: 'Love Jelly-100pcs', rate: 215.00, category: 'Panchforan and Jello' },
+            { id: 'prod_78', name: 'The Chef Rose Water 200 ML', rate: 15.94, category: 'Rose and Kewra' },
+            { id: 'prod_79', name: 'The Chef Kewra Water 200 ML', rate: 15.11, category: 'Rose and Kewra' },
+            { id: 'prod_80', name: 'The Chef Rose Water 160 ML', rate: 12.00, category: 'Rose and Kewra' },
+            { id: 'prod_81', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00, category: 'Rice' }
         ];
 
-        const productGroups = {};
+        function assignCategoriesToProducts(products) {
+            const categoryMap = defaultProducts.reduce((map, p) => {
+                map[p.name] = p.category;
+                return map;
+            }, {});
 
-        const groupOrder = [];
-
-        function groupAllProducts() {
-            // Reset groups
-            for (const key in productGroups) {
-                delete productGroups[key];
-            }
-            productGroups['Chili Powder'] = [];
-            productGroups['Turmeric Powder'] = [];
-            productGroups['Coriander Powder'] = [];
-            productGroups['Cumin Powder'] = [];
-            productGroups['Mixed Spice and box'] = [];
-            productGroups['Mustard Oil'] = [];
-            productGroups['Testing salt'] = [];
-            productGroups['Shader Masala '] = [];
-            productGroups['Sauce and Vinegar'] = [];
-            productGroups['Panchforan and Jello'] = [];
-            productGroups['Rose and Kewra'] = [];
-            productGroups['Rice'] = [];
-
-            const chiliProducts = new Set(['Chili Powder 50gm NEW', 'Chili Powder 100gm NEW', 'Chili Powder - 200gm', 'Chili Powder-500gm x 24', 'Chili Powder-1kg', 'Chili powder 200 gm jar', 'Chili powder 5 kg-New', '16 Ana Chilli-15Kg (Bulk)']);
-            const turmericProducts = new Set(['Turmeric Powder 15gm New', 'Turmeric Powder 50gm NEW', 'Turmeric Powder 100gm NEW', 'Turmeric Powder 200 gm', 'Turmeric Powder 500gmX24 Pouch', 'Turmeric Powder-1kg', 'Turmeric powder 200 gm jar', 'Turmeric Powder- 5kg', '16 Ana Turmeric 15kg (Bulk)']);
-            const corianderProducts = new Set(['Pran Coriander Powder 50 gm pouch', 'Pran Coriander Powder 100 gm pouch', 'Pran Coriander Powder 200 gm pouch', 'Pran Coriander Powder 500 gm pouch', 'Pran Coriander Powder 200 gm Jar']);
-            const cuminProducts = new Set(['Pran Cumin Powder 15gm pouch', 'Pran Cumin Powder 50gm pouch', 'Pran Cumin Powder 100gm pouch', 'Pran Cumin Powder 200gm pouch', 'Pran Cumin Powder 200gm Jar', 'Pran Cumin Powder 500gm pouch']);
-            const mixedSpiceProducts = new Set(['Curry powder 20gm', 'Fish Masala 20gm Foil NEW', 'Beef Masala 20gm Foil NEW', 'Chicken Masala 20gm Foil NEW', 'Meat Masala 20gm Foil NEW', 'Biriyani Masala Mix 25 gm', 'Meat Masala 100gm×48pcs P.Box', 'Chicken Masala 100gm×48pcs P.Box', 'Chicken Roast Masala 35gm×48pcs P.Box', 'Tehari Masala 40gm×48pcs P.Box', 'Bombay Biryani Masala 45gm×48pcs P.Box', 'Biryani Masala 40gm×48pcs P.Box', 'Chatpati Masala 45gm×48pcs P.Box', 'Firni Mix 150gm×48pcs P.Box', 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', 'Kacchi Biryani Masala 45gm×48pcs P.Box', 'Haleem Mix  200 gm', 'Garam Masala 15gm Foil New', 'Payes Mix 150gmX48pcs P.Box', 'Kacchi Biryani Masala 40 gm', 'Beef Kala Bhuna 80 gm', 'Shindhi Biriany Masala 45 gm', 'Khichuri Masala 50 gm']);
-            const mustardOilProducts = new Set(['Mustard Oil-80ml', 'Mustard Oil-200-mL', 'Mustard Oil-250ml', 'Mustard Oil-500 ml', 'Mustard Oil 500ml-CP', 'Mustard Oil-1000ml', 'Mustard Oil 1000ml-CP', 'Mustard oil 2 liter', 'M . Oil 5 Liter', 'Mughal 150 ml', 'Mustard oil 16kg Tin']);
-            const testingSaltProducts = new Set(['Testing salt 20 gm', 'T-Salt-40 gm New', 'T-Salt-100 gm New', 'T-Salt 450 gm']);
-            const shaderMasalaProducts = new Set(['Shader Masala 4gmX480 Pcs']);
-            const sauceVinegarProducts = new Set(['The chef Tomato  Sauce 295gm', 'The Chef Hot Tomato Sauce-1000gm', 'The Chef Hot Tomato Sauce 3 Kg', 'The chef White Vinager 330 ml', 'The  chef White  vinager 650 ml', 'The chef white vinager  5 ltr']);
-            const panchforanJelloProducts = new Set(['Love Jello-18 pcs Poly', 'Love Jelly-100pcs', 'Whole Panchforan 50gm New']);
-            const roseKewraProducts = new Set(['The Chef Rose Water 200 ML', 'The Chef Kewra Water 200 ML', 'The Chef Rose Water 160 ML']);
-            const riceProducts = new Set(['The Chef Chinigura Rice 1 Kg']);
-
-            const productToGroupMap = new Map();
-
-            state.products.forEach(p => {
-                if(p.category && productGroups[p.category]) {
-                    productGroups[p.category].push(p);
-                    productToGroupMap.set(p.id, p.category);
+            return products.map(p => {
+                if (!p.category && categoryMap[p.name]) {
+                    p.category = categoryMap[p.name];
                 }
+                return p;
             });
-
-            state.products.forEach(p => {
-                 if (productToGroupMap.has(p.id)) return;
-
-                if (chiliProducts.has(p.name)) productGroups['Chili Powder'].push(p);
-                else if (turmericProducts.has(p.name)) productGroups['Turmeric Powder'].push(p);
-                else if (corianderProducts.has(p.name)) productGroups['Coriander Powder'].push(p);
-                else if (cuminProducts.has(p.name)) productGroups['Cumin Powder'].push(p);
-                else if (mustardOilProducts.has(p.name)) productGroups['Mustard Oil'].push(p);
-                else if (testingSaltProducts.has(p.name)) productGroups['Testing salt'].push(p);
-                else if (shaderMasalaProducts.has(p.name)) productGroups['Shader Masala '].push(p);
-                else if (sauceVinegarProducts.has(p.name)) productGroups['Sauce and Vinegar'].push(p);
-                else if (panchforanJelloProducts.has(p.name)) productGroups['Panchforan and Jello'].push(p);
-                else if (roseKewraProducts.has(p.name)) productGroups['Rose and Kewra'].push(p);
-                else if (riceProducts.has(p.name)) productGroups['Rice'].push(p);
-                else if (mixedSpiceProducts.has(p.name)) productGroups['Mixed Spice and box'].push(p);
-            });
-            
-            groupOrder.length = 0; 
-            const sortedGroupKeys = Object.keys(productGroups).sort();
-
-            groupOrder.push(...sortedGroupKeys.map(key => ({label: key, key: key})));
         }
 
         function resetLocalState() {
@@ -859,9 +802,13 @@
                         return obj;
                     }, {});
                     await db.ref('products').set(productsToPush);
-                    await getFullState();
+                    await getFullState(); // Re-fetch after seeding
                     return;
                 }
+
+                // Assign categories to products from DB
+                state.products = assignCategoriesToProducts(state.products);
+
 
                 if (dbState.superAdmin && dbState.superAdmin.password) {
                     state.superAdminPassword = dbState.superAdmin.password;
@@ -872,8 +819,6 @@
                  if (!dbState.advertisements) {
                     await db.ref('advertisements').set(state.advertisements);
                 }
-                
-                groupAllProducts();
 
             } catch (error) {
                 console.error("Error fetching data from Firebase:", error);
@@ -1322,33 +1267,10 @@
             });
         }
         
-        function handleExistingCategorySelect() {
-            const select = document.getElementById('existingCategorySelect');
-            const input = document.getElementById('newProductCategory');
-            if (select.value) {
-                input.value = '';
-                input.disabled = true;
-            } else {
-                input.disabled = false;
-            }
-        }
-
-        function handleNewCategoryInput() {
-            const select = document.getElementById('existingCategorySelect');
-            const input = document.getElementById('newProductCategory');
-            if (input.value.trim() !== '') {
-                select.value = '';
-                select.disabled = true;
-            } else {
-                select.disabled = false;
-            }
-        }
-
         async function addNewProduct() {
             const name = document.getElementById('newProductName').value.trim();
             const rate = parseFloat(document.getElementById('newProductRate').value);
-            const categoryInput = document.getElementById('newProductCategory').value.trim();
-            let category = categoryInput;
+            const category = document.getElementById('newProductCategory').value.trim();
 
             if (!name || isNaN(rate)) {
                 return showAlert('Please fill in Product Name and Rate.');
@@ -2369,16 +2291,13 @@
         // --- Category Management ---
         function renderCategoryManagement() {
             const deleteSelect = document.getElementById('deleteCategorySelect');
-            const existingSelect = document.getElementById('existingCategorySelect');
             
             const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
 
             deleteSelect.innerHTML = '<option value="">-- Select Category to Delete --</option>';
-            existingSelect.innerHTML = '<option value="">-- Select Existing --</option>';
 
             uniqueCategories.forEach(cat => {
                 deleteSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
-                existingSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
             document.getElementById('newStandaloneCategoryName').value = '';
         }
@@ -2519,5 +2438,3 @@
     </script>
 </body>
 </html>
-
-    
