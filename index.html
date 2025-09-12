@@ -1,5 +1,3 @@
-
-      
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,19 +11,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-        .blinking-text {
-            animation: blink 1s linear infinite;
-            color: #ef4444; /* red-500 */
-            font-weight: 700;
-        }
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevent scrolling on the body */
             background-color: #f0f2f5;
         }
         #app-container {
@@ -34,16 +23,22 @@
             background-color: white;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Prevent scrolling on the container */
         }
          #app {
             flex-grow: 1;
-            overflow-y: auto; /* Allow scrolling only on the main content area */
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            overflow-y: auto;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
         #app::-webkit-scrollbar {
-            display: none;
+            display: none; /* Chrome, Safari, Opera */
+        }
+        #teamAdminDashboard #app {
+            -ms-overflow-style: auto;
+            scrollbar-width: auto;
+        }
+        #teamAdminDashboard #app::-webkit-scrollbar {
+            display: block;
         }
         .page {
             display: none;
@@ -54,12 +49,6 @@
         .card {
             background-color: white;
             padding: 24px;
-        }
-        .dashboard-section {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
         .btn {
             padding: 10px 20px;
@@ -129,9 +118,9 @@
         }
         #reportTable th, #reportTable td {
             border: 1px solid #ddd;
-            padding: 4px; /* Smaller padding */
+            padding: 3px; /* Smaller padding */
             text-align: center;
-            /* white-space: nowrap; removed for auto-width */
+            white-space: nowrap;
         }
         #reportTable th {
             background: #0867d2;
@@ -146,12 +135,11 @@
             left: 0;
             z-index: 11;
             background: #f1f5f9;
-            min-width: 120px; /* Give product name a bit more space */
-            white-space: normal; /* Allow product name to wrap */
+            min-width: 100px;
         }
         #reportTable th:nth-child(2), #reportTable td:nth-child(2) {
             position: sticky;
-            left: 120px; /* Adjust this value based on first column's width */
+            left: 100px; /* Adjust this value based on first column's width */
             z-index: 11;
             background: #f1f5f9;
         }
@@ -228,12 +216,30 @@
             font-weight: 500;
             margin-left: 8px;
         }
+         footer {
+            background-color: #1f2937;
+            color: #d1d5db;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+         @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+        .blinking-text {
+            animation: blink 1s linear infinite;
+            color: #ef4444; /* red-500 */
+            font-weight: bold;
+        }
 
     </style>
 </head>
 <body class="antialiased font-sans">
 <div id="app-container">
-    <div id="app" class="container mx-auto p-4">
+    <div id="app">
 
         <!-- Main Login Page -->
         <div id="mainLoginPage" class="page active">
@@ -283,41 +289,42 @@
 
         <!-- Super Admin Dashboard -->
         <div id="superAdminDashboard" class="page">
-             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <h2 class="text-2xl font-bold mb-4 md:mb-0">Super Admin Dashboard</h2>
-                <div class="flex space-x-2">
-                    <button onclick="showPage('createTeamAdminPage')" class="btn btn-primary">Create Team Admin</button>
-                    <button onclick="handleLogoutClick(event)" class="btn btn-danger">Logout</button>
+            <div class="card">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Super Admin Dashboard</h2>
+                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
                 </div>
-            </div>
-            
-            <div class="space-y-6">
-                <div class="dashboard-section">
+
+                <div class="mb-8">
+                    <button onclick="showPage('createTeamAdminPage')" class="btn btn-primary">Create New Team Admin</button>
+                </div>
+
+                <div class="mb-8">
                     <h3 class="text-lg font-semibold mb-2">Manage Team Admins (<span id="teamAdminCount">0</span>)</h3>
                     <div id="teamAdminsList" class="space-y-2"></div>
                 </div>
                 
-                 <div class="dashboard-section">
+                 <div class="mb-8">
                     <h3 class="text-lg font-semibold mb-2">Change Super Admin Password</h3>
-                    <div class="space-y-4">
+                    <div class="p-4 border rounded-lg space-y-4 max-w-md">
                         <input type="password" id="newSuperAdminPassword" class="input-field" placeholder="New Password">
                         <input type="password" id="confirmSuperAdminPassword" class="input-field" placeholder="Confirm New Password">
                         <button onclick="changeSuperAdminPassword()" class="btn btn-warning w-full">Change Password</button>
                     </div>
                 </div>
 
-                <div class="dashboard-section">
+                <div class="mb-8">
                     <h3 class="text-lg font-semibold mb-2">Notice for Team Admins</h3>
-                    <div class="space-y-4">
+                    <div class="p-4 border rounded-lg space-y-4">
                         <textarea id="superAdminNotice" class="input-field !mb-0" placeholder="Write notice for team admins..."></textarea>
                         <button onclick="saveSuperAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
                          <button onclick="deleteSuperAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
                     </div>
                 </div>
 
-                <div class="dashboard-section">
+                <div class="mb-8">
                     <h3 class="text-lg font-semibold mb-2">Manage Advertisements</h3>
-                    <div class="space-y-4">
+                    <div class="p-4 border rounded-lg space-y-4">
                         <div>
                             <label for="popunderAd" class="font-semibold text-sm">Popunder Ad URL</label>
                             <input type="text" id="popunderAd" class="input-field !mb-0" placeholder="https://example.com/popunder">
@@ -333,6 +340,7 @@
                         <button onclick="saveAdvertisements()" class="btn btn-primary w-full">Save Advertisements</button>
                     </div>
                 </div>
+
             </div>
         </div>
         
@@ -349,22 +357,20 @@
 
         <!-- Team Admin Dashboard -->
         <div id="teamAdminDashboard" class="page">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold mb-1">Team Admin Dashboard</h2>
-                    <p class="mb-4 md:mb-0">Welcome, <span id="loggedInTeamAdminUsername" class="font-semibold"></span>!</p>
+             <div class="card">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Admin Dashboard</h2>
+                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
                 </div>
-                <div class="flex space-x-2">
-                     <button onclick="showPage('createTeamMemberPage')" class="btn btn-primary">Create Member</button>
-                     <button onclick="handleLogoutClick(event)" class="btn btn-danger">Logout</button>
-                </div>
-            </div>
-            <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
+                <p class="mb-6">Welcome, <span id="loggedInTeamAdminUsername" class="font-semibold"></span>!</p>
+                <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
 
-            <div class="space-y-6">
+                <div class="mb-8">
+                     <button onclick="showPage('createTeamMemberPage')" class="btn btn-primary">Create New Team Member</button>
+                </div>
 
                 <!-- Team Report Section -->
-                <div id="teamReportSection" class="dashboard-section">
+                <div id="teamReportSection" class="mb-8">
                     <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
                     
                     <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
@@ -377,6 +383,7 @@
                     </div>
 
                     <div id="reportSubmissionStatus" class="mb-4 p-4 border rounded-lg bg-gray-50">
+                        <!-- Submission status will be rendered here -->
                     </div>
 
                     <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
@@ -395,162 +402,146 @@
                     </div>
                 </div>
 
-                <div class="dashboard-section">
+                 <div class="mt-8 mb-8">
                     <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
-                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                        <div class="w-full">
+                    <div class="grid grid-cols-2 gap-4 items-center">
+                        <div>
                             <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
                             <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
                         </div>
-                         <div class="w-full">
+                         <div>
                             <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
                             <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
                         </div>
                     </div>
                     <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full mt-4">View Report</button>
                 </div>
-
-                <!-- New Collapsible Section at the bottom -->
-                <div class="dashboard-section">
-                    <div id="allSectionsToggle" class="flex items-center justify-between cursor-pointer">
-                        <h3 class="text-lg font-semibold">All section mange</h3>
-                        <span class="ml-4 blinking-text">click</span>
+                
+                <div class="border-t-4 border-double border-gray-300 pt-8 mt-12 mb-8">
+                     <div class="flex items-center justify-center mb-4">
+                        <h3 class="text-xl font-bold text-center mr-4">All section mange</h3>
+                        <span class="blinking-text text-2xl">click</span>
                     </div>
-                    <div id="allSectionsContainer" class="mt-4 space-y-6 hidden">
-                        <div class="dashboard-section bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <h3 class="text-lg font-semibold">Manage Team Members</h3>
-                                <span id="toggleTeamMembers" class="toggle-btn text-sm">[Hide]</span>
+                    <div class="p-4 border rounded-lg space-y-6 bg-gray-50">
+
+                        <div class="flex items-center mb-2">
+                            <h3 class="text-lg font-semibold">Manage Team Members</h3>
+                            <span id="toggleTeamMembers" class="toggle-btn text-sm">[Show]</span>
+                        </div>
+                        <div id="teamMembersList" class="space-y-2" style="display: none;"></div>
+        
+                        <div class="flex items-center mb-2 border-t pt-4">
+                            <h3 class="text-lg font-semibold">Notice for Team Members</h3>
+                            <span id="toggleAdminNotice" class="toggle-btn text-sm">[Show]</span>
+                        </div>
+                        <div id="teamAdminNoticeSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
+                            <textarea id="teamAdminNotice" class="input-field !mb-0" placeholder="Write notice for team members..."></textarea>
+                            <button onclick="saveTeamAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
+                            <button onclick="deleteTeamAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
+                        </div>
+        
+                        <div class="flex items-center mb-2 border-t pt-4">
+                            <h3 class="text-lg font-semibold">Add New Product</h3>
+                            <span id="toggleAddProduct" class="toggle-btn text-sm">[Show]</span>
+                        </div>
+                        <div id="addProductSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
+                            <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
+                            <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
+                            <label for="existingCategorySelect" class="text-sm font-medium text-gray-700">Select Existing Category</label>
+                            <select id="existingCategorySelect" class="input-field" onchange="handleExistingCategorySelect()">
+                               <!-- Options will be populated by JS -->
+                            </select>
+                            <label for="newProductCategory" class="text-sm font-medium text-gray-700">Or, Add New Category</label>
+                            <input type="text" id="newProductCategory" class="input-field" placeholder="Type new category name..." oninput="handleNewCategoryInput()">
+                            <button onclick="addNewProduct()" class="btn btn-primary w-full">Add Product</button>
+                        </div>
+        
+                        <div class="flex items-center mb-2 border-t pt-4">
+                            <h3 class="text-lg font-semibold">Manage Products</h3>
+                            <span id="toggleManageProducts" class="toggle-btn text-sm">[Show]</span>
+                        </div>
+                        <div id="manageProductSection" style="display: none;">
+                            <div class="relative mb-2">
+                                <input type="text" id="adminProductSearch" class="input-field" placeholder="Search for a product..." oninput="filterProductsForAdmin(this.value)">
                             </div>
-                            <div id="teamMembersList" class="space-y-2"></div>
+                            <div id="productListForAdmin" class="space-y-2 max-h-96 overflow-y-auto p-2 border rounded-md"></div>
                         </div>
 
-                        <div class="dashboard-section bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <h3 class="text-lg font-semibold">Notice for Team Members</h3>
-                                <span id="toggleAdminNotice" class="toggle-btn text-sm">[Hide]</span>
-                            </div>
-                            <div id="teamAdminNoticeSection" class="space-y-4">
-                                <textarea id="teamAdminNotice" class="input-field !mb-0" placeholder="Write notice for team members..."></textarea>
-                                <button onclick="saveTeamAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
-                                <button onclick="deleteTeamAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
-                            </div>
+                        <div class="flex items-center mb-2 border-t pt-4">
+                            <h3 class="text-lg font-semibold">Manage Categories</h3>
+                            <span id="toggleCategoryManager" class="toggle-btn text-sm">[Show]</span>
                         </div>
-
-                        <div class="dashboard-section bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <h3 class="text-lg font-semibold">Add New Product</h3>
-                                <span id="toggleAddProduct" class="toggle-btn text-sm">[Show]</span>
+                        <div id="categoryManagerSection" style="display: none;">
+                            <div class="mb-4 p-4 border rounded-lg">
+                                <h4 class="font-semibold mb-2">Add New Category</h4>
+                                <input type="text" id="newStandaloneCategoryName" class="input-field" placeholder="New category name">
+                                <button onclick="addStandaloneCategory()" class="btn btn-primary w-full">Add Category</button>
                             </div>
-                            <div id="addProductSection" class="space-y-4" style="display: none;">
-                                <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
-                                <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
-                                
-                                <label for="existingCategorySelect" class="text-sm font-medium text-gray-700">Select Existing Category</label>
-                                <select id="existingCategorySelect" class="input-field" onchange="handleExistingCategorySelect()">
+                            <div class="mb-4 p-4 border rounded-lg">
+                                <h4 class="font-semibold mb-2">Delete Existing Category</h4>
+                                <select id="deleteCategorySelect" class="input-field">
+                                    <option value="">-- Select Category to Delete --</option>
                                 </select>
-                                
-                                <label for="newProductCategory" class="text-sm font-medium text-gray-700">Or, Add New Category</label>
-                                <input type="text" id="newProductCategory" class="input-field" placeholder="Type new category name..." oninput="handleNewCategoryInput()">
-                                
-                                <button onclick="addNewProduct()" class="btn btn-primary w-full">Add Product</button>
+                                <button onclick="deleteStandaloneCategory()" class="btn btn-danger w-full">Delete Selected Category</button>
                             </div>
                         </div>
 
-                        <div class="dashboard-section bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <h3 class="text-lg font-semibold">Manage Products</h3>
-                                <span id="toggleManageProducts" class="toggle-btn text-sm">[Hide]</span>
+                         <div class="flex items-center mb-2 border-t pt-4">
+                            <h3 class="text-lg font-semibold">Manage Notification System</h3>
+                            <span id="toggleNotificationSystem" class="toggle-btn text-sm">[Show]</span>
+                        </div>
+                        <div id="notificationSystemSection" class="p-4 border rounded-lg space-y-6" style="display: none;">
+                            <div class="flex items-center justify-between">
+                                <label for="enableNotifications" class="font-semibold text-gray-700">Enable Notification System</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="enableNotifications" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
                             </div>
-                            <div id="manageProductSection">
-                                <div class="relative mb-2">
-                                    <input type="text" id="adminProductSearch" class="input-field" placeholder="Search for a product..." oninput="filterProductsForAdmin(this.value)">
+    
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Message (for non-submitters)</label>
+                                <textarea id="reminderMessage" rows="3" class="input-field !mb-0" placeholder="Message for members who have not submitted their report..."></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Times</label>
+                                <div id="reminderTimesContainer" class="space-y-2">
+                                    <!-- Reminder time inputs will be here -->
                                 </div>
-                                <div id="productListForAdmin" class="space-y-2 max-h-96 overflow-y-auto p-2 border rounded-md"></div>
+                                <button onclick="addReminderTimeInput()" class="btn btn-secondary btn-sm mt-2">Add More Time</button>
                             </div>
+    
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Thank You Message (for submitters)</label>
+                                <textarea id="thankYouMessage" rows="2" class="input-field !mb-0" placeholder="Message for members who have submitted their report..."></textarea>
+                            </div>
+    
+                            <button onclick="saveNotificationSettings()" class="btn btn-primary w-full">Save Settings</button>
                         </div>
 
-                        <div class="dashboard-section bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <h3 class="text-lg font-semibold">Manage Categories</h3>
-                                <span id="toggleManageCategories" class="toggle-btn text-sm">[Show]</span>
-                            </div>
-                            <div id="manageCategoriesSection" class="space-y-4" style="display: none;">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Add New Category</label>
-                                    <input type="text" id="categoryNameToAdd" class="input-field" placeholder="New category name">
-                                    <button onclick="addCategory()" class="btn btn-primary w-full">Add Category</button>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Delete Existing Category</label>
-                                    <select id="categoryToDelete" class="input-field">
-                                        <option value="">-- Select Category to Delete --</option>
-                                    </select>
-                                    <button onclick="deleteCategory()" class="btn btn-danger w-full mt-2">Delete Category</button>
-                                </div>
-                            </div>
+                        <div class="flex items-center mb-2 border-t pt-4">
+                            <h3 class="text-lg font-semibold">Manage Logout Settings</h3>
+                            <span id="toggleLogoutSettings" class="toggle-btn text-sm">[Show]</span>
                         </div>
-
-                        <div class="dashboard-section bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <h3 class="text-lg font-semibold">Manage Notification System</h3>
-                                <span id="toggleNotificationSystem" class="toggle-btn text-sm">[Show]</span>
+                        <div id="logoutSettingsSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
+                            <div>
+                                <label for="logoutClickCount" class="block text-sm font-medium text-gray-700 mb-1">Required Clicks to Logout</label>
+                                <input type="number" id="logoutClickCount" class="input-field !mb-0" placeholder="e.g., 10">
                             </div>
-                            <div id="notificationSystemSection" class="space-y-6" style="display: none;">
-                                <div class="flex items-center justify-between">
-                                    <label for="enableNotifications" class="font-semibold text-gray-700">Enable Notification System</label>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" id="enableNotifications" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                    </label>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Message</label>
-                                    <textarea id="reminderMessage" rows="3" class="input-field !mb-0" placeholder="Message for non-submitters..."></textarea>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Times</label>
-                                    <div id="reminderTimesContainer" class="space-y-2"></div>
-                                    <button onclick="addReminderTimeInput()" class="btn btn-secondary btn-sm mt-2">Add More Time</button>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Thank You Message</label>
-                                    <textarea id="thankYouMessage" rows="2" class="input-field !mb-0" placeholder="Message for submitters..."></textarea>
-                                </div>
-
-                                <button onclick="saveNotificationSettings()" class="btn btn-primary w-full">Save Settings</button>
-                            </div>
-                        </div>
-
-                        <div class="dashboard-section bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <h3 class="text-lg font-semibold">Manage Voice Settings</h3>
-                                <span id="toggleVoiceSettings" class="toggle-btn text-sm">[Show]</span>
-                            </div>
-                            <div id="voiceSettingsSection" class="space-y-4" style="display: none;">
-                                <div>
-                                    <label for="summaryRepeatCount" class="block text-sm font-medium text-gray-700 mb-1">Summary Voice Repeat Count</label>
-                                    <input type="number" id="summaryRepeatCount" class="input-field !mb-0" placeholder="e.g., 2">
-                                </div>
-                                <button onclick="saveVoiceSettings()" class="btn btn-primary w-full">Save Voice Settings</button>
-                            </div>
+                            <button onclick="saveLogoutSettings()" class="btn btn-primary w-full">Save Logout Clicks</button>
                         </div>
                         
-                        <div class="dashboard-section bg-gray-50">
-                            <div class="flex items-center mb-2">
-                                <h3 class="text-lg font-semibold">Manage Logout Settings</h3>
-                                <span id="toggleLogoutSettings" class="toggle-btn text-sm">[Show]</span>
+                        <div class="flex items-center mb-2 border-t pt-4">
+                            <h3 class="text-lg font-semibold">Manage Voice Settings</h3>
+                            <span id="toggleVoiceSettings" class="toggle-btn text-sm">[Show]</span>
+                        </div>
+                        <div id="voiceSettingsSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
+                            <div>
+                                <label for="voiceRepeatCount" class="block text-sm font-medium text-gray-700 mb-1">Voice Summary Repeat Count</label>
+                                <input type="number" id="voiceRepeatCount" class="input-field !mb-0" placeholder="e.g., 2">
                             </div>
-                            <div id="logoutSettingsSection" class="space-y-4" style="display: none;">
-                                <div>
-                                    <label for="logoutClickCount" class="block text-sm font-medium text-gray-700 mb-1">Required Clicks to Logout</label>
-                                    <input type="number" id="logoutClickCount" class="input-field !mb-0" placeholder="e.g., 10">
-                                </div>
-                                <button onclick="saveLogoutSettings()" class="btn btn-primary w-full">Save Logout Clicks</button>
-                            </div>
+                            <button onclick="saveVoiceSettings()" class="btn btn-primary w-full">Save Voice Settings</button>
                         </div>
 
                     </div>
@@ -573,15 +564,14 @@
 
         <!-- Team Member Dashboard -->
         <div id="teamMemberDashboard" class="page">
-             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Member Dashboard</h2>
-                <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
-            </div>
-            <p class="mb-6">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
-            <div id="teamAdminNoticeContainer" class="mb-4"></div>
-            
-            <div class="space-y-6">
-                <div id="submitReportContainer" class="dashboard-section">
+            <div class="card">
+                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Member Dashboard</h2>
+                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
+                </div>
+                <p class="mb-6">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
+
+                <div id="submitReportContainer" class="mb-8 p-4 border rounded-lg">
                     <h3 class="text-lg font-semibold mb-2">Submit Daily Sales Report</h3>
                     
                      <div class="border-t pt-4">
@@ -590,10 +580,12 @@
                         <div class="flex flex-col md:flex-row gap-4 mb-4">
                             <input type="text" id="memberProductSearch" oninput="handleProductSearchForMember(this.value)" class="input-field !mb-0 flex-grow" placeholder="Search for a product by name...">
                             <select id="productCategorySelect" onchange="handleCategorySelect(this.value)" class="input-field !mb-0 md:w-1/3">
+                                <!-- Categories will be populated here -->
                             </select>
                         </div>
 
                         <div id="memberProductListContainer" class="max-h-[60vh] overflow-y-auto mb-6">
+                            <!-- Product list for selected category or search will be rendered here -->
                         </div>
                     </div>
 
@@ -621,20 +613,20 @@
                     <button onclick="submitSalesReport()" class="btn btn-success mt-4 w-full">Submit Final Report</button>
                 </div>
 
-                <div class="dashboard-section">
+                <div>
                     <h3 class="text-lg font-semibold mb-2">My Submitted Reports</h3>
                     <div id="mySalesReportsList" class="space-y-4"></div>
                 </div>
+
+                 <div id="teamAdminNoticeContainer" class="mt-8"></div>
             </div>
         </div>
 
         <!-- Advertisement Container -->
         <div id="adContainer" class="mt-8 text-center"></div>
     </div>
-    <!-- Responsive Footer -->
-    <footer class="bg-gray-800 text-white text-center p-4 mt-auto">
-        <p>&copy; 2024 Sales Report App. All Rights Reserved.</p>
-        <p class="text-sm text-gray-400">Developed with ❤️ by Your Company</p>
+    <footer id="mainFooter">
+        © 2024 shohel_it. All rights reserved.
     </footer>
 </div>
     <script>
@@ -659,137 +651,153 @@
         let logoutClickTimer = null;
         
         const defaultProducts = [
-            { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11, category: 'Chili Powder' },
-            { id: 'prod_2', name: 'Chili Powder 100gm NEW', rate: 57.60, category: 'Chili Powder' },
-            { id: 'prod_3', name: 'Chili Powder - 200gm', rate: 108.00, category: 'Chili Powder' },
-            { id: 'prod_4', name: 'Chili Powder-500gm x 24', rate: 254.57, category: 'Chili Powder' },
-            { id: 'prod_5', name: 'Chili Powder-1kg', rate: 556.45, category: 'Chili Powder' },
-            { id: 'prod_6', name: 'Chili powder 200 gm jar', rate: 132.96, category: 'Chili Powder' },
-            { id: 'prod_7', name: 'Chili powder 5 kg-New', rate: 1530, category: 'Chili Powder' },
-            { id: 'prod_8', name: '16 Ana Chilli-15Kg (Bulk)', rate: 4380, category: 'Chili Powder' },
-            { id: 'prod_9', name: 'Turmeric Powder 15gm New', rate: 9.95, category: 'Turmeric Powder' },
-            { id: 'prod_10', name: 'Turmeric Powder 50gm NEW', rate: 30.67, category: 'Turmeric Powder' },
-            { id: 'prod_11', name: 'Turmeric Powder 100gm NEW', rate: 57.78, category: 'Turmeric Powder' },
-            { id: 'prod_12', name: 'Turmeric Powder 200 gm', rate: 112.00, category: 'Turmeric Powder' },
-            { id: 'prod_13', name: 'Turmeric Powder 500gmX24 Pouch', rate: 249.43, category: 'Turmeric Powder' },
-            { id: 'prod_14', name: 'Turmeric Powder-1kg', rate: 533.33, category: 'Turmeric Powder' },
-            { id: 'prod_15', name: 'Turmeric powder 200 gm jar', rate: 135.36, category: 'Turmeric Powder' },
-            { id: 'prod_16', name: 'Turmeric Powder- 5kg', rate: 1310, category: 'Turmeric Powder' },
-            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 0.00, category: 'Turmeric Powder' },
-            { id: 'prod_18', name: 'Pran Coriander Powder 50 gm pouch', rate: 23.57, category: 'Coriander Powder' },
-            { id: 'prod_19', name: 'Pran Coriander Powder 100 gm pouch', rate: 44.14, category: 'Coriander Powder' },
-            { id: 'prod_20', name: 'Pran Coriander Powder 200 gm pouch', rate: 83.33, category: 'Coriander Powder' },
-            { id: 'prod_21', name: 'Pran Coriander Powder 500 gm pouch', rate: 180.00, category: 'Coriander Powder' },
-            { id: 'prod_22', name: 'Pran Coriander Powder 200 gm Jar', rate: 92.57, category: 'Coriander Powder' },
-            { id: 'prod_23', name: 'Pran Cumin Powder 15gm pouch', rate: 22.05, category: 'Cumin Powder' },
-            { id: 'prod_24', name: 'Pran Cumin Powder 50gm pouch', rate: 66.67, category: 'Cumin Powder' },
-            { id: 'prod_25', name: 'Pran Cumin Powder 100gm pouch', rate: 129.09, category: 'Cumin Powder' },
-            { id: 'prod_26', name: 'Pran Cumin Powder 200gm pouch', rate: 247.11, category: 'Cumin Powder' },
-            { id: 'prod_27', name: 'Pran Cumin Powder 200gm Jar', rate: 268.18, category: 'Cumin Powder' },
-            { id: 'prod_28', name: 'Pran Cumin Powder 500gm pouch', rate: 578.57, category: 'Cumin Powder' },
-            { id: 'prod_29', name: 'Fish Masala 20gm Foil NEW', rate: 15.00, category: 'Mixed Spice and box' },
-            { id: 'prod_30', name: 'Beef Masala 20gm Foil NEW', rate: 15.45, category: 'Mixed Spice and box' },
-            { id: 'prod_31', name: 'Chicken Masala 20gm Foil NEW', rate: 15.11, category: 'Mixed Spice and box' },
-            { id: 'prod_32', name: 'Meat Masala 20gm Foil NEW', rate: 15.45, category: 'Mixed Spice and box' },
-            { id: 'prod_33', name: 'Biriyani Masala Mix 25 gm', rate: 30.74, category: 'Mixed Spice and box' },
-            { id: 'prod_34', name: 'Meat Masala 100gm×48pcs P.Box', rate: 76.36, category: 'Mixed Spice and box' },
-            { id: 'prod_35', name: 'Chicken Masala 100gm×48pcs P.Box', rate: 75.00, category: 'Mixed Spice and box' },
-            { id: 'prod_36', name: 'Chicken Roast Masala 35gm×48pcs P.Box', rate: 48.89, category: 'Mixed Spice and box' },
-            { id: 'prod_37', name: 'Tehari Masala 40gm×48pcs P.Box', rate: 44.16, category: 'Mixed Spice and box' },
-            { id: 'prod_38', name: 'Bombay Biryani Masala 45gm×48pcs P.Box', rate: 48.00, category: 'Mixed Spice and box' },
-            { id: 'prod_39', name: 'Biryani Masala 40gm×48pcs P.Box', rate: 46.15, category: 'Mixed Spice and box' },
-            { id: 'prod_40', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00, category: 'Mixed Spice and box' },
-            { id: 'prod_41', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00, category: 'Mixed Spice and box' },
-            { id: 'prod_42', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40, category: 'Mixed Spice and box' },
-            { id: 'prod_43', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77, category: 'Mixed Spice and box' },
-            { id: 'prod_44', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53, category: 'Mixed Spice and box' },
-            { id: 'prod_45', name: 'Haleem Mix  200 gm', rate: 54.67, category: 'Mixed Spice and box' },
-            { id: 'prod_46', name: 'Curry powder 20gm', rate: 90.10, category: 'Mixed Spice and box' },
-            { id: 'prod_47', name: 'Garam Masala 15gm Foil New', rate: 27.50, category: 'Mixed Spice and box' },
-            { id: 'prod_48', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78, category: 'Mixed Spice and box' },
-            { id: 'prod_49', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53, category: 'Mixed Spice and box' },
-            { id: 'prod_50', name: 'Beef Kala Bhuna 80 gm', rate: 91.58, category: 'Mixed Spice and box' },
-            { id: 'prod_51', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31, category: 'Mixed Spice and box' },
-            { id: 'prod_52', name: 'Khichuri Masala 50 gm', rate: 48.96, category: 'Mixed Spice and box' },
-            { id: 'prod_53', name: 'Mustard Oil-80ml', rate: 23.56, category: 'Mustard Oil' },
-            { id: 'prod_54', name: 'Mustard Oil-200-mL', rate: 52.89, category: 'Mustard Oil' },
-            { id: 'prod_55', name: 'Mustard Oil-250ml', rate: 66.00, category: 'Mustard Oil' },
-            { id: 'prod_56', name: 'Mustard Oil-500 ml', rate: 136.89, category: 'Mustard Oil' },
-            { id: 'prod_57', name: 'Mustard Oil 500ml-CP', rate: 118.34, category: 'Mustard Oil' },
-            { id: 'prod_58', name: 'Mustard Oil-1000ml', rate: 265.71, category: 'Mustard Oil' },
-            { id: 'prod_59', name: 'Mustard Oil 1000ml-CP', rate: 255.11, category: 'Mustard Oil' },
-            { id: 'prod_60', name: 'Mustard oil 2 liter', rate: 528.89, category: 'Mustard Oil' },
-            { id: 'prod_61', name: 'M . Oil 5 Liter', rate: 1102.22, category: 'Mustard Oil' },
-            { id: 'prod_62', name: 'Mughal 150 ml', rate: 43.00, category: 'Mustard Oil' },
-            { id: 'prod_63', name: 'Mustard oil 16kg Tin', rate: 3270.00, category: 'Mustard Oil' },
-            { id: 'prod_64', name: 'Testing salt 20 gm', rate: 7.08, category: 'Testing salt' },
-            { id: 'prod_65', name: 'T-Salt-40 gm New', rate: 14.17, category: 'Testing salt' },
-            { id: 'prod_66', name: 'T-Salt-100 gm New', rate: 35.00, category: 'Testing salt' },
-            { id: 'prod_67', name: 'T-Salt 450 gm', rate: 137.89, category: 'Testing salt' },
-            { id: 'prod_68', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40, category: 'Shader Masala ' },
-            { id: 'prod_69', name: 'Whole Panchforan 50gm New', rate: 23.41, category: 'Panchforan and Jello' },
-            { id: 'prod_70', name: 'The chef Tomato  Sauce 295gm', rate: 86.20, category: 'Sauce and Vinegar' },
-            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62, category: 'Sauce and Vinegar' },
-            { id: 'prod_72', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
-            { id: 'prod_73', name: 'The chef White Vinager 330 ml', rate: 26.40, category: 'Sauce and Vinegar' },
-            { id: 'prod_74', name: 'The  chef White  vinager 650 ml', rate: 43.56, category: 'Sauce and Vinegar' },
-            { id: 'prod_75', name: 'The chef white vinager  5 ltr', rate: 213.18, category: 'Sauce and Vinegar' },
-            { id: 'prod_76', name: 'Love Jello-18 pcs Poly', rate: 40.00, category: 'Panchforan and Jello' },
-            { id: 'prod_77', name: 'Love Jelly-100pcs', rate: 215.00, category: 'Panchforan and Jello' },
-            { id: 'prod_78', name: 'The Chef Rose Water 200 ML', rate: 15.94, category: 'Rose and Kewra' },
-            { id: 'prod_79', name: 'The Chef Kewra Water 200 ML', rate: 15.11, category: 'Rose and Kewra' },
-            { id: 'prod_80', name: 'The Chef Rose Water 160 ML', rate: 12.00, category: 'Rose and Kewra' },
-            { id: 'prod_81', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00, category: 'Rice' }
+            { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11 },
+            { id: 'prod_2', name: 'Chili Powder 100gm NEW', rate: 57.60 },
+            { id: 'prod_3', name: 'Chili Powder - 200gm', rate: 108.00 },
+            { id: 'prod_4', name: 'Chili Powder-500gm x 24', rate: 254.57 },
+            { id: 'prod_5', name: 'Chili Powder-1kg', rate: 556.45 },
+            { id: 'prod_6', name: 'Chili powder 200 gm jar', rate: 132.96 },
+            { id: 'prod_7', name: 'Chili powder 5 kg-New', rate: 1530 },
+            { id: 'prod_8', name: '16 Ana Chilli-15Kg (Bulk)', rate: 4380 },
+            { id: 'prod_9', name: 'Turmeric Powder 15gm New', rate: 9.95 },
+            { id: 'prod_10', name: 'Turmeric Powder 50gm NEW', rate: 30.67 },
+            { id: 'prod_11', name: 'Turmeric Powder 100gm NEW', rate: 57.78 },
+            { id: 'prod_12', name: 'Turmeric Powder 200 gm', rate: 112.00 },
+            { id: 'prod_13', name: 'Turmeric Powder 500gmX24 Pouch', rate: 249.43 },
+            { id: 'prod_14', name: 'Turmeric Powder-1kg', rate: 533.33 },
+            { id: 'prod_15', name: 'Turmeric powder 200 gm jar', rate: 135.36 },
+            { id: 'prod_16', name: 'Turmeric Powder- 5kg', rate: 1310 },
+            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 0.00 },
+            { id: 'prod_18', name: 'Pran Coriander Powder 50 gm pouch', rate: 23.57 },
+            { id: 'prod_19', name: 'Pran Coriander Powder 100 gm pouch', rate: 44.14 },
+            { id: 'prod_20', name: 'Pran Coriander Powder 200 gm pouch', rate: 83.33 },
+            { id: 'prod_21', name: 'Pran Coriander Powder 500 gm pouch', rate: 180.00 },
+            { id: 'prod_22', name: 'Pran Coriander Powder 200 gm Jar', rate: 92.57 },
+            { id: 'prod_23', name: 'Pran Cumin Powder 15gm pouch', rate: 22.05 },
+            { id: 'prod_24', name: 'Pran Cumin Powder 50gm pouch', rate: 66.67 },
+            { id: 'prod_25', name: 'Pran Cumin Powder 100gm pouch', rate: 129.09 },
+            { id: 'prod_26', name: 'Pran Cumin Powder 200gm pouch', rate: 247.11 },
+            { id: 'prod_27', name: 'Pran Cumin Powder 200gm Jar', rate: 268.18 },
+            { id: 'prod_28', name: 'Pran Cumin Powder 500gm pouch', rate: 578.57 },
+            { id: 'prod_29', name: 'Fish Masala 20gm Foil NEW', rate: 15.00 },
+            { id: 'prod_30', name: 'Beef Masala 20gm Foil NEW', rate: 15.45 },
+            { id: 'prod_31', name: 'Chicken Masala 20gm Foil NEW', rate: 15.11 },
+            { id: 'prod_32', name: 'Meat Masala 20gm Foil NEW', rate: 15.45 },
+            { id: 'prod_33', name: 'Biriyani Masala Mix 25 gm', rate: 30.74 },
+            { id: 'prod_34', name: 'Meat Masala 100gm×48pcs P.Box', rate: 76.36 },
+            { id: 'prod_35', name: 'Chicken Masala 100gm×48pcs P.Box', rate: 75.00 },
+            { id: 'prod_36', name: 'Chicken Roast Masala 35gm×48pcs P.Box', rate: 48.89 },
+            { id: 'prod_37', name: 'Tehari Masala 40gm×48pcs P.Box', rate: 44.16 },
+            { id: 'prod_38', name: 'Bombay Biryani Masala 45gm×48pcs P.Box', rate: 48.00 },
+            { id: 'prod_39', name: 'Biryani Masala 40gm×48pcs P.Box', rate: 46.15 },
+            { id: 'prod_40', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00 },
+            { id: 'prod_41', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00 },
+            { id: 'prod_42', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40 },
+            { id: 'prod_43', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77 },
+            { id: 'prod_44', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53 },
+            { id: 'prod_45', name: 'Haleem Mix  200 gm', rate: 54.67 },
+            { id: 'prod_46', name: 'Curry powder 20gm', rate: 90.10 },
+            { id: 'prod_47', name: 'Garam Masala 15gm Foil New', rate: 27.50 },
+            { id: 'prod_48', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78 },
+            { id: 'prod_49', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53 },
+            { id: 'prod_50', name: 'Beef Kala Bhuna 80 gm', rate: 91.58 },
+            { id: 'prod_51', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31 },
+            { id: 'prod_52', name: 'Khichuri Masala 50 gm', rate: 48.96 },
+            { id: 'prod_53', name: 'Mustard Oil-80ml', rate: 23.56 },
+            { id: 'prod_54', name: 'Mustard Oil-200-mL', rate: 52.89 },
+            { id: 'prod_55', name: 'Mustard Oil-250ml', rate: 66.00 },
+            { id: 'prod_56', name: 'Mustard Oil-500 ml', rate: 136.89 },
+            { id: 'prod_57', name: 'Mustard Oil 500ml-CP', rate: 118.34 },
+            { id: 'prod_58', name: 'Mustard Oil-1000ml', rate: 265.71 },
+            { id: 'prod_59', name: 'Mustard Oil 1000ml-CP', rate: 255.11 },
+            { id: 'prod_60', name: 'Mustard oil 2 liter', rate: 528.89 },
+            { id: 'prod_61', name: 'M . Oil 5 Liter', rate: 1102.22 },
+            { id: 'prod_62', name: 'Mughal 150 ml', rate: 43.00 },
+            { id: 'prod_63', name: 'Mustard oil 16kg Tin', rate: 3270.00 },
+            { id: 'prod_64', name: 'Testing salt 20 gm', rate: 7.08 },
+            { id: 'prod_65', name: 'T-Salt-40 gm New', rate: 14.17 },
+            { id: 'prod_66', name: 'T-Salt-100 gm New', rate: 35.00 },
+            { id: 'prod_67', name: 'T-Salt 450 gm', rate: 137.89 },
+            { id: 'prod_68', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40 },
+            { id: 'prod_69', name: 'Whole Panchforan 50gm New', rate: 23.41 },
+            { id: 'prod_70', name: 'The chef Tomato  Sauce 295gm', rate: 86.20 },
+            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62 },
+            { id: 'prod_72', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03 },
+            { id: 'prod_73', name: 'The chef White Vinager 330 ml', rate: 26.40 },
+            { id: 'prod_74', name: 'The  chef White  vinager 650 ml', rate: 43.56 },
+            { id: 'prod_75', name: 'The chef white vinager  5 ltr', rate: 213.18 },
+            { id: 'prod_76', name: 'Love Jello-18 pcs Poly', rate: 40.00 },
+            { id: 'prod_77', name: 'Love Jelly-100pcs', rate: 215.00 },
+            { id: 'prod_78', name: 'The Chef Rose Water 200 ML', rate: 15.94 },
+            { id: 'prod_79', name: 'The Chef Kewra Water 200 ML', rate: 15.11 },
+            { id: 'prod_80', name: 'The Chef Rose Water 160 ML', rate: 12.00 },
+            { id: 'prod_81', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00 }
         ];
 
         const productGroups = {};
 
         const groupOrder = [];
 
-        function getUniqueCategories() {
-            return [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
-        }
-
-
         function groupAllProducts() {
             // Reset groups
             for (const key in productGroups) {
                 delete productGroups[key];
             }
-            
-            // Explicitly define group keys to control order and inclusion
-            const groupKeys = [
-                'Chili Powder', 'Turmeric Powder', 'Coriander Powder', 'Cumin Powder', 
-                'Mixed Spice and box', 'Mustard Oil', 'Testing salt', 'Shader Masala ', 
-                'Sauce and Vinegar', 'Panchforan and Jello', 'Rose and Kewra', 'Rice'
-            ];
+            productGroups['Chili Powder'] = [];
+            productGroups['Turmeric Powder'] = [];
+            productGroups['Coriander Powder'] = [];
+            productGroups['Cumin Powder'] = [];
+            productGroups['Mixed Spice and box'] = [];
+            productGroups['Mustard Oil'] = [];
+            productGroups['Testing salt'] = [];
+            productGroups['Shader Masala '] = [];
+            productGroups['Sauce and Vinegar'] = [];
+            productGroups['Panchforan and Jello'] = [];
+            productGroups['Rose and Kewra'] = [];
+            productGroups['Rice'] = [];
 
-            // Initialize all group keys
-            groupKeys.forEach(key => {
-                productGroups[key] = [];
-            });
-            
-            // Assign products to their groups
+            const chiliProducts = new Set(['Chili Powder 50gm NEW', 'Chili Powder 100gm NEW', 'Chili Powder - 200gm', 'Chili Powder-500gm x 24', 'Chili Powder-1kg', 'Chili powder 200 gm jar', 'Chili powder 5 kg-New', '16 Ana Chilli-15Kg (Bulk)']);
+            const turmericProducts = new Set(['Turmeric Powder 15gm New', 'Turmeric Powder 50gm NEW', 'Turmeric Powder 100gm NEW', 'Turmeric Powder 200 gm', 'Turmeric Powder 500gmX24 Pouch', 'Turmeric Powder-1kg', 'Turmeric powder 200 gm jar', 'Turmeric Powder- 5kg', '16 Ana Turmeric 15kg (Bulk)']);
+            const corianderProducts = new Set(['Pran Coriander Powder 50 gm pouch', 'Pran Coriander Powder 100 gm pouch', 'Pran Coriander Powder 200 gm pouch', 'Pran Coriander Powder 500 gm pouch', 'Pran Coriander Powder 200 gm Jar']);
+            const cuminProducts = new Set(['Pran Cumin Powder 15gm pouch', 'Pran Cumin Powder 50gm pouch', 'Pran Cumin Powder 100gm pouch', 'Pran Cumin Powder 200gm pouch', 'Pran Cumin Powder 200gm Jar', 'Pran Cumin Powder 500gm pouch']);
+            const mixedSpiceProducts = new Set(['Curry powder 20gm', 'Fish Masala 20gm Foil NEW', 'Beef Masala 20gm Foil NEW', 'Chicken Masala 20gm Foil NEW', 'Meat Masala 20gm Foil NEW', 'Biriyani Masala Mix 25 gm', 'Meat Masala 100gm×48pcs P.Box', 'Chicken Masala 100gm×48pcs P.Box', 'Chicken Roast Masala 35gm×48pcs P.Box', 'Tehari Masala 40gm×48pcs P.Box', 'Bombay Biryani Masala 45gm×48pcs P.Box', 'Biryani Masala 40gm×48pcs P.Box', 'Chatpati Masala 45gm×48pcs P.Box', 'Firni Mix 150gm×48pcs P.Box', 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', 'Kacchi Biryani Masala 45gm×48pcs P.Box', 'Haleem Mix  200 gm', 'Garam Masala 15gm Foil New', 'Payes Mix 150gmX48pcs P.Box', 'Kacchi Biryani Masala 40 gm', 'Beef Kala Bhuna 80 gm', 'Shindhi Biriany Masala 45 gm', 'Khichuri Masala 50 gm']);
+            const mustardOilProducts = new Set(['Mustard Oil-80ml', 'Mustard Oil-200-mL', 'Mustard Oil-250ml', 'Mustard Oil-500 ml', 'Mustard Oil 500ml-CP', 'Mustard Oil-1000ml', 'Mustard Oil 1000ml-CP', 'Mustard oil 2 liter', 'M . Oil 5 Liter', 'Mughal 150 ml', 'Mustard oil 16kg Tin']);
+            const testingSaltProducts = new Set(['Testing salt 20 gm', 'T-Salt-40 gm New', 'T-Salt-100 gm New', 'T-Salt 450 gm']);
+            const shaderMasalaProducts = new Set(['Shader Masala 4gmX480 Pcs']);
+            const sauceVinegarProducts = new Set(['The chef Tomato  Sauce 295gm', 'The Chef Hot Tomato Sauce-1000gm', 'The Chef Hot Tomato Sauce 3 Kg', 'The chef White Vinager 330 ml', 'The  chef White  vinager 650 ml', 'The chef white vinager  5 ltr']);
+            const panchforanJelloProducts = new Set(['Love Jello-18 pcs Poly', 'Love Jelly-100pcs', 'Whole Panchforan 50gm New']);
+            const roseKewraProducts = new Set(['The Chef Rose Water 200 ML', 'The Chef Kewra Water 200 ML', 'The Chef Rose Water 160 ML']);
+            const riceProducts = new Set(['The Chef Chinigura Rice 1 Kg']);
+
+            const productToGroupMap = new Map();
+
             state.products.forEach(p => {
-                const category = p.category;
-                if (category) {
-                    if (!productGroups[category]) {
-                        productGroups[category] = []; // Create group if it doesn't exist from the hardcoded list
-                    }
-                    productGroups[category].push(p);
-                } else {
-                    // Fallback for products without a category (though defaultProducts all have one)
-                    const fallbackGroup = 'Mixed Spice and box';
-                     if (!productGroups[fallbackGroup]) {
-                        productGroups[fallbackGroup] = [];
-                    }
-                    productGroups[fallbackGroup].push(p);
+                if(p.category && productGroups[p.category]) {
+                    productGroups[p.category].push(p);
+                    productToGroupMap.set(p.id, p.category);
                 }
             });
+
+            state.products.forEach(p => {
+                 if (productToGroupMap.has(p.id)) return;
+
+                if (chiliProducts.has(p.name)) productGroups['Chili Powder'].push(p);
+                else if (turmericProducts.has(p.name)) productGroups['Turmeric Powder'].push(p);
+                else if (corianderProducts.has(p.name)) productGroups['Coriander Powder'].push(p);
+                else if (cuminProducts.has(p.name)) productGroups['Cumin Powder'].push(p);
+                else if (mustardOilProducts.has(p.name)) productGroups['Mustard Oil'].push(p);
+                else if (testingSaltProducts.has(p.name)) productGroups['Testing salt'].push(p);
+                else if (shaderMasalaProducts.has(p.name)) productGroups['Shader Masala '].push(p);
+                else if (sauceVinegarProducts.has(p.name)) productGroups['Sauce and Vinegar'].push(p);
+                else if (panchforanJelloProducts.has(p.name)) productGroups['Panchforan and Jello'].push(p);
+                else if (roseKewraProducts.has(p.name)) productGroups['Rose and Kewra'].push(p);
+                else if (riceProducts.has(p.name)) productGroups['Rice'].push(p);
+                else if (mixedSpiceProducts.has(p.name)) productGroups['Mixed Spice and box'].push(p);
+            });
             
-            // Finalize group order based on what has products and sort alphabetically
             groupOrder.length = 0; 
-            const sortedGroupKeys = Object.keys(productGroups).filter(key => productGroups[key].length > 0).sort();
+            const sortedGroupKeys = Object.keys(productGroups).sort();
+
             groupOrder.push(...sortedGroupKeys.map(key => ({label: key, key: key})));
         }
 
@@ -835,13 +843,13 @@
                 state.teamAdmins = firebaseObjectToArray(dbState.teamAdmins);
                 state.salesReports = firebaseObjectToArray(dbState.salesReports);
                 state.products = firebaseObjectToArray(dbState.products);
+                state.categories = firebaseObjectToArray(dbState.categories);
                 state.advertisements = dbState.advertisements || { popunder: '', banner: '', nativeBanner: ''};
                 state.superAdminNotice = dbState.superAdminNotice || '';
                 state.notices = dbState.notices || {};
                 state.notificationSettings = dbState.notificationSettings || {};
                 state.logoutSettings = dbState.logoutSettings || {};
                 state.voiceSettings = dbState.voiceSettings || {};
-                state.categories = dbState.categories || getUniqueCategories();
 
 
                 if (!dbState.products || state.products.length === 0) {
@@ -854,13 +862,6 @@
                     await getFullState();
                     return;
                 }
-                
-                if (!dbState.categories || state.categories.length === 0) {
-                    const initialCategories = getUniqueCategories();
-                    await db.ref('categories').set(initialCategories);
-                    state.categories = initialCategories;
-                }
-
 
                 if (dbState.superAdmin && dbState.superAdmin.password) {
                     state.superAdminPassword = dbState.superAdmin.password;
@@ -887,6 +888,9 @@
             const page = document.getElementById(pageId);
              if (page) {
                 page.classList.add('active');
+                 document.body.style.overflowY = (pageId === 'teamAdminDashboard' || pageId === 'superAdminDashboard') ? 'auto' : 'hidden';
+            } else {
+                 document.body.style.overflowY = 'hidden';
             }
 
             renderAdvertisements(pageId);
@@ -1183,9 +1187,11 @@
                 state.loggedInUser = user.id;
                 state.loggedInUserName = user.username;
                 state.loggedInUserRole = user.role;
-                setupNotifications(user.role, null, user.id);
+                
+                await getFullState(); 
                 renderTeamAdminDashboard();
                 showPage('teamAdminDashboard');
+                playAdminWelcomeVoice();
             } else {
                 showAlert('Invalid username or password.');
             }
@@ -1275,7 +1281,8 @@
              if (confirm(`Are you sure you want to delete the product "${productName}"? This action cannot be undone.`)) {
                 await db.ref(`products/${productId}`).remove();
                 await getFullState();
-                filterProductsForAdmin(document.getElementById('adminProductSearch').value);
+                filterProductsForAdmin('');
+                renderCategoryManagement();
                 showAlert('Product deleted successfully!');
             }
         }
@@ -1340,17 +1347,14 @@
         async function addNewProduct() {
             const name = document.getElementById('newProductName').value.trim();
             const rate = parseFloat(document.getElementById('newProductRate').value);
-            
-            const existingCategory = document.getElementById('existingCategorySelect').value;
-            const newCategory = document.getElementById('newProductCategory').value.trim();
-
-            const category = newCategory || existingCategory;
+            const categoryInput = document.getElementById('newProductCategory').value.trim();
+            let category = categoryInput;
 
             if (!name || isNaN(rate)) {
                 return showAlert('Please fill in Product Name and Rate.');
             }
-            if (!category) {
-                 return showAlert('Please select an existing category or type a new one.');
+             if (!category) {
+                 return showAlert('Please add a category for the product.');
             }
             if (state.products.find(p => p.name.toLowerCase() === name.toLowerCase())) {
                 return showAlert('A product with this name already exists.');
@@ -1358,17 +1362,15 @@
             
             const newProductData = { name, rate, category };
 
-            const newProductRef = await db.ref('products').push(newProductData);
+            await db.ref('products').push(newProductData);
             
             document.getElementById('newProductName').value = '';
             document.getElementById('newProductRate').value = '';
-            document.getElementById('existingCategorySelect').value = '';
             document.getElementById('newProductCategory').value = '';
-            document.getElementById('newProductCategory').disabled = false;
-            document.getElementById('existingCategorySelect').disabled = false;
             
             await getFullState();
             filterProductsForAdmin(''); // Re-render product list
+            renderCategoryManagement(); // Refresh category lists
             showAlert('New product added successfully!');
         }
         
@@ -1458,32 +1460,22 @@
                     teamMembersList.appendChild(div);
                 });
             }
-            
-            // Populate category dropdowns
-            populateCategoryDropdowns();
-
-
-            // Setup for the new main collapsible toggle
-            document.getElementById('allSectionsToggle').addEventListener('click', () => {
-                const container = document.getElementById('allSectionsContainer');
-                container.classList.toggle('hidden');
-            });
-
 
             setupToggle('toggleTeamMembers', 'teamMembersList', true);
             setupToggle('toggleAdminNotice', 'teamAdminNoticeSection', false);
             setupToggle('toggleManageProducts', 'manageProductSection', false);
             setupToggle('toggleAddProduct', 'addProductSection', false);
-            setupToggle('toggleManageCategories', 'manageCategoriesSection', false);
             setupToggle('toggleNotificationSystem', 'notificationSystemSection', false);
-            setupToggle('toggleVoiceSettings', 'voiceSettingsSection', false);
             setupToggle('toggleLogoutSettings', 'logoutSettingsSection', false);
+            setupToggle('toggleCategoryManager', 'categoryManagerSection', false);
+            setupToggle('toggleVoiceSettings', 'voiceSettingsSection', false);
 
 
             document.getElementById('adminProductSearch').value = '';
             renderProductManagement(state.products);
             renderNotificationSettings();
             renderLogoutSettings();
+            renderCategoryManagement();
             renderVoiceSettings();
             
             const today = new Date().toISOString().split('T')[0];
@@ -1491,28 +1483,6 @@
             document.getElementById('reportStartDate').value = today;
             document.getElementById('reportEndDate').value = today;
             
-            // Voice alerts for admin
-            playVoice("টিম অ্যাডমিন হিসেবে আপনাকে স্বাগতম।", 'bn-BD', true);
-            setTimeout(() => {
-                const { notSubmittedMembers, grandTotal } = getReportDataForDateRange(today, today);
-                let summaryMessage;
-                if (notSubmittedMembers.length > 0) {
-                    summaryMessage = `আপনার ${notSubmittedMembers.length} জন মেম্বার এখনো রিপোর্ট দেননি। `;
-                } else {
-                    summaryMessage = "আপনার সকল মেম্বার আজ রিপোর্ট জমা দিয়েছেন। ";
-                }
-                summaryMessage += `আজকের রিপোর্টের সারাংশ: মোট টার্গেট ${grandTotal.tgt}, মোট সেলস ${grandTotal.sales}, এবং মোট অ্যামাউন্ট ${Math.round(grandTotal.amount)} টাকা।`;
-
-                const adminVoiceSettings = state.voiceSettings[state.loggedInUser] || {};
-                const repeatCount = parseInt(adminVoiceSettings.summaryRepeatCount, 10) || 1;
-
-                for (let i = 0; i < repeatCount; i++) {
-                    setTimeout(() => playVoice(summaryMessage, 'bn-BD', true), i * 10000); // 10s delay between repeats
-                }
-
-            }, 3000); // 3 second delay for the second message
-
-
             renderTeamAdminReports();
         }
 
@@ -1550,7 +1520,7 @@
 
         function getReportDataForDateRange(startDateStr, endDateStr) {
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
-            if (!admin) return { productData: {}, reportingMembers: [], submittedProducts: new Set(), notSubmittedMembers: [], submittedMemberUsernames: new Set(), grandTotal: { tgt: 0, sales: 0, amount: 0 } };
+            if (!admin) return { productData: {}, reportingMembers: [], submittedProducts: new Set(), notSubmittedMembers: [], submittedMemberUsernames: new Set(), grandTotalAmount: 0 };
 
             const reportingMembers = admin.teamMembers && typeof admin.teamMembers === 'object'
                 ? Object.values(admin.teamMembers).filter(m => m.status === 'active') 
@@ -1571,9 +1541,11 @@
 
             const submittedProducts = new Set();
             reportsForDateRange.forEach(report => {
-                report.reportData.items.forEach(item => {
-                    submittedProducts.add(item.name);
-                });
+                if (report.reportData && report.reportData.items) {
+                    report.reportData.items.forEach(item => {
+                        submittedProducts.add(item.name);
+                    });
+                }
             });
 
             const productData = {};
@@ -1587,32 +1559,28 @@
                 }
             });
 
+            let grandTotalAmount = 0;
             reportsForDateRange.forEach(report => {
                 const member = reportingMembers.find(m => m.username === report.submittedBy);
-                if (member) {
+                if (member && report.reportData && report.reportData.items) {
                     report.reportData.items.forEach(item => {
                         if (productData[item.name]) {
                             const productInState = state.products.find(p => p.name === item.name);
+                            const itemRate = productInState ? productInState.rate : item.rate;
+                            const itemAmount = item.sales * itemRate;
+
                             productData[item.name].members[member.name].tgt += item.tgt;
                             productData[item.name].members[member.name].sales += item.sales;
-                            productData[item.name].members[member.name].amount += item.sales * (productInState ? productInState.rate : item.rate);
+                            productData[item.name].members[member.name].amount += itemAmount;
                         }
                     });
+                     if(report.reportData.grandTotal) {
+                        grandTotalAmount += report.reportData.grandTotal;
+                    }
                 }
             });
-
-            const grandTotal = { tgt: 0, sales: 0, amount: 0 };
-            submittedProducts.forEach(productName => {
-                const productInfo = productData[productName];
-                reportingMembers.forEach(member => {
-                    const data = productInfo.members[member.name] || { tgt: 0, sales: 0, amount: 0 };
-                    grandTotal.tgt += data.tgt;
-                    grandTotal.sales += data.sales;
-                    grandTotal.amount += data.amount;
-                });
-            });
             
-            return { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames, grandTotal };
+            return { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames, grandTotalAmount };
         }
         
         function renderTeamAdminReportsForDateRange() {
@@ -1631,7 +1599,7 @@
             const isDateRange = startDate && endDate;
             const selectedDateValue = startDate || document.getElementById('reportDate').value;
             
-            const { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames, grandTotal } = isDateRange
+            const { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames } = isDateRange
                 ? getReportDataForDateRange(startDate, endDate)
                 : getReportDataForDateRange(selectedDateValue, selectedDateValue);
 
@@ -1675,12 +1643,12 @@
                 return;
             }
 
-            memberRow.innerHTML = '<th rowspan="2">Product</th><th rowspan="2">Rate</th>';
+            memberRow.innerHTML = '<th rowspan="2" style="white-space: normal;">Product</th><th rowspan="2">Rate</th>';
             subHeaderRow.innerHTML = '';
 
             reportingMembers.forEach(m => {
-                memberRow.innerHTML += `<th colspan="3" style="width: auto;">${m.name}</th>`;
-                subHeaderRow.innerHTML += '<th style="width: 5%;">TGT</th><th style="width: auto;">Sales</th><th style="width: auto;">Amount</th>';
+                memberRow.innerHTML += `<th colspan="3">${m.name}</th>`;
+                subHeaderRow.innerHTML += '<th>TGT</th><th>Sales</th><th>Amount</th>';
             });
             memberRow.innerHTML += `<th colspan="3" class="summary-header">Summary</th>`;
             subHeaderRow.innerHTML += '<th class="summary-header">TGT</th><th class="summary-header">Sales</th><th class="summary-header">Amount</th>';
@@ -1688,7 +1656,7 @@
             tableBody.innerHTML = '';
             Array.from(submittedProducts).sort().forEach(productName => {
                 const productInfo = productData[productName];
-                let rowHtml = `<tr><td>${productName}</td><td>${productInfo.rate.toFixed(2)}</td>`;
+                let rowHtml = `<tr><td style="white-space: normal;">${productName}</td><td>${productInfo.rate.toFixed(2)}</td>`;
                 let summaryTgt = 0, summarySales = 0, summaryAmount = 0;
 
                 reportingMembers.forEach(member => {
@@ -1708,6 +1676,7 @@
             let footerHtml = '<tr><td colspan="2"><b>Total</b></td>';
             const memberTotals = {};
             reportingMembers.forEach(m => { memberTotals[m.name] = { tgt: 0, sales: 0, amount: 0 }; });
+            let grandTotal = { tgt: 0, sales: 0, amount: 0 };
             
             submittedProducts.forEach(productName => {
                 const productInfo = productData[productName];
@@ -1721,6 +1690,9 @@
 
             reportingMembers.forEach(member => {
                 footerHtml += `<td><b>${memberTotals[member.name].tgt}</b></td><td><b>${memberTotals[member.name].sales}</b></td><td><b>${Math.round(memberTotals[member.name].amount)}</b></td>`;
+                grandTotal.tgt += memberTotals[member.name].tgt;
+                grandTotal.sales += memberTotals[member.name].sales;
+                grandTotal.amount += memberTotals[member.name].amount;
             });
 
             footerHtml += `<td class="summary-col"><b>${grandTotal.tgt}</b></td><td class="summary-col"><b>${grandTotal.sales}</b></td><td class="summary-col"><b>${Math.round(grandTotal.amount)}</b></td>`;
@@ -1761,7 +1733,7 @@
                         admin.teamMembers[key].username === username && admin.teamMembers[key].password === password
                     );
                     if(memberKey){
-                        foundMember = {id: memberKey, ...admin.teamMembers[key]};
+                        foundMember = {id: memberKey, ...admin.teamMembers[memberKey]};
                         teamAdminInfo = {id: admin.id, username: admin.username, status: admin.status };
                         break;
                     }
@@ -1792,9 +1764,10 @@
                 state.loggedInUserTeam = user.team;
                 state.loggedInUserTeamId = teamAdminInfo.id;
                 
-                setupNotifications(user.role, user.teamId, user.id);
+                await getFullState();
                 renderTeamMemberDashboard();
                 showPage('teamMemberDashboard');
+                playWelcomeVoice('member');
             } else {
                 showAlert('Invalid username or password.');
             }
@@ -1866,7 +1839,7 @@
                     const amountCell = document.getElementById(`amount-${productId}`);
                     if (tgtInput) tgtInput.value = '';
                     if (salesInput) salesInput.value = '';
-                    if (amountCell) amountCell.innerText = '0.00';
+                    if (amountCell) amountCell.innerText = '0';
                 });
 
                 showAlert(`${itemsToAdd.length} item(s) added to the report.`);
@@ -1972,7 +1945,7 @@
             }
         }
         
-        function renderProductTableForMember(products, containerId, groupBy = null) {
+        function renderProductTableForMember(products, containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
             container.innerHTML = '';
@@ -1984,39 +1957,17 @@
 
             let tableHtml = '<table class="w-full grouped-product-table"><thead><tr><th>Product</th><th class="text-right">Rate</th><th>TGT</th><th>Sales</th><th class="text-right">Amount</th></tr></thead><tbody>';
 
-            if(groupBy === 'category') {
-                const uniqueCategories = [...new Set(products.map(p => p.category))].sort();
-                uniqueCategories.forEach(category => {
-                    const productsInGroup = products.filter(p => p.category === category);
-                    if(productsInGroup.length > 0) {
-                        tableHtml += `<tr><td colspan="5" class="group-header">${category}</td></tr>`;
-                        productsInGroup.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
-                            tableHtml += `
-                                <tr data-product-id="${p.id}">
-                                    <td>${p.name}</td>
-                                    <td class="text-right">${p.rate.toFixed(2)}</td>
-                                    <td><input type="number" id="tgt-${p.id}" class="inline-input" placeholder="TGT"></td>
-                                    <td><input type="number" id="sales-${p.id}" class="inline-input" placeholder="Sales" oninput="updateAmountOnRow('${p.id}')"></td>
-                                    <td class="text-right" id="amount-${p.id}">0</td>
-                                </tr>
-                            `;
-                        });
-                    }
-                });
-            } else {
-                 products.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
-                    tableHtml += `
-                        <tr data-product-id="${p.id}">
-                            <td>${p.name}</td>
-                            <td class="text-right">${p.rate.toFixed(2)}</td>
-                            <td><input type="number" id="tgt-${p.id}" class="inline-input" placeholder="TGT"></td>
-                            <td><input type="number" id="sales-${p.id}" class="inline-input" placeholder="Sales" oninput="updateAmountOnRow('${p.id}')"></td>
-                            <td class="text-right" id="amount-${p.id}">0</td>
-                        </tr>
-                    `;
-                });
-            }
-
+            products.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                tableHtml += `
+                    <tr data-product-id="${p.id}">
+                        <td>${p.name}</td>
+                        <td class="text-right">${p.rate.toFixed(2)}</td>
+                        <td><input type="number" id="tgt-${p.id}" class="inline-input" placeholder="TGT"></td>
+                        <td><input type="number" id="sales-${p.id}" class="inline-input" placeholder="Sales" oninput="updateAmountOnRow('${p.id}')"></td>
+                        <td class="text-right" id="amount-${p.id}">0</td>
+                    </tr>
+                `;
+            });
 
             tableHtml += '</tbody></table>';
 
@@ -2032,12 +1983,13 @@
             const container = document.getElementById('memberProductListContainer');
             container.innerHTML = '';
             if (categoryKey) {
-                if (categoryKey === 'all') {
-                    renderProductTableForMember(state.products, 'memberProductListContainer', 'category');
+                let products;
+                if (categoryKey === 'All') {
+                    products = state.products;
                 } else {
-                    const products = state.products.filter(p => p.category === categoryKey);
-                    renderProductTableForMember(products, 'memberProductListContainer');
+                    products = state.products.filter(p => p.category === categoryKey);
                 }
+                renderProductTableForMember(products, 'memberProductListContainer');
             }
         }
         
@@ -2071,15 +2023,13 @@
                 noticeContainer.innerHTML = '';
             }
             
-            // Populate category dropdown
             const categorySelect = document.getElementById('productCategorySelect');
-            categorySelect.innerHTML = '<option value="">-- Select a Category --</option>';
-            categorySelect.innerHTML += '<option value="all">All</option>'; // Add "All" option
-            state.categories.forEach(cat => {
-                 categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
+            categorySelect.innerHTML = '<option value="">-- Select a Category --</option><option value="All">All</option>';
+            uniqueCategories.forEach(cat => {
+                categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
             
-            // Clear previous results
             document.getElementById('memberProductSearch').value = '';
             document.getElementById('memberProductListContainer').innerHTML = '';
 
@@ -2090,17 +2040,6 @@
                 r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
             );
             document.getElementById('submitReportContainer').style.display = hasSubmittedToday ? 'none' : 'block';
-
-            // Reminder on login
-            setTimeout(() => {
-                const hasSubmittedNow = state.salesReports.some(r => 
-                    r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
-                );
-                if (!hasSubmittedNow) {
-                    playVoice("আপনি আজকের রিপোর্ট এখনো সাবমিট করেননি, তাই আপনাকে স্মরণ করানো হলো", 'bn-BD', false);
-                }
-            }, 1000); // 1-second delay to allow dashboard to render
-
 
             const mySalesReportsList = document.getElementById('mySalesReportsList');
             mySalesReportsList.innerHTML = '';
@@ -2143,7 +2082,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${report.reportData.items.map(item => `
+                                    ${(report.reportData.items || []).map(item => `
                                         <tr>
                                             <td class="p-2">${item.name}</td>
                                             <td class="p-2 text-right">${item.rate.toFixed(2)}</td>
@@ -2187,50 +2126,103 @@
             adContainer.innerHTML = adHtml;
         }
 
-        // --- Notification and Alarm System ---
-        function playVoice(text, lang = 'en-US', isFemale = true) {
+        // --- Notification and Voice System ---
+        function playVoice(text, lang = 'en-US', isFemale = true, onEndCallback) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = lang;
                 utterance.rate = 0.9;
                 
-                // Try to find a specific female voice
-                if (isFemale) {
-                    const voices = window.speechSynthesis.getVoices();
-                    let femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google UK English Female'));
-                     if (lang === 'bn-BD') {
-                        // For Bengali, there might not be a standard "Female" name, find one that works
-                        femaleVoice = voices.find(v => v.lang === 'bn-BD');
+                if (onEndCallback) {
+                    utterance.onend = onEndCallback;
+                }
+                
+                const voices = window.speechSynthesis.getVoices();
+                let chosenVoice = null;
+
+                if (lang === 'bn-BD') {
+                    chosenVoice = voices.find(v => v.lang === 'bn-BD' && v.name.includes('Female'));
+                    if (!chosenVoice) {
+                        chosenVoice = voices.find(v => v.lang === 'bn-BD');
                     }
-                    if (femaleVoice) {
-                        utterance.voice = femaleVoice;
-                    }
+                } else if (isFemale) {
+                    chosenVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google UK English Female'));
+                }
+                
+                if(chosenVoice) {
+                    utterance.voice = chosenVoice;
                 }
                 
                 window.speechSynthesis.cancel(); // Stop any previous speech
                 window.speechSynthesis.speak(utterance);
             } else {
                 console.log("Speech synthesis not supported.");
+                 if (onEndCallback) {
+                    onEndCallback();
+                }
+            }
+        }
+
+        async function playAdminWelcomeVoice() {
+            playVoice("Welcome admin", 'en-US', false);
+
+            const today = new Date().toISOString().split('T')[0];
+            const { notSubmittedMembers, grandTotalAmount } = getReportDataForDateRange(today, today);
+            
+            const adminSettings = state.voiceSettings[state.loggedInUser] || {};
+            const repeatCount = parseInt(adminSettings.repeatCount, 10) || 1;
+
+            let fullMessage = "";
+            if (notSubmittedMembers.length > 0) {
+                fullMessage += `${notSubmittedMembers.length} members have not submitted the report yet. `;
+            } else {
+                fullMessage += `All members have submitted their reports. `;
+            }
+            fullMessage += `Today's grand total amount is ${Math.round(grandTotalAmount)}.`;
+
+            let repeatCounter = 0;
+            const playRepeatedly = () => {
+                if (repeatCounter < repeatCount) {
+                    repeatCounter++;
+                    playVoice(fullMessage, 'en-US', false, playRepeatedly);
+                }
+            };
+            
+            setTimeout(() => {
+                playRepeatedly();
+            }, 2000);
+        }
+
+        async function playWelcomeVoice(role) {
+             if (role === 'member') {
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const hasSubmittedToday = state.salesReports.some(r => 
+                    r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
+                );
+
+                if (!hasSubmittedToday) {
+                    setTimeout(() => {
+                        playVoice("আপনি আজকের রিপোর্ট এখনো সাবমিট করেননি, তাই আপনাকে স্মরণ করানো হলো", 'bn-BD', true);
+                    }, 5000); 
+                }
             }
         }
         
         function unlockAudio() {
             if ('speechSynthesis' in window) {
-                // Play a silent utterance to unlock audio
-                const utterance = new SpeechSynthesisUtterance('');
-                utterance.volume = 0;
-                window.speechSynthesis.speak(utterance);
-                
-                // Also ensures voices are loaded.
-                window.speechSynthesis.getVoices();
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length === 0) {
+                     const utterance = new SpeechSynthesisUtterance('');
+                    utterance.volume = 0;
+                    window.speechSynthesis.speak(utterance);
+                }
             }
         }
 
-
-        // This function is needed to load voices on some browsers
-        window.speechSynthesis.onvoiceschanged = () => {
-             window.speechSynthesis.getVoices();
-        };
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = unlockAudio;
+        }
 
         function startMemberAlarmSystem() {
             if (alarmIntervalId) clearInterval(alarmIntervalId); 
@@ -2242,9 +2234,9 @@
                 const todayStart = new Date();
                 todayStart.setHours(0, 0, 0, 0);
                 
-                // We need to refresh sales reports from DB to get the latest status
                 const salesReportsSnapshot = await db.ref('salesReports').once('value');
-                const liveSalesReports = salesReportsSnapshot.val() ? Object.values(salesReportsSnapshot.val()) : [];
+                const liveSalesReportsData = salesReportsSnapshot.val() || {};
+                const liveSalesReports = Object.values(liveSalesReportsData);
 
                 const hasSubmittedToday = liveSalesReports.some(r => 
                     r.submittedBy === state.loggedInUserUsername && new Date(r.date) >= todayStart
@@ -2263,39 +2255,6 @@
                     playVoice(settings.reminderMessage, 'bn-BD', true);
                 }
             }, 60000); // Check every minute
-        }
-
-        function startAdminNotificationSystem() {
-            if (adminNotificationIntervalId) clearInterval(adminNotificationIntervalId);
-
-            adminNotificationIntervalId = setInterval(async () => {
-                const now = new Date();
-                const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-
-                if (currentTime === "23:02") {
-                    await getFullState(); // Refresh data
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    const { reportingMembers, submittedMemberUsernames, productData } = getReportDataForDateRange(todayStr, todayStr);
-                    
-                    const submittedCount = submittedMemberUsernames.size;
-                    const notSubmittedCount = reportingMembers.length - submittedCount;
-                    
-                    let grandTotalAmount = 0;
-                    Object.values(productData).forEach(pInfo => {
-                        Object.values(pInfo.members).forEach(mData => {
-                            grandTotalAmount += mData.amount;
-                        });
-                    });
-
-                    const title = "Daily Report Summary";
-                    const body = `Submitted: ${submittedCount}, Not Submitted: ${notSubmittedCount}. Total Amount: ${Math.round(grandTotalAmount)}.`;
-                    
-                    const adminUser = state.teamAdmins.find(a => a.id === state.loggedInUser);
-                    if (adminUser && adminUser.fcmToken) {
-                       sendPushNotification(adminUser.fcmToken, title, body);
-                    }
-                }
-            }, 60000);
         }
 
         async function setupPushNotifications(role, teamId, userId) {
@@ -2320,37 +2279,6 @@
             }
         }
         
-        async function setupNotifications(role, teamId, userId) {
-            startMemberAlarmSystem();
-            startAdminNotificationSystem();
-            await setupPushNotifications(role, teamId, userId);
-        }
-        
-        async function sendPushNotification(token, title, body) {
-            // This is a client-side simulation. For a real app, this should be done from a server.
-            console.log(`Simulating sending push to ${token}: Title: ${title}, Body: ${body}`);
-            // In a real implementation, you would make an HTTP POST request to FCM API endpoint.
-            // Example:
-            /*
-            const message = {
-                to: token,
-                notification: {
-                    title: title,
-                    body: body,
-                    icon: '/firebase-logo.png' // Optional: add an icon
-                }
-            };
-            fetch('https://fcm.googleapis.com/fcm/send', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'key=YOUR_SERVER_KEY', // Get this from Firebase Console
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(message)
-            });
-            */
-        }
-
         function addReminderTimeInput(time = '') {
             const container = document.getElementById('reminderTimesContainer');
             const div = document.createElement('div');
@@ -2373,7 +2301,7 @@
             timesContainer.innerHTML = '';
             const reminderTimes = settings.reminderTimes || ["21:30", "22:20"];
             reminderTimes.forEach(time => addReminderTimeInput(time));
-            if(reminderTimes.length === 0){ // Add one empty if none exist
+            if(reminderTimes.length === 0){
                  addReminderTimeInput();
             }
 
@@ -2421,75 +2349,94 @@
         function renderVoiceSettings() {
             const adminId = state.loggedInUser;
             const settings = state.voiceSettings[adminId] || {};
-            document.getElementById('summaryRepeatCount').value = settings.summaryRepeatCount || 1;
+            document.getElementById('voiceRepeatCount').value = settings.repeatCount || 2;
         }
 
         async function saveVoiceSettings() {
             const adminId = state.loggedInUser;
-            const repeatCount = parseInt(document.getElementById('summaryRepeatCount').value, 10);
+            const repeatCount = parseInt(document.getElementById('voiceRepeatCount').value, 10);
             
             if(isNaN(repeatCount) || repeatCount < 1) {
                 return showAlert('Please enter a valid number greater than 0.');
             }
 
-            const settings = { summaryRepeatCount: repeatCount };
+            const settings = { repeatCount };
             await db.ref(`voiceSettings/${adminId}`).set(settings);
             state.voiceSettings[adminId] = settings;
             showAlert('Voice settings saved successfully!');
         }
 
-        function populateCategoryDropdowns() {
-            const existingCategorySelect = document.getElementById('existingCategorySelect');
-            const categoryToDeleteSelect = document.getElementById('categoryToDelete');
+        // --- Category Management ---
+        function renderCategoryManagement() {
+            const deleteSelect = document.getElementById('deleteCategorySelect');
+            const existingSelect = document.getElementById('existingCategorySelect');
+            
+            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
 
-            const categories = state.categories;
+            deleteSelect.innerHTML = '<option value="">-- Select Category to Delete --</option>';
+            existingSelect.innerHTML = '<option value="">-- Select Existing --</option>';
 
-            existingCategorySelect.innerHTML = '<option value="">-- Select Existing --</option>';
-            categoryToDeleteSelect.innerHTML = '<option value="">-- Select Category to Delete --</option>';
-
-            categories.forEach(cat => {
-                existingCategorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
-                categoryToDeleteSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            uniqueCategories.forEach(cat => {
+                deleteSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+                existingSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
+            document.getElementById('newStandaloneCategoryName').value = '';
         }
-        
-        async function addCategory() {
-            const newCategoryName = document.getElementById('categoryNameToAdd').value.trim();
-            if (!newCategoryName) {
+
+        async function addStandaloneCategory() {
+            const categoryName = document.getElementById('newStandaloneCategoryName').value.trim();
+            if (!categoryName) {
                 return showAlert('Category name cannot be empty.');
             }
-            if (state.categories.includes(newCategoryName)) {
+            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))];
+             if (uniqueCategories.some(c => c.toLowerCase() === categoryName.toLowerCase())) {
                 return showAlert('This category already exists.');
             }
-
-            const updatedCategories = [...state.categories, newCategoryName].sort();
-            await db.ref('categories').set(updatedCategories);
-            await getFullState(); // Refresh state
-            populateCategoryDropdowns();
-            document.getElementById('categoryNameToAdd').value = '';
-            showAlert('Category added successfully!');
+            
+            // To "create" a category, we add a placeholder product. This is a workaround.
+            const placeholderProduct = {
+                name: `_placeholder_for_${categoryName}`,
+                rate: 0,
+                category: categoryName
+            };
+            await db.ref('products').push(placeholderProduct);
+            await getFullState();
+            renderCategoryManagement();
+            showAlert(`Category "${categoryName}" created successfully.`);
         }
 
-        async function deleteCategory() {
-            const categoryToDelete = document.getElementById('categoryToDelete').value;
+        async function deleteStandaloneCategory() {
+            const categoryToDelete = document.getElementById('deleteCategorySelect').value;
             if (!categoryToDelete) {
                 return showAlert('Please select a category to delete.');
             }
+            
+            const productsInCategory = state.products.filter(p => p.category === categoryToDelete);
 
-            const isCategoryInUse = state.products.some(p => p.category === categoryToDelete);
-            if (isCategoryInUse) {
-                return showAlert('This category cannot be deleted because it is currently assigned to one or more products.');
+            if (productsInCategory.length > 1 || (productsInCategory.length === 1 && !productsInCategory[0].name.startsWith('_placeholder_for_'))) {
+                 if (!confirm(`This category contains products. Deleting it will remove the category from all associated products. Are you sure?`)) {
+                    return;
+                }
+            } else {
+                 if (!confirm(`Are you sure you want to delete the category "${categoryToDelete}"?`)) {
+                    return;
+                }
             }
+            
+            const updates = {};
+            productsInCategory.forEach(p => {
+                if (p.name.startsWith('_placeholder_for_')) {
+                    updates[`/products/${p.id}`] = null; // Delete placeholder
+                } else {
+                    updates[`/products/${p.id}/category`] = null; // Unset category for other products
+                }
+            });
 
-            if (confirm(`Are you sure you want to delete the category "${categoryToDelete}"? This action cannot be undone.`)) {
-                const updatedCategories = state.categories.filter(c => c !== categoryToDelete);
-                await db.ref('categories').set(updatedCategories);
-                await getFullState(); // Refresh state
-                populateCategoryDropdowns();
-                showAlert('Category deleted successfully!');
-            }
+            await db.ref().update(updates);
+            await getFullState();
+            renderCategoryManagement();
+            showAlert(`Category "${categoryToDelete}" has been deleted.`);
         }
-
 
         // --- App Initialization ---
         async function initializeApp() {
@@ -2504,7 +2451,7 @@
                     const notificationTitle = payload.notification.title;
                     const notificationOptions = {
                         body: payload.notification.body,
-                        icon: '/firebase-logo.png' // Optional: add an icon
+                        icon: '/firebase-logo.png'
                     };
                     new Notification(notificationTitle, notificationOptions);
                 });
@@ -2516,65 +2463,61 @@
             const savedUserJSON = localStorage.getItem('loggedInUser');
             if (savedUserJSON) {
                 const savedUser = JSON.parse(savedUserJSON);
-                state.loggedInUser = savedUser.id;
-                state.loggedInUserRole = savedUser.role;
+                
+                const adminUser = state.teamAdmins.find(a => a.id === savedUser.id);
+                const memberUser = state.teamAdmins.flatMap(a => a.teamMembers ? Object.keys(a.teamMembers).map(k => ({...a.teamMembers[k], id: k, adminId: a.id})) : []).find(m => m.id === savedUser.id);
 
+                let userIsValid = false;
                 if (savedUser.role === 'superadmin') {
-                    renderSuperAdminDashboard();
-                    showPage('superAdminDashboard');
-                } else if (savedUser.role === 'teamadmin') {
-                    state.loggedInUserName = savedUser.username;
-                    setupNotifications(savedUser.role, null, savedUser.id);
-                    renderTeamAdminDashboard();
-                    showPage('teamAdminDashboard');
-                } else if (savedUser.role === 'teammember') {
-                    state.loggedInUserName = savedUser.name;
-                    state.loggedInUserUsername = savedUser.username;
-                    state.loggedInUserTeam = savedUser.team;
-                    state.loggedInUserTeamId = savedUser.teamId;
-                    setupNotifications(savedUser.role, savedUser.teamId, savedUser.id);
-                    renderTeamMemberDashboard();
-                    showPage('teamMemberDashboard');
+                     userIsValid = true;
+                } else if (savedUser.role === 'teamadmin' && adminUser && adminUser.status === 'active') {
+                     userIsValid = true;
+                } else if (savedUser.role === 'teammember' && memberUser && memberUser.status === 'active') {
+                    const memberAdmin = state.teamAdmins.find(a => a.id === memberUser.adminId);
+                    if(memberAdmin && memberAdmin.status === 'active') {
+                        userIsValid = true;
+                    }
+                }
+
+                if (userIsValid) {
+                    state.loggedInUser = savedUser.id;
+                    state.loggedInUserRole = savedUser.role;
+
+                    if (savedUser.role === 'superadmin') {
+                        renderSuperAdminDashboard();
+                        showPage('superAdminDashboard');
+                    } else if (savedUser.role === 'teamadmin') {
+                        state.loggedInUserName = savedUser.username;
+                        renderTeamAdminDashboard();
+                        showPage('teamAdminDashboard');
+                        playAdminWelcomeVoice();
+                    } else if (savedUser.role === 'teammember') {
+                        state.loggedInUserName = savedUser.name;
+                        state.loggedInUserUsername = savedUser.username;
+                        state.loggedInUserTeam = savedUser.team;
+                        state.loggedInUserTeamId = savedUser.teamId;
+                        renderTeamMemberDashboard();
+                        showPage('teamMemberDashboard');
+                        playWelcomeVoice('member');
+                    }
+                    if (savedUser.role !== 'superadmin') {
+                        startMemberAlarmSystem();
+                    }
+                } else {
+                    localStorage.removeItem('loggedInUser');
+                    showPage('mainLoginPage');
                 }
             } else {
                  showPage('mainLoginPage');
             }
 
-            // Unlock audio on the first user interaction
             document.addEventListener('click', unlockAudio, { once: true });
-
-
-            document.addEventListener('click', function(event) {
-                const suggestionsContainer = document.getElementById('memberProductSuggestions');
-                const searchInput = document.getElementById('memberProductSearch');
-                if (suggestionsContainer && searchInput && !suggestionsContainer.contains(event.target) && event.target !== searchInput) {
-                    suggestionsContainer.classList.add('hidden');
-                }
-            });
         }
 
         window.onload = initializeApp;
 
     </script>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-
-
-
-    
-
-    
-
-
-
+</body>
+</html>
 
     
