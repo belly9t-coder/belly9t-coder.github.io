@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sales Report App</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -129,21 +131,26 @@
             top: 0;
             z-index: 10;
         }
-        /* Freeze first two columns */
-        #reportTable th:first-child, #reportTable td:first-child {
+        /* Freeze first three columns */
+        #reportTable th:first-child, #reportTable td:first-child,
+        #reportTable th:nth-child(2), #reportTable td:nth-child(2),
+        #reportTable th:nth-child(3), #reportTable td:nth-child(3) {
             position: sticky;
-            left: 0;
             z-index: 11;
             background: #f1f5f9;
-            min-width: 100px;
+        }
+        #reportTable th:first-child, #reportTable td:first-child {
+            left: 0;
+            min-width: 40px;
         }
         #reportTable th:nth-child(2), #reportTable td:nth-child(2) {
-            position: sticky;
-            left: 100px; /* Adjust this value based on first column's width */
-            z-index: 11;
-            background: #f1f5f9;
+            left: 40px;
+            min-width: 100px;
         }
-         #reportTable th:first-child, #reportTable th:nth-child(2) {
+        #reportTable th:nth-child(3), #reportTable td:nth-child(3) {
+            left: 140px;
+        }
+         #reportTable th:first-child, #reportTable th:nth-child(2), #reportTable th:nth-child(3) {
             background: #0867d2;
             color: white;
         }
@@ -234,6 +241,22 @@
             color: #ef4444; /* red-500 */
             font-weight: bold;
         }
+        .accordion-header {
+            cursor: pointer;
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            transition: background-color 0.2s;
+        }
+        .accordion-header:hover {
+            background-color: #f3f4f6;
+        }
+        .accordion-content {
+            display: none;
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
 
     </style>
 </head>
@@ -402,9 +425,9 @@
                     </div>
                 </div>
 
-                 <div class="mt-8 mb-8">
+                 <div class="mt-8 mb-8 border-t pt-8">
                     <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
-                    <div class="grid grid-cols-2 gap-4 items-center">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-4 p-4 border rounded-lg bg-gray-50">
                         <div>
                             <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
                             <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
@@ -413,131 +436,176 @@
                             <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
                             <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
                         </div>
+                        <div>
+                            <label for="reportMemberSelect" class="font-semibold text-sm">Select Member:</label>
+                            <select id="reportMemberSelect" class="input-field !mb-0 w-full"></select>
+                        </div>
+                         <div>
+                            <label for="reportProductSelect" class="font-semibold text-sm">Select Product:</label>
+                            <select id="reportProductSelect" class="input-field !mb-0 w-full"></select>
+                        </div>
                     </div>
-                    <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full mt-4">View Report</button>
+                    <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full">View Report</button>
                 </div>
                 
-                <div class="border-t-4 border-double border-gray-300 pt-8 mt-12 mb-8">
-                     <div class="flex items-center justify-center mb-4">
-                        <h3 class="text-xl font-bold text-center mr-4">All section mange</h3>
-                        <span class="blinking-text text-2xl">click</span>
+                 <!-- Category Wise Report Section -->
+                <div class="border-t-4 border-gray-200 pt-8 mt-8 mb-8">
+                     <div class="flex items-center mb-4">
+                        <h3 class="text-lg font-semibold">Category Wise Report</h3>
+                        <span id="toggleCategoryWiseReport" class="toggle-btn text-sm">[Show]</span>
                     </div>
-                    <div class="p-4 border rounded-lg space-y-6 bg-gray-50">
+                    <div id="categoryWiseReportSection" class="p-4 border rounded-lg space-y-6 bg-gray-50" style="display: none;">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <div>
+                                <label for="categoryReportStartDate" class="font-semibold text-sm">Start Date:</label>
+                                <input type="date" id="categoryReportStartDate" class="input-field !mb-0 w-full">
+                            </div>
+                             <div>
+                                <label for="categoryReportEndDate" class="font-semibold text-sm">End Date:</label>
+                                <input type="date" id="categoryReportEndDate" class="input-field !mb-0 w-full">
+                            </div>
+                            <div>
+                                <label for="categoryReportMemberSelect" class="font-semibold text-sm">Select Member:</label>
+                                <select id="categoryReportMemberSelect" class="input-field !mb-0 w-full"></select>
+                            </div>
+                        </div>
+                        <button onclick="renderCategoryWiseReport()" class="btn btn-primary w-full">View Category Report</button>
+                        <div class="mt-4">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                        <div id="categoryReportTableContainer" class="mt-4 overflow-x-auto"></div>
+                    </div>
+                </div>
 
-                        <div class="flex items-center mb-2">
+                <div id="allSectionsManager" class="border-t-4 border-double border-gray-300 pt-8 mt-12 mb-8">
+                     <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold">All Section Manage</h3>
+                        <button id="toggleAllSectionsBtn" class="btn btn-secondary btn-sm">Toggle All</button>
+                    </div>
+                    <div class="border rounded-lg overflow-hidden">
+                        
+                        <div class="accordion-header">
                             <h3 class="text-lg font-semibold">Manage Team Members</h3>
-                            <span id="toggleTeamMembers" class="toggle-btn text-sm">[Show]</span>
                         </div>
-                        <div id="teamMembersList" class="space-y-2" style="display: none;"></div>
+                        <div class="accordion-content">
+                            <div id="teamMembersList" class="space-y-2"></div>
+                        </div>
         
-                        <div class="flex items-center mb-2 border-t pt-4">
+                        <div class="accordion-header">
                             <h3 class="text-lg font-semibold">Notice for Team Members</h3>
-                            <span id="toggleAdminNotice" class="toggle-btn text-sm">[Show]</span>
                         </div>
-                        <div id="teamAdminNoticeSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
-                            <textarea id="teamAdminNotice" class="input-field !mb-0" placeholder="Write notice for team members..."></textarea>
-                            <button onclick="saveTeamAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
-                            <button onclick="deleteTeamAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
+                        <div class="accordion-content">
+                            <div id="teamAdminNoticeSection" class="space-y-4">
+                                <textarea id="teamAdminNotice" class="input-field !mb-0" placeholder="Write notice for team members..."></textarea>
+                                <button onclick="saveTeamAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
+                                <button onclick="deleteTeamAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
+                            </div>
                         </div>
         
-                        <div class="flex items-center mb-2 border-t pt-4">
+                        <div class="accordion-header">
                             <h3 class="text-lg font-semibold">Add New Product</h3>
-                            <span id="toggleAddProduct" class="toggle-btn text-sm">[Show]</span>
                         </div>
-                        <div id="addProductSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
-                            <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
-                            <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
-                            <label for="newProductCategory" class="text-sm font-medium text-gray-700">Add New Category</label>
-                            <input type="text" id="newProductCategory" class="input-field" placeholder="Type new category name...">
-                            <button onclick="addNewProduct()" class="btn btn-primary w-full">Add Product</button>
+                        <div class="accordion-content">
+                            <div id="addProductSection" class="space-y-4">
+                                <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
+                                <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
+                                <label for="newProductCategory" class="text-sm font-medium text-gray-700">Add New Category</label>
+                                <input type="text" id="newProductCategory" class="input-field" placeholder="Type new category name...">
+                                <button onclick="addNewProduct()" class="btn btn-primary w-full">Add Product</button>
+                            </div>
                         </div>
         
-                        <div class="flex items-center mb-2 border-t pt-4">
+                        <div class="accordion-header">
                             <h3 class="text-lg font-semibold">Manage Products</h3>
-                            <span id="toggleManageProducts" class="toggle-btn text-sm">[Show]</span>
                         </div>
-                        <div id="manageProductSection" style="display: none;">
-                            <div class="relative mb-2">
-                                <input type="text" id="adminProductSearch" class="input-field" placeholder="Search for a product..." oninput="filterProductsForAdmin(this.value)">
-                            </div>
-                            <div id="productListForAdmin" class="space-y-2 max-h-96 overflow-y-auto p-2 border rounded-md"></div>
-                        </div>
-
-                        <div class="flex items-center mb-2 border-t pt-4">
-                            <h3 class="text-lg font-semibold">Manage Categories</h3>
-                            <span id="toggleCategoryManager" class="toggle-btn text-sm">[Show]</span>
-                        </div>
-                        <div id="categoryManagerSection" style="display: none;">
-                            <div class="mb-4 p-4 border rounded-lg">
-                                <h4 class="font-semibold mb-2">Add New Category</h4>
-                                <input type="text" id="newStandaloneCategoryName" class="input-field" placeholder="New category name">
-                                <button onclick="addStandaloneCategory()" class="btn btn-primary w-full">Add Category</button>
-                            </div>
-                            <div class="mb-4 p-4 border rounded-lg">
-                                <h4 class="font-semibold mb-2">Delete Existing Category</h4>
-                                <select id="deleteCategorySelect" class="input-field">
-                                    <option value="">-- Select Category to Delete --</option>
-                                </select>
-                                <button onclick="deleteStandaloneCategory()" class="btn btn-danger w-full">Delete Selected Category</button>
-                            </div>
-                        </div>
-
-                         <div class="flex items-center mb-2 border-t pt-4">
-                            <h3 class="text-lg font-semibold">Manage Notification System</h3>
-                            <span id="toggleNotificationSystem" class="toggle-btn text-sm">[Show]</span>
-                        </div>
-                        <div id="notificationSystemSection" class="p-4 border rounded-lg space-y-6" style="display: none;">
-                            <div class="flex items-center justify-between">
-                                <label for="enableNotifications" class="font-semibold text-gray-700">Enable Notification System</label>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="enableNotifications" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                </label>
-                            </div>
-    
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Message (for non-submitters)</label>
-                                <textarea id="reminderMessage" rows="3" class="input-field !mb-0" placeholder="Message for members who have not submitted their report..."></textarea>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Times</label>
-                                <div id="reminderTimesContainer" class="space-y-2">
-                                    <!-- Reminder time inputs will be here -->
+                        <div class="accordion-content">
+                            <div id="manageProductSection">
+                                <div class="relative mb-2">
+                                    <input type="text" id="adminProductSearch" class="input-field" placeholder="Search for a product..." oninput="filterProductsForAdmin(this.value)">
                                 </div>
-                                <button onclick="addReminderTimeInput()" class="btn btn-secondary btn-sm mt-2">Add More Time</button>
+                                <div id="productListForAdmin" class="space-y-2 max-h-96 overflow-y-auto p-2 border rounded-md"></div>
                             </div>
-    
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Thank You Message (for submitters)</label>
-                                <textarea id="thankYouMessage" rows="2" class="input-field !mb-0" placeholder="Message for members who have submitted their report..."></textarea>
-                            </div>
-    
-                            <button onclick="saveNotificationSettings()" class="btn btn-primary w-full">Save Settings</button>
                         </div>
 
-                        <div class="flex items-center mb-2 border-t pt-4">
-                            <h3 class="text-lg font-semibold">Manage Logout Settings</h3>
-                            <span id="toggleLogoutSettings" class="toggle-btn text-sm">[Show]</span>
+                        <div class="accordion-header">
+                            <h3 class="text-lg font-semibold">Manage Categories</h3>
                         </div>
-                        <div id="logoutSettingsSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
-                            <div>
-                                <label for="logoutClickCount" class="block text-sm font-medium text-gray-700 mb-1">Required Clicks to Logout</label>
-                                <input type="number" id="logoutClickCount" class="input-field !mb-0" placeholder="e.g., 10">
+                        <div class="accordion-content">
+                            <div id="categoryManagerSection">
+                                <div class="mb-4 p-4 border rounded-lg">
+                                    <h4 class="font-semibold mb-2">Add New Category</h4>
+                                    <input type="text" id="newStandaloneCategoryName" class="input-field" placeholder="New category name">
+                                    <button onclick="addStandaloneCategory()" class="btn btn-primary w-full">Add Category</button>
+                                </div>
+                                <div class="mb-4 p-4 border rounded-lg">
+                                    <h4 class="font-semibold mb-2">Delete Existing Category</h4>
+                                    <select id="deleteCategorySelect" class="input-field">
+                                        <option value="">-- Select Category to Delete --</option>
+                                    </select>
+                                    <button onclick="deleteStandaloneCategory()" class="btn btn-danger w-full">Delete Selected Category</button>
+                                </div>
                             </div>
-                            <button onclick="saveLogoutSettings()" class="btn btn-primary w-full">Save Logout Clicks</button>
+                        </div>
+
+                         <div class="accordion-header">
+                            <h3 class="text-lg font-semibold">Manage Notification System</h3>
+                        </div>
+                        <div class="accordion-content">
+                            <div id="notificationSystemSection" class="space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <label for="enableNotifications" class="font-semibold text-gray-700">Enable Notification System</label>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="enableNotifications" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+        
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Message (for non-submitters)</label>
+                                    <textarea id="reminderMessage" rows="3" class="input-field !mb-0" placeholder="Message for members who have not submitted their report..."></textarea>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Reminder Times</label>
+                                    <div id="reminderTimesContainer" class="space-y-2">
+                                        <!-- Reminder time inputs will be here -->
+                                    </div>
+                                    <button onclick="addReminderTimeInput()" class="btn btn-secondary btn-sm mt-2">Add More Time</button>
+                                </div>
+        
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Thank You Message (for submitters)</label>
+                                    <textarea id="thankYouMessage" rows="2" class="input-field !mb-0" placeholder="Message for members who have submitted their report..."></textarea>
+                                </div>
+        
+                                <button onclick="saveNotificationSettings()" class="btn btn-primary w-full">Save Settings</button>
+                            </div>
+                        </div>
+
+                        <div class="accordion-header">
+                            <h3 class="text-lg font-semibold">Manage Logout Settings</h3>
+                        </div>
+                        <div class="accordion-content">
+                            <div id="logoutSettingsSection" class="space-y-4">
+                                <div>
+                                    <label for="logoutClickCount" class="block text-sm font-medium text-gray-700 mb-1">Required Clicks to Logout</label>
+                                    <input type="number" id="logoutClickCount" class="input-field !mb-0" placeholder="e.g., 10">
+                                </div>
+                                <button onclick="saveLogoutSettings()" class="btn btn-primary w-full">Save Logout Clicks</button>
+                            </div>
                         </div>
                         
-                        <div class="flex items-center mb-2 border-t pt-4">
+                        <div class="accordion-header">
                             <h3 class="text-lg font-semibold">Manage Voice Settings</h3>
-                            <span id="toggleVoiceSettings" class="toggle-btn text-sm">[Show]</span>
                         </div>
-                        <div id="voiceSettingsSection" class="p-4 border rounded-lg space-y-4" style="display: none;">
-                            <div>
-                                <label for="voiceRepeatCount" class="block text-sm font-medium text-gray-700 mb-1">Voice Summary Repeat Count</label>
-                                <input type="number" id="voiceRepeatCount" class="input-field !mb-0" placeholder="e.g., 2">
+                        <div class="accordion-content">
+                            <div id="voiceSettingsSection" class="space-y-4">
+                                <div>
+                                    <label for="voiceRepeatCount" class="block text-sm font-medium text-gray-700 mb-1">Voice Summary Repeat Count</label>
+                                    <input type="number" id="voiceRepeatCount" class="input-field !mb-0" placeholder="e.g., 2">
+                                </div>
+                                <button onclick="saveVoiceSettings()" class="btn btn-primary w-full">Save Voice Settings</button>
                             </div>
-                            <button onclick="saveVoiceSettings()" class="btn btn-primary w-full">Save Voice Settings</button>
                         </div>
 
                     </div>
@@ -562,10 +630,13 @@
         <div id="teamMemberDashboard" class="page">
             <div class="card">
                  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Member Dashboard</h2>
+                    <div>
+                        <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Member Dashboard</h2>
+                        <p class="mb-4 md:mb-0">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
+                    </div>
                     <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
                 </div>
-                <p class="mb-6">Welcome, <span id="loggedInTeamMemberName" class="font-semibold"></span>!</p>
+                <div id="teamAdminNoticeContainer" class="mt-2 mb-6"></div>
 
                 <div id="submitReportContainer" class="mb-8 p-4 border rounded-lg">
                     <h3 class="text-lg font-semibold mb-2">Submit Daily Sales Report</h3>
@@ -609,12 +680,11 @@
                     <button onclick="submitSalesReport()" class="btn btn-success mt-4 w-full">Submit Final Report</button>
                 </div>
 
-                <div>
-                    <h3 class="text-lg font-semibold mb-2">My Submitted Reports</h3>
+                <div class="mt-8">
+                    <h3 class="text-lg font-semibold mb-2">My All Submitted Reports</h3>
                     <div id="mySalesReportsList" class="space-y-4"></div>
                 </div>
 
-                 <div id="teamAdminNoticeContainer" class="mt-8"></div>
             </div>
         </div>
 
@@ -645,6 +715,7 @@
         let adminNotificationIntervalId = null;
         let logoutClickCounter = 0;
         let logoutClickTimer = null;
+        let categoryChartInstance = null;
         
         const defaultProducts = [
             { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11, category: 'Chili Powder' },
@@ -663,7 +734,7 @@
             { id: 'prod_14', name: 'Turmeric Powder-1kg', rate: 533.33, category: 'Turmeric Powder' },
             { id: 'prod_15', name: 'Turmeric powder 200 gm jar', rate: 135.36, category: 'Turmeric Powder' },
             { id: 'prod_16', name: 'Turmeric Powder- 5kg', rate: 1310, category: 'Turmeric Powder' },
-            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 0.00, category: 'Turmeric Powder' },
+            { id: 'prod_17', name: '16 Ana Turmeric 15kg (Bulk)', rate: 3821, category: 'Turmeric Powder' },
             { id: 'prod_18', name: 'Pran Coriander Powder 50 gm pouch', rate: 23.57, category: 'Coriander Powder' },
             { id: 'prod_19', name: 'Pran Coriander Powder 100 gm pouch', rate: 44.14, category: 'Coriander Powder' },
             { id: 'prod_20', name: 'Pran Coriander Powder 200 gm pouch', rate: 83.33, category: 'Coriander Powder' },
@@ -687,48 +758,61 @@
             { id: 'prod_38', name: 'Bombay Biryani Masala 45gm×48pcs P.Box', rate: 48.00, category: 'Mixed Spice and box' },
             { id: 'prod_39', name: 'Biryani Masala 40gm×48pcs P.Box', rate: 46.15, category: 'Mixed Spice and box' },
             { id: 'prod_40', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00, category: 'Mixed Spice and box' },
-            { id: 'prod_41', name: 'Chatpati Masala 45gm×48pcs P.Box', rate: 36.00, category: 'Mixed Spice and box' },
-            { id: 'prod_42', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40, category: 'Mixed Spice and box' },
-            { id: 'prod_43', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77, category: 'Mixed Spice and box' },
-            { id: 'prod_44', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53, category: 'Mixed Spice and box' },
-            { id: 'prod_45', name: 'Haleem Mix  200 gm', rate: 54.67, category: 'Mixed Spice and box' },
-            { id: 'prod_46', name: 'Curry powder 20gm', rate: 90.10, category: 'Mixed Spice and box' },
-            { id: 'prod_47', name: 'Garam Masala 15gm Foil New', rate: 27.50, category: 'Mixed Spice and box' },
-            { id: 'prod_48', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78, category: 'Mixed Spice and box' },
-            { id: 'prod_49', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53, category: 'Mixed Spice and box' },
-            { id: 'prod_50', name: 'Beef Kala Bhuna 80 gm', rate: 91.58, category: 'Mixed Spice and box' },
-            { id: 'prod_51', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31, category: 'Mixed Spice and box' },
-            { id: 'prod_52', name: 'Khichuri Masala 50 gm', rate: 48.96, category: 'Mixed Spice and box' },
-            { id: 'prod_53', name: 'Mustard Oil-80ml', rate: 23.56, category: 'Mustard Oil' },
-            { id: 'prod_54', name: 'Mustard Oil-200-mL', rate: 52.89, category: 'Mustard Oil' },
-            { id: 'prod_55', name: 'Mustard Oil-250ml', rate: 66.00, category: 'Mustard Oil' },
-            { id: 'prod_56', name: 'Mustard Oil-500 ml', rate: 136.89, category: 'Mustard Oil' },
-            { id: 'prod_57', name: 'Mustard Oil 500ml-CP', rate: 118.34, category: 'Mustard Oil' },
-            { id: 'prod_58', name: 'Mustard Oil-1000ml', rate: 265.71, category: 'Mustard Oil' },
-            { id: 'prod_59', name: 'Mustard Oil 1000ml-CP', rate: 255.11, category: 'Mustard Oil' },
-            { id: 'prod_60', name: 'Mustard oil 2 liter', rate: 528.89, category: 'Mustard Oil' },
-            { id: 'prod_61', name: 'M . Oil 5 Liter', rate: 1102.22, category: 'Mustard Oil' },
-            { id: 'prod_62', name: 'Mughal 150 ml', rate: 43.00, category: 'Mustard Oil' },
-            { id: 'prod_63', name: 'Mustard oil 16kg Tin', rate: 3270.00, category: 'Mustard Oil' },
-            { id: 'prod_64', name: 'Testing salt 20 gm', rate: 7.08, category: 'Testing salt' },
-            { id: 'prod_65', name: 'T-Salt-40 gm New', rate: 14.17, category: 'Testing salt' },
-            { id: 'prod_66', name: 'T-Salt-100 gm New', rate: 35.00, category: 'Testing salt' },
-            { id: 'prod_67', name: 'T-Salt 450 gm', rate: 137.89, category: 'Testing salt' },
-            { id: 'prod_68', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40, category: 'Shader Masala ' },
-            { id: 'prod_69', name: 'Whole Panchforan 50gm New', rate: 23.41, category: 'Panchforan and Jello' },
-            { id: 'prod_70', name: 'The chef Tomato  Sauce 295gm', rate: 86.20, category: 'Sauce and Vinegar' },
-            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62, category: 'Sauce and Vinegar' },
-            { id: 'prod_72', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
-            { id: 'prod_73', name: 'The chef White Vinager 330 ml', rate: 26.40, category: 'Sauce and Vinegar' },
-            { id: 'prod_74', name: 'The  chef White  vinager 650 ml', rate: 43.56, category: 'Sauce and Vinegar' },
-            { id: 'prod_75', name: 'The chef white vinager  5 ltr', rate: 213.18, category: 'Sauce and Vinegar' },
-            { id: 'prod_76', name: 'Love Jello-18 pcs Poly', rate: 40.00, category: 'Panchforan and Jello' },
-            { id: 'prod_77', name: 'Love Jelly-100pcs', rate: 215.00, category: 'Panchforan and Jello' },
-            { id: 'prod_78', name: 'The Chef Rose Water 200 ML', rate: 15.94, category: 'Rose and Kewra' },
-            { id: 'prod_79', name: 'The Chef Kewra Water 200 ML', rate: 15.11, category: 'Rose and Kewra' },
-            { id: 'prod_80', name: 'The Chef Rose Water 160 ML', rate: 12.00, category: 'Rose and Kewra' },
-            { id: 'prod_81', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00, category: 'Rice' }
+            { id: 'prod_41', name: 'Firni Mix 150gm×48pcs P.Box', rate: 48.40, category: 'Mixed Spice and box' },
+            { id: 'prod_42', name: 'BBQ Sheik Kabab Masala 50gm×48pcs P.Box', rate: 62.77, category: 'Mixed Spice and box' },
+            { id: 'prod_43', name: 'Kacchi Biryani Masala 45gm×48pcs P.Box', rate: 52.53, category: 'Mixed Spice and box' },
+            { id: 'prod_44', name: 'Haleem Mix  200 gm', rate: 54.67, category: 'Mixed Spice and box' },
+            { id: 'prod_45', name: 'Curry powder 20gm', rate: 90.10, category: 'Mixed Spice and box' },
+            { id: 'prod_46', name: 'Garam Masala 15gm Foil New', rate: 27.50, category: 'Mixed Spice and box' },
+            { id: 'prod_47', name: 'Payes Mix 150gmX48pcs P.Box', rate: 53.78, category: 'Mixed Spice and box' },
+            { id: 'prod_48', name: 'Kacchi Biryani Masala 40 gm', rate: 52.53, category: 'Mixed Spice and box' },
+            { id: 'prod_49', name: 'Beef Kala Bhuna 80 gm', rate: 91.58, category: 'Mixed Spice and box' },
+            { id: 'prod_50', name: 'Shindhi Biriany Masala 45 gm', rate: 44.31, category: 'Mixed Spice and box' },
+            { id: 'prod_51', name: 'Khichuri Masala 50 gm', rate: 48.96, category: 'Mixed Spice and box' },
+            { id: 'prod_52', name: 'Mustard Oil-80ml', rate: 23.56, category: 'Mustard Oil' },
+            { id: 'prod_53', name: 'Mustard Oil-200-mL', rate: 52.89, category: 'Mustard Oil' },
+            { id: 'prod_54', name: 'Mustard Oil-250ml', rate: 66.00, category: 'Mustard Oil' },
+            { id: 'prod_55', name: 'Mustard Oil-500 ml', rate: 136.89, category: 'Mustard Oil' },
+            { id: 'prod_56', name: 'Mustard Oil 500ml-CP', rate: 118.34, category: 'Mustard Oil' },
+            { id: 'prod_57', name: 'Mustard Oil-1000ml', rate: 265.71, category: 'Mustard Oil' },
+            { id: 'prod_58', name: 'Mustard Oil 1000ml-CP', rate: 255.11, category: 'Mustard Oil' },
+            { id: 'prod_59', name: 'Mustard oil 2 liter', rate: 528.89, category: 'Mustard Oil' },
+            { id: 'prod_60', name: 'M . Oil 5 Liter', rate: 1102.22, category: 'Mustard Oil' },
+            { id: 'prod_61', name: 'Mughal 150 ml', rate: 43.00, category: 'Mustard Oil' },
+            { id: 'prod_62', name: 'Mustard oil 16kg Tin', rate: 3270.00, category: 'Mustard Oil' },
+            { id: 'prod_63', name: 'Testing salt 20 gm', rate: 7.08, category: 'Testing salt' },
+            { id: 'prod_64', name: 'T-Salt-40 gm New', rate: 14.17, category: 'Testing salt' },
+            { id: 'prod_65', name: 'T-Salt-100 gm New', rate: 35.00, category: 'Testing salt' },
+            { id: 'prod_66', name: 'T-Salt 450 gm', rate: 137.89, category: 'Testing salt' },
+            { id: 'prod_67', name: 'Shader Masala 4gmX480 Pcs', rate: 3.40, category: 'Shader Masala ' },
+            { id: 'prod_68', name: 'Whole Panchforan 50gm New', rate: 23.41, category: 'Panchforan and Jello' },
+            { id: 'prod_69', name: 'The chef Tomato Sauce 295gm', rate: 86.20, category: 'Sauce and Vinegar' },
+            { id: 'prod_70', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62, category: 'Sauce and Vinegar' },
+            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
+            { id: 'prod_72', name: 'The chef White Vinager 330 ml', rate: 26.40, category: 'Sauce and Vinegar' },
+            { id: 'prod_73', name: 'The chef White vinager 650 ml', rate: 43.56, category: 'Sauce and Vinegar' },
+            { id: 'prod_74', name: 'The chef white vinager 5 ltr', rate: 213.18, category: 'Sauce and Vinegar' },
+            { id: 'prod_75', name: 'Love Jello-18 pcs Poly', rate: 40.00, category: 'Panchforan and Jello' },
+            { id: 'prod_76', name: 'Love Jelly-100pcs', rate: 215.00, category: 'Panchforan and Jello' },
+            { id: 'prod_77', name: 'The Chef Rose Water 200 ML', rate: 15.94, category: 'Rose and Kewra' },
+            { id: 'prod_78', name: 'The Chef Kewra Water 200 ML', rate: 15.11, category: 'Rose and Kewra' },
+            { id: 'prod_79', name: 'The Chef Rose Water 160 ML', rate: 12.00, category: 'Rose and Kewra' },
+            { id: 'prod_80', name: 'The Chef Chinigura Rice 1 Kg', rate: 136.00, category: 'Rice' }
         ];
+
+        const reportingCategories = {
+            "Basic Spice": ["Chili Powder 50gm NEW", "Chili Powder 100gm NEW", "Chili Powder - 200gm", "Chili Powder-500gm x 24", "Chili Powder-1kg", "Chili powder 200 gm jar", "Turmeric Powder 15gm New", "Turmeric Powder 50gm NEW", "Turmeric Powder 100gm NEW", "Turmeric Powder 200 gm", "Turmeric Powder 500gmX24 Pouch", "Turmeric Powder-1kg", "Turmeric powder 200 gm jar", "Pran Coriander Powder 50 gm pouch", "Pran Coriander Powder 100 gm pouch", "Pran Coriander Powder 200 gm pouch", "Pran Coriander Powder 500 gm pouch", "Pran Coriander Powder 200 gm Jar", "Pran Cumin Powder 15gm pouch", "Pran Cumin Powder 50gm pouch", "Pran Cumin Powder 100gm pouch", "Pran Cumin Powder 200gm pouch", "Pran Cumin Powder 200gm Jar", "Pran Cumin Powder 500gm pouch"],
+            "Mixed Spice": ["Fish Masala 20gm Foil NEW", "Beef Masala 20gm Foil NEW", "Chicken Masala 20gm Foil NEW", "Meat Masala 20gm Foil NEW", "Biriyani Masala Mix 25 gm", "Meat Masala 100gm×48pcs P.Box", "Chicken Masala 100gm×48pcs P.Box", "Chicken Roast Masala 35gm×48pcs P.Box", "Tehari Masala 40gm×48pcs P.Box", "Bombay Biryani Masala 45gm×48pcs P.Box", "Biryani Masala 40gm×48pcs P.Box", "Chatpati Masala 45gm×48pcs P.Box", "Firni Mix 150gm×48pcs P.Box", "BBQ Sheik Kabab Masala 50gm×48pcs P.Box", "Kacchi Biryani Masala 45gm×48pcs P.Box", "Haleem Mix  200 gm", "Curry powder 20gm", "Payes Mix 150gmX48pcs P.Box", "Kacchi Biryani Masala 40 gm", "Beef Kala Bhuna 80 gm", "Shindhi Biriany Masala 45 gm", "Khichuri Masala 50 gm"],
+            "Must. oil": ["Mustard Oil-80ml", "Mustard Oil-200-mL", "Mustard Oil-250ml", "Mustard Oil-500 ml", "Mustard Oil 500ml-CP", "Mustard Oil-1000ml", "Mustard Oil 1000ml-CP", "Mustard oil 2 liter", "M . Oil 5 Liter", "Mughal 150 ml"],
+            "Must. oil Bulk": ["Mustard oil 16kg Tin"],
+            "Oil": [],
+            "Others": ["Whole Panchforan 50gm New", "The chef Tomato Sauce 295gm", "The Chef Hot Tomato Sauce-1000gm", "The Chef Hot Tomato Sauce 3 Kg", "The Chef Rose Water 200 ML", "The Chef Kewra Water 200 ML", "The Chef Rose Water 160 ML", "Garam Masala 15gm Foil New"],
+            "Shader Masala": ["Shader Masala 4gmX480 Pcs"],
+            "Spice Bulk": ["Chili powder 5 kg-New", "16 Ana Chilli-15Kg (Bulk)", "Turmeric Powder- 5kg", "16 Ana Turmeric 15kg (Bulk)"],
+            "Testing Salt": ["Testing salt 20 gm", "T-Salt-40 gm New", "T-Salt-100 gm New", "T-Salt 450 gm"],
+            "White Vinegar": ["The chef White Vinager 330 ml", "The chef White vinager 650 ml", "The chef white vinager 5 ltr"]
+        };
+
 
         function assignCategoriesToProducts(products) {
             const categoryMap = defaultProducts.reduce((map, p) => {
@@ -795,10 +879,9 @@
                 state.voiceSettings = dbState.voiceSettings || {};
 
 
-                if (!dbState.products || state.products.length === 0) {
+                if (!dbState.products || state.products.length < 80) {
                     const productsToPush = defaultProducts.reduce((obj, item) => {
-                        const { id, ...rest } = item;
-                        obj[item.id] = rest;
+                        obj[item.id] = { name: item.name, rate: item.rate, category: item.category };
                         return obj;
                     }, {});
                     await db.ref('products').set(productsToPush);
@@ -1234,7 +1317,7 @@
 
         function filterProductsForAdmin(searchTerm) {
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            const filteredProducts = state.products.filter(product => 
+            const filteredProducts = defaultProducts.filter(product => 
                 product.name.toLowerCase().includes(lowerCaseSearchTerm)
             );
             renderProductManagement(filteredProducts);
@@ -1243,7 +1326,7 @@
         function renderProductManagement(productsToRender) {
             const container = document.getElementById('productListForAdmin');
             container.innerHTML = '';
-            const products = productsToRender || state.products;
+            const products = productsToRender || defaultProducts;
 
             if (products.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 p-4">No products found.</p>';
@@ -1251,17 +1334,20 @@
             }
 
             products.forEach((product) => {
+                const productFromState = state.products.find(p => p.id === product.id);
+                const currentRate = productFromState ? productFromState.rate : product.rate;
+
                 const div = document.createElement('div');
                 div.className = 'p-3 border-b grid grid-cols-1 md:grid-cols-4 items-center gap-4';
                 div.innerHTML = `
                     <span class="font-semibold col-span-1 md:col-span-2">${product.name}</span>
                     <input 
                         type="number" 
-                        value="${product.rate.toFixed(2)}" 
+                        value="${currentRate.toFixed(2)}" 
                         onchange="updateProductRate('${product.id}', this.value)"
                         class="input-field !mb-0 text-right"
                     >
-                    <button onclick="deleteProduct('${product.id}', '${product.name}')" class="btn btn-danger btn-sm">Delete</button>
+                    <button onclick="deleteProduct('${product.id}', '${product.name.replace(/'/g, "\\'")}')" class="btn btn-danger btn-sm">Delete</button>
                 `;
                 container.appendChild(div);
             });
@@ -1278,13 +1364,15 @@
              if (!category) {
                  return showAlert('Please add a category for the product.');
             }
-            if (state.products.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+            if (defaultProducts.find(p => p.name.toLowerCase() === name.toLowerCase())) {
                 return showAlert('A product with this name already exists.');
             }
             
             const newProductData = { name, rate, category };
-
-            await db.ref('products').push(newProductData);
+            const newProductRef = await db.ref('products').push(newProductData);
+            
+            // This needs to be dynamically updated
+            defaultProducts.push({ id: newProductRef.key, ...newProductData });
             
             document.getElementById('newProductName').value = '';
             document.getElementById('newProductRate').value = '';
@@ -1331,9 +1419,46 @@
                 updateVisibility();
              });
         }
+        
+        function setupAccordion() {
+            const manager = document.getElementById('allSectionsManager');
+            if (!manager) return;
+
+            const headers = manager.querySelectorAll('.accordion-header');
+            const contents = manager.querySelectorAll('.accordion-content');
+            const toggleAllBtn = document.getElementById('toggleAllSectionsBtn');
+
+            headers.forEach((header, index) => {
+                header.addEventListener('click', () => {
+                    const content = contents[index];
+                    const isVisible = content.style.display === 'block';
+
+                    // Close all sections
+                    contents.forEach(c => c.style.display = 'none');
+
+                    // Open the clicked section if it was closed
+                    if (!isVisible) {
+                        content.style.display = 'block';
+                    }
+                });
+            });
+
+            toggleAllBtn.addEventListener('click', () => {
+                const areAnyOpen = Array.from(contents).some(c => c.style.display === 'block');
+                const newDisplayState = areAnyOpen ? 'none' : 'block';
+                contents.forEach(c => c.style.display = newDisplayState);
+            });
+        }
 
 
         function renderTeamAdminDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reportDate').value = today;
+            document.getElementById('reportStartDate').value = today;
+            document.getElementById('reportEndDate').value = today;
+            document.getElementById('categoryReportStartDate').value = today;
+            document.getElementById('categoryReportEndDate').value = today;
+            
             document.getElementById('loggedInTeamAdminUsername').innerText = state.loggedInUserName;
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
             if (!admin) return;
@@ -1383,29 +1508,39 @@
                 });
             }
 
-            setupToggle('toggleTeamMembers', 'teamMembersList', true);
-            setupToggle('toggleAdminNotice', 'teamAdminNoticeSection', false);
-            setupToggle('toggleManageProducts', 'manageProductSection', false);
-            setupToggle('toggleAddProduct', 'addProductSection', false);
-            setupToggle('toggleNotificationSystem', 'notificationSystemSection', false);
-            setupToggle('toggleLogoutSettings', 'logoutSettingsSection', false);
-            setupToggle('toggleCategoryManager', 'categoryManagerSection', false);
-            setupToggle('toggleVoiceSettings', 'voiceSettingsSection', false);
+            // Populate member and product dropdowns for reports
+            const reportMemberSelect = document.getElementById('reportMemberSelect');
+            const reportProductSelect = document.getElementById('reportProductSelect');
+            reportMemberSelect.innerHTML = '<option value="all">All Members</option>';
+            members.forEach(member => {
+                reportMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
+            });
+            reportProductSelect.innerHTML = '<option value="all">All Products</option>';
+            defaultProducts.forEach(product => {
+                reportProductSelect.innerHTML += `<option value="${product.name}">${product.name}</option>`;
+            });
+
+            // Populate category wise report member dropdown
+            const categoryMemberSelect = document.getElementById('categoryReportMemberSelect');
+            categoryMemberSelect.innerHTML = '<option value="all">All Members</option>';
+            members.forEach(member => {
+                categoryMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
+            });
+
+
+            setupAccordion();
+            setupToggle('toggleCategoryWiseReport', 'categoryWiseReportSection', false);
 
 
             document.getElementById('adminProductSearch').value = '';
-            renderProductManagement(state.products);
+            renderProductManagement(defaultProducts);
             renderNotificationSettings();
             renderLogoutSettings();
             renderCategoryManagement();
             renderVoiceSettings();
             
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('reportDate').value = today;
-            document.getElementById('reportStartDate').value = today;
-            document.getElementById('reportEndDate').value = today;
-            
             renderTeamAdminReports();
+            renderCategoryWiseReport();
         }
 
         function copyNotSubmittedNames() {
@@ -1440,11 +1575,11 @@
         }
 
 
-        function getReportDataForDateRange(startDateStr, endDateStr) {
+        function getReportDataForDateRange(startDateStr, endDateStr, selectedMember, selectedProduct) {
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
-            if (!admin) return { productData: {}, reportingMembers: [], submittedProducts: new Set(), notSubmittedMembers: [], submittedMemberUsernames: new Set(), grandTotalAmount: 0 };
+            if (!admin) return { productData: {}, reportingMembers: [], grandTotalAmount: 0 };
 
-            const reportingMembers = admin.teamMembers && typeof admin.teamMembers === 'object'
+            let reportingMembers = admin.teamMembers && typeof admin.teamMembers === 'object'
                 ? Object.values(admin.teamMembers).filter(m => m.status === 'active') 
                 : [];
             
@@ -1453,32 +1588,28 @@
             const endDate = new Date(endDateStr);
             endDate.setHours(23, 59, 59, 999);
 
-            const reportsForDateRange = state.salesReports.filter(r => {
+            let reportsForDateRange = state.salesReports.filter(r => {
                 const reportDate = new Date(r.date).getTime();
                 return r.team === state.loggedInUserName && reportDate >= startDate.getTime() && reportDate <= endDate.getTime();
             });
-
-            const submittedMemberUsernames = new Set(reportsForDateRange.map(r => r.submittedBy));
-            const notSubmittedMembers = reportingMembers.filter(m => !submittedMemberUsernames.has(m.username));
-
-            const submittedProducts = new Set();
-            reportsForDateRange.forEach(report => {
-                if (report.reportData && report.reportData.items) {
-                    report.reportData.items.forEach(item => {
-                        submittedProducts.add(item.name);
-                    });
-                }
-            });
+            
+            // Filter by member
+            if (selectedMember && selectedMember !== 'all') {
+                reportsForDateRange = reportsForDateRange.filter(r => r.submittedBy === selectedMember);
+                reportingMembers = reportingMembers.filter(m => m.username === selectedMember);
+            }
 
             const productData = {};
-            submittedProducts.forEach(productName => {
-                const productInfo = state.products.find(p => p.name === productName);
-                if (productInfo) {
-                    productData[productName] = { rate: productInfo.rate, members: {} };
-                    reportingMembers.forEach(m => {
-                        productData[productName].members[m.name] = { tgt: 0, sales: 0, amount: 0 };
-                    });
-                }
+            const productsToList = (selectedProduct && selectedProduct !== 'all') ? defaultProducts.filter(p => p.name === selectedProduct) : defaultProducts;
+
+            productsToList.forEach(product => {
+                productData[product.name] = { 
+                    rate: product.rate, 
+                    members: {} 
+                };
+                reportingMembers.forEach(m => {
+                    productData[product.name].members[m.name] = { tgt: 0, sales: 0, amount: 0 };
+                });
             });
 
             let grandTotalAmount = 0;
@@ -1487,8 +1618,8 @@
                 if (member && report.reportData && report.reportData.items) {
                     report.reportData.items.forEach(item => {
                         if (productData[item.name]) {
-                            const productInState = state.products.find(p => p.name === item.name);
-                            const itemRate = productInState ? productInState.rate : item.rate;
+                            const productInfo = defaultProducts.find(p => p.name === item.name);
+                            const itemRate = productInfo ? productInfo.rate : item.rate;
                             const itemAmount = item.sales * itemRate;
 
                             productData[item.name].members[member.name].tgt += item.tgt;
@@ -1496,47 +1627,66 @@
                             productData[item.name].members[member.name].amount += itemAmount;
                         }
                     });
-                     if(report.reportData.grandTotal) {
-                        grandTotalAmount += report.reportData.grandTotal;
-                    }
                 }
             });
             
-            return { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames, grandTotalAmount };
+             // Calculate grand total from aggregated data
+            Object.values(productData).forEach(pData => {
+                Object.values(pData.members).forEach(mData => {
+                    grandTotalAmount += mData.amount;
+                });
+            });
+
+            return { productData, reportingMembers, grandTotalAmount };
         }
         
         function renderTeamAdminReportsForDateRange() {
             const startDate = document.getElementById('reportStartDate').value;
             const endDate = document.getElementById('reportEndDate').value;
+            const member = document.getElementById('reportMemberSelect').value;
+            const product = document.getElementById('reportProductSelect').value;
             if (!startDate || !endDate) {
                 return showAlert('Please select both a start and end date.');
             }
             if (new Date(startDate) > new Date(endDate)) {
                 return showAlert('Start date cannot be after end date.');
             }
-            renderTeamAdminReports(startDate, endDate);
+            renderTeamAdminReports(startDate, endDate, member, product);
         }
 
-        function renderTeamAdminReports(startDate, endDate) {
-            const isDateRange = startDate && endDate;
+        function renderTeamAdminReports(startDate, endDate, selectedMember, selectedProduct) {
+            const isFiltered = startDate && endDate;
             const selectedDateValue = startDate || document.getElementById('reportDate').value;
             
-            const { productData, reportingMembers, submittedProducts, notSubmittedMembers, submittedMemberUsernames } = isDateRange
-                ? getReportDataForDateRange(startDate, endDate)
-                : getReportDataForDateRange(selectedDateValue, selectedDateValue);
+            const { productData, reportingMembers } = isFiltered
+                ? getReportDataForDateRange(startDate, endDate, selectedMember, selectedProduct)
+                : getReportDataForDateRange(selectedDateValue, selectedDateValue, 'all', 'all');
 
+            const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
+            const allMembers = admin.teamMembers && typeof admin.teamMembers === 'object' 
+                ? Object.values(admin.teamMembers).filter(m => m.status === 'active') 
+                : [];
+            
+            // Submission status check for single day, non-filtered report
+            if (!isFiltered) {
+                 const reportsForDate = state.salesReports.filter(r => {
+                    const reportDate = new Date(r.date);
+                    const selectedDate = new Date(selectedDateValue);
+                    return r.team === state.loggedInUserName &&
+                           reportDate.getFullYear() === selectedDate.getFullYear() &&
+                           reportDate.getMonth() === selectedDate.getMonth() &&
+                           reportDate.getDate() === selectedDate.getDate();
+                });
+                const submittedMemberUsernames = new Set(reportsForDate.map(r => r.submittedBy));
+                const notSubmittedMembers = allMembers.filter(m => !submittedMemberUsernames.has(m.username));
 
-            const statusContainer = document.getElementById('reportSubmissionStatus');
-            if (isDateRange) {
-                statusContainer.innerHTML = `<p class="font-bold">Displaying aggregated report from ${startDate} to ${endDate}</p>`;
-            } else {
-                 const totalMembers = reportingMembers.length;
+                const statusContainer = document.getElementById('reportSubmissionStatus');
+                const totalMembers = allMembers.length;
                 const submittedCount = submittedMemberUsernames.size;
                 let notSubmittedNames = notSubmittedMembers.map(m => m.name).join(', ');
                 if (notSubmittedNames) {
                     notSubmittedNames = "যারা এখনো রিপোর্ট দেননি তাদের নাম দেয়া হলো, অনুগ্রহ পূর্বক রিপোর্ট দেন !!! " + notSubmittedNames;
                 }
-
 
                 statusContainer.innerHTML = `
                     <p class="font-bold">Total Members: ${totalMembers} | Submitted: ${submittedCount} | Not Submitted: ${notSubmittedMembers.length}</p>
@@ -1550,6 +1700,8 @@
                         </div>
                     ` : '<p class="mt-2 text-green-600 font-semibold">All active members have submitted their reports!</p>'}
                 `;
+            } else {
+                 document.getElementById('reportSubmissionStatus').innerHTML = `<p class="font-bold">Displaying filtered report.</p>`;
             }
 
             const memberRow = document.getElementById('memberRow');
@@ -1557,15 +1709,15 @@
             const tableBody = document.getElementById('tableBody');
             const tableFoot = document.getElementById('tableFoot');
 
-            if (submittedProducts.size === 0) {
+            if (Object.keys(productData).length === 0) {
                 memberRow.innerHTML = '';
                 subHeaderRow.innerHTML = '';
-                tableBody.innerHTML = '<tr><td colspan="100%" class="p-4 text-center text-gray-500">No reports found for the selected date(s).</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="100%" class="p-4 text-center text-gray-500">No data available for the selected criteria.</td></tr>';
                 tableFoot.innerHTML = '';
                 return;
             }
 
-            memberRow.innerHTML = '<th rowspan="2" style="white-space: normal;">Product</th><th rowspan="2">Rate</th>';
+            memberRow.innerHTML = '<th rowspan="2">SL</th><th rowspan="2" style="white-space: normal;">Product</th><th rowspan="2">Rate</th>';
             subHeaderRow.innerHTML = '';
 
             reportingMembers.forEach(m => {
@@ -1576,9 +1728,14 @@
             subHeaderRow.innerHTML += '<th class="summary-header">TGT</th><th class="summary-header">Sales</th><th class="summary-header">Amount</th>';
 
             tableBody.innerHTML = '';
-            Array.from(submittedProducts).sort().forEach(productName => {
+            const productsToList = (selectedProduct && selectedProduct !== 'all') ? defaultProducts.filter(p => p.name === selectedProduct) : defaultProducts;
+
+            productsToList.forEach((product, index) => {
+                const productName = product.name;
+                if (!productData[productName]) return; // Skip if no data for this product in the filtered set
+
                 const productInfo = productData[productName];
-                let rowHtml = `<tr><td style="white-space: normal;">${productName}</td><td>${productInfo.rate.toFixed(2)}</td>`;
+                let rowHtml = `<tr><td>${index + 1}</td><td style="white-space: normal;">${productName}</td><td>${productInfo.rate.toFixed(2)}</td>`;
                 let summaryTgt = 0, summarySales = 0, summaryAmount = 0;
 
                 reportingMembers.forEach(member => {
@@ -1595,13 +1752,14 @@
             });
 
             tableFoot.innerHTML = '';
-            let footerHtml = '<tr><td colspan="2"><b>Total</b></td>';
+            let footerHtml = '<tr><td colspan="3"><b>Total</b></td>';
             const memberTotals = {};
             reportingMembers.forEach(m => { memberTotals[m.name] = { tgt: 0, sales: 0, amount: 0 }; });
             let grandTotal = { tgt: 0, sales: 0, amount: 0 };
             
-            submittedProducts.forEach(productName => {
-                const productInfo = productData[productName];
+            productsToList.forEach(product => {
+                if (!productData[product.name]) return;
+                const productInfo = productData[product.name];
                 reportingMembers.forEach(member => {
                     const data = productInfo.members[member.name] || { tgt: 0, sales: 0, amount: 0 };
                     memberTotals[member.name].tgt += data.tgt;
@@ -1624,7 +1782,7 @@
 
         function exportReportToExcel() {
             const table = document.getElementById('reportTable');
-            if (!table || table.querySelector('td')?.innerText.includes('No reports')) {
+            if (!table || table.querySelector('td')?.innerText.includes('No data')) {
                  return showAlert('No data available to export.');
             }
             const wb = XLSX.utils.table_to_book(table, {sheet: "Report"});
@@ -1696,7 +1854,7 @@
         }
         
         function updateAmountOnRow(productId) {
-            const product = state.products.find(p => p.id === productId);
+            const product = defaultProducts.find(p => p.id === productId);
             if (!product) return;
 
             const rate = product.rate;
@@ -1720,7 +1878,7 @@
             
             productRows.forEach(row => {
                  const productId = row.dataset.productId;
-                 const product = state.products.find(p => p.id === productId);
+                 const product = defaultProducts.find(p => p.id === productId);
                  if(!product) return;
 
                  const tgtInput = document.getElementById(`tgt-${productId}`);
@@ -1877,13 +2035,20 @@
                 return;
             }
 
-            let tableHtml = '<table class="w-full grouped-product-table"><thead><tr><th>Product</th><th class="text-right">Rate</th><th>TGT</th><th>Sales</th><th class="text-right">Amount</th></tr></thead><tbody>';
+            // Sort products based on their order in defaultProducts
+            const sortedProducts = products.sort((a, b) => {
+                const indexA = defaultProducts.findIndex(p => p.id === a.id);
+                const indexB = defaultProducts.findIndex(p => p.id === b.id);
+                return indexA - indexB;
+            });
 
-            products.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+
+            let tableHtml = '<table class="w-full grouped-product-table"><thead><tr><th>Product</th><th>TGT</th><th>Sales</th><th class="text-right">Amount</th></tr></thead><tbody>';
+
+            sortedProducts.forEach(p => {
                 tableHtml += `
                     <tr data-product-id="${p.id}">
                         <td>${p.name}</td>
-                        <td class="text-right">${p.rate.toFixed(2)}</td>
                         <td><input type="number" id="tgt-${p.id}" class="inline-input" placeholder="TGT"></td>
                         <td><input type="number" id="sales-${p.id}" class="inline-input" placeholder="Sales" oninput="updateAmountOnRow('${p.id}')"></td>
                         <td class="text-right" id="amount-${p.id}">0</td>
@@ -1907,9 +2072,9 @@
             if (categoryKey) {
                 let products;
                 if (categoryKey === 'All') {
-                    products = state.products;
+                    products = [...defaultProducts];
                 } else {
-                    products = state.products.filter(p => p.category === categoryKey);
+                    products = defaultProducts.filter(p => p.category === categoryKey);
                 }
                 renderProductTableForMember(products, 'memberProductListContainer');
             }
@@ -1922,31 +2087,33 @@
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
             if (lowerCaseSearchTerm.length > 1) {
-                const filteredProducts = state.products.filter(product => 
+                const filteredProducts = defaultProducts.filter(product => 
                     product.name.toLowerCase().includes(lowerCaseSearchTerm)
                 );
                 renderProductTableForMember(filteredProducts, 'memberProductListContainer');
             }
         }
 
-
         function renderTeamMemberDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+
             document.getElementById('loggedInTeamMemberName').innerText = state.loggedInUserName;
             
             const noticeContainer = document.getElementById('teamAdminNoticeContainer');
             const teamNotice = state.notices[state.loggedInUserTeamId] || '';
             if (teamNotice) {
                 noticeContainer.innerHTML = `
-                    <div class="p-4 mb-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700">
-                        <p class="font-bold">Notice from Team Admin</p>
-                        <marquee behavior="scroll" direction="left">${teamNotice}</marquee>
+                    <div class="p-2 bg-blue-100 border-l-4 border-blue-500 text-blue-700">
+                        <p class="font-bold flex items-center">
+                            Notice: <marquee behavior="scroll" direction="left" class="ml-2">${teamNotice}</marquee>
+                        </p>
                     </div>`;
             } else {
                 noticeContainer.innerHTML = '';
             }
             
             const categorySelect = document.getElementById('productCategorySelect');
-            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
+            const uniqueCategories = [...new Set(defaultProducts.map(p => p.category).filter(Boolean))].sort();
             categorySelect.innerHTML = '<option value="">-- Select a Category --</option><option value="All">All</option>';
             uniqueCategories.forEach(cat => {
                 categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
@@ -1975,12 +2142,11 @@
                     div.className = 'p-3 border rounded';
                     
                     const reportDate = new Date(report.date);
-                    const today = new Date();
-                    const isToday = reportDate.getFullYear() === today.getFullYear() &&
-                                  reportDate.getMonth() === today.getMonth() &&
-                                  reportDate.getDate() === today.getDate();
+                    const isToday = reportDate.getFullYear() === todayStart.getFullYear() &&
+                                  reportDate.getMonth() === todayStart.getMonth() &&
+                                  reportDate.getDate() === todayStart.getDate();
                                   
-                    const canDelete = isToday && today.getHours() < 23;
+                    const canDelete = isToday && new Date().getHours() < 23;
 
                     div.innerHTML = `
                         <div class="flex flex-col md:flex-row justify-between items-start mb-2">
@@ -2089,8 +2255,22 @@
             playVoice("Welcome admin", 'en-US', false);
 
             const today = new Date().toISOString().split('T')[0];
-            const { notSubmittedMembers, grandTotalAmount } = getReportDataForDateRange(today, today);
+            const { grandTotalAmount } = getReportDataForDateRange(today, today, 'all', 'all');
             
+             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
+            const allMembers = admin.teamMembers && typeof admin.teamMembers === 'object' ? Object.values(admin.teamMembers).filter(m => m.status === 'active') : [];
+             const reportsForDate = state.salesReports.filter(r => {
+                const reportDate = new Date(r.date);
+                const selectedDate = new Date(today);
+                return r.team === state.loggedInUserName &&
+                       reportDate.getFullYear() === selectedDate.getFullYear() &&
+                       reportDate.getMonth() === selectedDate.getMonth() &&
+                       reportDate.getDate() === selectedDate.getDate();
+            });
+            const submittedMemberUsernames = new Set(reportsForDate.map(r => r.submittedBy));
+            const notSubmittedMembers = allMembers.filter(m => !submittedMemberUsernames.has(m.username));
+
+
             const adminSettings = state.voiceSettings[state.loggedInUser] || {};
             const repeatCount = parseInt(adminSettings.repeatCount, 10) || 1;
 
@@ -2292,7 +2472,7 @@
         function renderCategoryManagement() {
             const deleteSelect = document.getElementById('deleteCategorySelect');
             
-            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
+            const uniqueCategories = [...new Set(defaultProducts.map(p => p.category).filter(Boolean))].sort();
 
             deleteSelect.innerHTML = '<option value="">-- Select Category to Delete --</option>';
 
@@ -2307,7 +2487,7 @@
             if (!categoryName) {
                 return showAlert('Category name cannot be empty.');
             }
-            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))];
+            const uniqueCategories = [...new Set(defaultProducts.map(p => p.category).filter(Boolean))];
              if (uniqueCategories.some(c => c.toLowerCase() === categoryName.toLowerCase())) {
                 return showAlert('This category already exists.');
             }
@@ -2318,7 +2498,9 @@
                 rate: 0,
                 category: categoryName
             };
-            await db.ref('products').push(placeholderProduct);
+            const newRef = await db.ref('products').push(placeholderProduct);
+            defaultProducts.push({id: newRef.key, ...placeholderProduct})
+
             await getFullState();
             renderCategoryManagement();
             showAlert(`Category "${categoryName}" created successfully.`);
@@ -2330,7 +2512,7 @@
                 return showAlert('Please select a category to delete.');
             }
             
-            const productsInCategory = state.products.filter(p => p.category === categoryToDelete);
+            const productsInCategory = defaultProducts.filter(p => p.category === categoryToDelete);
 
             if (productsInCategory.length > 1 || (productsInCategory.length === 1 && !productsInCategory[0].name.startsWith('_placeholder_for_'))) {
                  if (!confirm(`This category contains products. Deleting it will remove the category from all associated products. Are you sure?`)) {
@@ -2344,17 +2526,164 @@
             
             const updates = {};
             productsInCategory.forEach(p => {
-                if (p.name.startsWith('_placeholder_for_')) {
-                    updates[`/products/${p.id}`] = null; // Delete placeholder
-                } else {
-                    updates[`/products/${p.id}/category`] = null; // Unset category for other products
+                const stateProduct = state.products.find(sp => sp.name === p.name);
+                if (stateProduct) {
+                    if (p.name.startsWith('_placeholder_for_')) {
+                        updates[`/products/${stateProduct.id}`] = null; // Delete placeholder
+                    } else {
+                        updates[`/products/${stateProduct.id}/category`] = null; // Unset category for other products
+                    }
                 }
             });
 
             await db.ref().update(updates);
+            
+            // Update local defaultProducts
+            defaultProducts.forEach(p => {
+                if (p.category === categoryToDelete) {
+                    if (p.name.startsWith('_placeholder_for_')) {
+                        const index = defaultProducts.findIndex(dp => dp.id === p.id);
+                        if(index > -1) defaultProducts.splice(index, 1);
+                    } else {
+                        p.category = null;
+                    }
+                }
+            });
+
             await getFullState();
             renderCategoryManagement();
             showAlert(`Category "${categoryToDelete}" has been deleted.`);
+        }
+        
+         // --- Category Wise Report ---
+        function renderCategoryWiseReport() {
+            const startDateStr = document.getElementById('categoryReportStartDate').value;
+            const endDateStr = document.getElementById('categoryReportEndDate').value;
+            const selectedMemberUsername = document.getElementById('categoryReportMemberSelect').value;
+
+            if (!startDateStr || !endDateStr) {
+                return showAlert('Please select both start and end dates for the category report.');
+            }
+
+            const startDate = new Date(startDateStr);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(endDateStr);
+            endDate.setHours(23, 59, 59, 999);
+
+            let relevantReports = state.salesReports.filter(r => {
+                const reportDate = new Date(r.date).getTime();
+                return r.team === state.loggedInUserName && reportDate >= startDate.getTime() && reportDate <= endDate.getTime();
+            });
+
+            if (selectedMemberUsername !== 'all') {
+                relevantReports = relevantReports.filter(r => r.submittedBy === selectedMemberUsername);
+            }
+
+            const categoryData = {};
+            Object.keys(reportingCategories).forEach(cat => {
+                categoryData[cat] = { tgtAmount: 0, salesAmount: 0 };
+            });
+
+            relevantReports.forEach(report => {
+                report.reportData.items.forEach(item => {
+                    for (const categoryName in reportingCategories) {
+                        if (reportingCategories[categoryName].includes(item.name)) {
+                            const productInfo = defaultProducts.find(p => p.name === item.name);
+                            const rate = productInfo ? productInfo.rate : item.rate;
+                            categoryData[categoryName].tgtAmount += item.tgt * rate;
+                            categoryData[categoryName].salesAmount += item.sales * rate;
+                            // An item belongs to only one reporting category, so we can break.
+                            break; 
+                        }
+                    }
+                });
+            });
+
+            // Render Chart
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const labels = Object.keys(categoryData);
+            const tgtData = labels.map(l => categoryData[l].tgtAmount);
+            const salesData = labels.map(l => categoryData[l].salesAmount);
+
+            if (categoryChartInstance) {
+                categoryChartInstance.destroy();
+            }
+
+            categoryChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'TGT Amount',
+                            data: tgtData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Sales Amount',
+                            data: salesData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)', // Green
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Render Table
+            const tableContainer = document.getElementById('categoryReportTableContainer');
+            let tableHtml = `
+                <table class="w-full text-left text-sm mt-4">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="p-2 font-semibold">Category</th>
+                            <th class="p-2 font-semibold text-right">TGT Amount</th>
+                            <th class="p-2 font-semibold text-right">Sales Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let totalTgt = 0;
+            let totalSales = 0;
+
+            for (const categoryName in categoryData) {
+                const data = categoryData[categoryName];
+                totalTgt += data.tgtAmount;
+                totalSales += data.salesAmount;
+                tableHtml += `
+                    <tr class="border-b">
+                        <td class="p-2">${categoryName}</td>
+                        <td class="p-2 text-right">${Math.round(data.tgtAmount).toLocaleString()}</td>
+                        <td class="p-2 text-right">${Math.round(data.salesAmount).toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+            
+            tableHtml += `
+                    </tbody>
+                    <tfoot class="font-bold bg-gray-100">
+                        <tr>
+                            <td class="p-2">Grand Total</td>
+                            <td class="p-2 text-right">${Math.round(totalTgt).toLocaleString()}</td>
+                            <td class="p-2 text-right">${Math.round(totalSales).toLocaleString()}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+
+            tableContainer.innerHTML = tableHtml;
         }
 
         // --- App Initialization ---
@@ -2384,18 +2713,28 @@
                 const savedUser = JSON.parse(savedUserJSON);
                 
                 const adminUser = state.teamAdmins.find(a => a.id === savedUser.id);
-                const memberUser = state.teamAdmins.flatMap(a => a.teamMembers ? Object.keys(a.teamMembers).map(k => ({...a.teamMembers[k], id: k, adminId: a.id})) : []).find(m => m.id === savedUser.id);
+                let memberUser, memberAdmin;
+                 if (savedUser.role === 'teammember') {
+                    for(const admin of state.teamAdmins) {
+                        if (admin.teamMembers) {
+                            const memberKey = Object.keys(admin.teamMembers).find(k => k === savedUser.id);
+                            if (memberKey) {
+                                memberUser = {...admin.teamMembers[memberKey], id: memberKey, adminId: admin.id };
+                                memberAdmin = admin;
+                                break;
+                            }
+                        }
+                    }
+                 }
+
 
                 let userIsValid = false;
                 if (savedUser.role === 'superadmin') {
                      userIsValid = true;
                 } else if (savedUser.role === 'teamadmin' && adminUser && adminUser.status === 'active') {
                      userIsValid = true;
-                } else if (savedUser.role === 'teammember' && memberUser && memberUser.status === 'active') {
-                    const memberAdmin = state.teamAdmins.find(a => a.id === memberUser.adminId);
-                    if(memberAdmin && memberAdmin.status === 'active') {
-                        userIsValid = true;
-                    }
+                } else if (savedUser.role === 'teammember' && memberUser && memberUser.status === 'active' && memberAdmin && memberAdmin.status === 'active') {
+                    userIsValid = true;
                 }
 
                 if (userIsValid) {
@@ -2438,3 +2777,5 @@
     </script>
 </body>
 </html>
+
+    
