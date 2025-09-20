@@ -49,8 +49,12 @@
             display: block;
         }
         .card {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.6);
             padding: 24px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
         }
         .btn {
             padding: 10px 20px;
@@ -252,19 +256,19 @@
         .accordion-header {
             cursor: pointer;
             padding: 12px;
-            border-top: 1px solid #e5e7eb;
-            background-color: #f9fafb;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
             transition: background-color 0.2s;
         }
         .accordion-header:hover {
-            background-color: #f3f4f6;
+            background-color: rgba(255, 255, 255, 0.2);
         }
         .accordion-content {
             display: none;
             padding: 1rem;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.05);
         }
-
 
     </style>
 </head>
@@ -647,7 +651,8 @@
                     </div>
                     <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
                 </div>
-                <div id="teamAdminNoticeContainer" class="mt-2 mb-6"></div>
+                 <div id="teamAdminNoticeContainer" class="border-b pb-4 mb-6"></div>
+
 
                 <div id="submitReportContainer" class="mb-8 p-4 border rounded-lg">
                     <h3 class="text-lg font-semibold mb-2">Submit Daily Sales Report</h3>
@@ -675,7 +680,6 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th>Product Name</th>
-                                        <th>Rate</th>
                                         <th>TGT</th>
                                         <th>Sales</th>
                                         <th>Amount</th>
@@ -1328,7 +1332,7 @@
 
         function filterProductsForAdmin(searchTerm) {
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            const filteredProducts = defaultProducts.filter(product => 
+            const filteredProducts = state.products.filter(product => 
                 product.name.toLowerCase().includes(lowerCaseSearchTerm)
             );
             renderProductManagement(filteredProducts);
@@ -1337,7 +1341,7 @@
         function renderProductManagement(productsToRender) {
             const container = document.getElementById('productListForAdmin');
             container.innerHTML = '';
-            const products = productsToRender || defaultProducts;
+            const products = productsToRender || state.products;
 
             if (products.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 p-4">No products found.</p>';
@@ -1345,16 +1349,13 @@
             }
 
             products.forEach((product) => {
-                const productFromState = state.products.find(p => p.id === product.id);
-                const currentRate = productFromState ? productFromState.rate : product.rate;
-
                 const div = document.createElement('div');
                 div.className = 'p-3 border-b grid grid-cols-1 md:grid-cols-4 items-center gap-4';
                 div.innerHTML = `
                     <span class="font-semibold col-span-1 md:col-span-2">${product.name}</span>
                     <input 
                         type="number" 
-                        value="${currentRate.toFixed(2)}" 
+                        value="${product.rate.toFixed(2)}" 
                         onchange="updateProductRate('${product.id}', this.value)"
                         class="input-field !mb-0 text-right"
                     >
@@ -1375,16 +1376,13 @@
              if (!category) {
                  return showAlert('Please add a category for the product.');
             }
-            if (defaultProducts.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+            if (state.products.find(p => p.name.toLowerCase() === name.toLowerCase())) {
                 return showAlert('A product with this name already exists.');
             }
             
             const newProductData = { name, rate, category };
-            const newProductRef = await db.ref('products').push(newProductData);
-            
-            // This needs to be dynamically updated
-            defaultProducts.push({ id: newProductRef.key, ...newProductData });
-            
+            await db.ref('products').push(newProductData);
+                        
             document.getElementById('newProductName').value = '';
             document.getElementById('newProductRate').value = '';
             document.getElementById('newProductCategory').value = '';
@@ -1527,7 +1525,7 @@
                 reportMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
             });
             reportProductSelect.innerHTML = '<option value="all">All Products</option>';
-            defaultProducts.forEach(product => {
+            state.products.forEach(product => {
                 reportProductSelect.innerHTML += `<option value="${product.name}">${product.name}</option>`;
             });
 
@@ -1544,7 +1542,7 @@
 
 
             document.getElementById('adminProductSearch').value = '';
-            renderProductManagement(defaultProducts);
+            renderProductManagement(state.products);
             renderNotificationSettings();
             renderLogoutSettings();
             renderCategoryManagement();
@@ -1611,7 +1609,7 @@
             }
 
             const productData = {};
-            const productsToList = (selectedProduct && selectedProduct !== 'all') ? defaultProducts.filter(p => p.name === selectedProduct) : defaultProducts;
+            const productsToList = (selectedProduct && selectedProduct !== 'all') ? state.products.filter(p => p.name === selectedProduct) : state.products;
 
             productsToList.forEach(product => {
                 productData[product.name] = { 
@@ -1629,7 +1627,7 @@
                 if (member && report.reportData && report.reportData.items) {
                     report.reportData.items.forEach(item => {
                         if (productData[item.name]) {
-                            const productInfo = defaultProducts.find(p => p.name === item.name);
+                            const productInfo = state.products.find(p => p.name === item.name);
                             const itemRate = productInfo ? productInfo.rate : item.rate;
                             const itemAmount = item.sales * itemRate;
 
@@ -1739,7 +1737,7 @@
             subHeaderRow.innerHTML += '<th class="summary-header">TGT</th><th class="summary-header">Sales</th><th class="summary-header">Amount</th>';
 
             tableBody.innerHTML = '';
-            const productsToList = (selectedProduct && selectedProduct !== 'all') ? defaultProducts.filter(p => p.name === selectedProduct) : defaultProducts;
+            const productsToList = (selectedProduct && selectedProduct !== 'all') ? state.products.filter(p => p.name === selectedProduct) : state.products;
 
             productsToList.forEach((product, index) => {
                 const productName = product.name;
@@ -1865,7 +1863,7 @@
         }
         
         function updateAmountOnRow(productId) {
-            const product = defaultProducts.find(p => p.id === productId);
+            const product = state.products.find(p => p.id === productId);
             if (!product) return;
 
             const rate = product.rate;
@@ -1889,7 +1887,7 @@
             
             productRows.forEach(row => {
                  const productId = row.dataset.productId;
-                 const product = defaultProducts.find(p => p.id === productId);
+                 const product = state.products.find(p => p.id === productId);
                  if(!product) return;
 
                  const tgtInput = document.getElementById(`tgt-${productId}`);
@@ -1950,7 +1948,7 @@
             itemsContainer.innerHTML = '';
             
             if (!state.currentReportItems || state.currentReportItems.length === 0) {
-                 itemsContainer.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500">No items added yet.</td></tr>';
+                 itemsContainer.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-gray-500">No items added yet.</td></tr>';
                  return;
             }
 
@@ -1958,7 +1956,6 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.name}</td>
-                    <td class="text-right">${item.rate.toFixed(2)}</td>
                     <td class="text-right">${item.tgt}</td>
                     <td class="text-right">${item.sales}</td>
                     <td class="text-right">${Math.round(item.amount)}</td>
@@ -2046,10 +2043,10 @@
                 return;
             }
 
-            // Sort products based on their order in defaultProducts
+            // Sort products based on their order in state.products
             const sortedProducts = products.sort((a, b) => {
-                const indexA = defaultProducts.findIndex(p => p.id === a.id);
-                const indexB = defaultProducts.findIndex(p => p.id === b.id);
+                const indexA = state.products.findIndex(p => p.id === a.id);
+                const indexB = state.products.findIndex(p => p.id === b.id);
                 return indexA - indexB;
             });
 
@@ -2083,9 +2080,9 @@
             if (categoryKey) {
                 let products;
                 if (categoryKey === 'All') {
-                    products = [...defaultProducts];
+                    products = [...state.products];
                 } else {
-                    products = defaultProducts.filter(p => p.category === categoryKey);
+                    products = state.products.filter(p => p.category === categoryKey);
                 }
                 renderProductTableForMember(products, 'memberProductListContainer');
             }
@@ -2098,7 +2095,7 @@
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
             if (lowerCaseSearchTerm.length > 1) {
-                const filteredProducts = defaultProducts.filter(product => 
+                const filteredProducts = state.products.filter(product => 
                     product.name.toLowerCase().includes(lowerCaseSearchTerm)
                 );
                 renderProductTableForMember(filteredProducts, 'memberProductListContainer');
@@ -2114,9 +2111,9 @@
             const teamNotice = state.notices[state.loggedInUserTeamId] || '';
             if (teamNotice) {
                 noticeContainer.innerHTML = `
-                    <div class="p-2 bg-blue-100 border-l-4 border-blue-500 text-blue-700">
-                        <p class="font-bold flex items-center">
-                            Notice: <marquee behavior="scroll" direction="left" class="ml-2">${teamNotice}</marquee>
+                     <div class="border-b border-gray-300 pb-2 mb-4">
+                        <p class="font-semibold flex items-center">
+                             Notice: <marquee behavior="scroll" direction="left" class="ml-2 text-red-600">${teamNotice}</marquee>
                         </p>
                     </div>`;
             } else {
@@ -2124,7 +2121,7 @@
             }
             
             const categorySelect = document.getElementById('productCategorySelect');
-            const uniqueCategories = [...new Set(defaultProducts.map(p => p.category).filter(Boolean))].sort();
+            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
             categorySelect.innerHTML = '<option value="">-- Select a Category --</option><option value="All">All</option>';
             uniqueCategories.forEach(cat => {
                 categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
@@ -2174,7 +2171,6 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="p-2">Product Name</th>
-                                        <th class="p-2 text-right">Rate</th>
                                         <th class="p-2 text-right">TGT</th>
                                         <th class="p-2 text-right">Sales</th>
                                         <th class="p-2 text-right">Amount</th>
@@ -2184,7 +2180,6 @@
                                     ${(report.reportData.items || []).map(item => `
                                         <tr>
                                             <td class="p-2">${item.name}</td>
-                                            <td class="p-2 text-right">${item.rate.toFixed(2)}</td>
                                             <td class="p-2 text-right">${item.tgt}</td>
                                             <td class="p-2 text-right">${item.sales}</td>
                                             <td class="p-2 text-right">${Math.round(item.amount)}</td>
@@ -2193,7 +2188,7 @@
                                 </tbody>
                                 <tfoot class="font-bold bg-gray-100">
                                     <tr>
-                                        <td colspan="4" class="p-2 text-right">Grand Total:</td>
+                                        <td colspan="3" class="p-2 text-right">Grand Total:</td>
                                         <td class="p-2 text-right">${Math.round(report.reportData.grandTotal)}</td>
                                     </tr>
                                 </tfoot>
@@ -2483,7 +2478,7 @@
         function renderCategoryManagement() {
             const deleteSelect = document.getElementById('deleteCategorySelect');
             
-            const uniqueCategories = [...new Set(defaultProducts.map(p => p.category).filter(Boolean))].sort();
+            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
 
             deleteSelect.innerHTML = '<option value="">-- Select Category to Delete --</option>';
 
@@ -2498,7 +2493,7 @@
             if (!categoryName) {
                 return showAlert('Category name cannot be empty.');
             }
-            const uniqueCategories = [...new Set(defaultProducts.map(p => p.category).filter(Boolean))];
+            const uniqueCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))];
              if (uniqueCategories.some(c => c.toLowerCase() === categoryName.toLowerCase())) {
                 return showAlert('This category already exists.');
             }
@@ -2509,8 +2504,7 @@
                 rate: 0,
                 category: categoryName
             };
-            const newRef = await db.ref('products').push(placeholderProduct);
-            defaultProducts.push({id: newRef.key, ...placeholderProduct})
+            await db.ref('products').push(placeholderProduct);
 
             await getFullState();
             renderCategoryManagement();
@@ -2523,7 +2517,7 @@
                 return showAlert('Please select a category to delete.');
             }
             
-            const productsInCategory = defaultProducts.filter(p => p.category === categoryToDelete);
+            const productsInCategory = state.products.filter(p => p.category === categoryToDelete);
 
             if (productsInCategory.length > 1 || (productsInCategory.length === 1 && !productsInCategory[0].name.startsWith('_placeholder_for_'))) {
                  if (!confirm(`This category contains products. Deleting it will remove the category from all associated products. Are you sure?`)) {
@@ -2537,30 +2531,17 @@
             
             const updates = {};
             productsInCategory.forEach(p => {
-                const stateProduct = state.products.find(sp => sp.name === p.name);
-                if (stateProduct) {
-                    if (p.name.startsWith('_placeholder_for_')) {
-                        updates[`/products/${stateProduct.id}`] = null; // Delete placeholder
-                    } else {
-                        updates[`/products/${stateProduct.id}/category`] = null; // Unset category for other products
-                    }
+                if (p.name.startsWith('_placeholder_for_')) {
+                    updates[`/products/${p.id}`] = null; // Delete placeholder
+                } else {
+                    updates[`/products/${p.id}/category`] = null; // Unset category for other products
                 }
             });
 
-            await db.ref().update(updates);
+            if(Object.keys(updates).length > 0) {
+                await db.ref().update(updates);
+            }
             
-            // Update local defaultProducts
-            defaultProducts.forEach(p => {
-                if (p.category === categoryToDelete) {
-                    if (p.name.startsWith('_placeholder_for_')) {
-                        const index = defaultProducts.findIndex(dp => dp.id === p.id);
-                        if(index > -1) defaultProducts.splice(index, 1);
-                    } else {
-                        p.category = null;
-                    }
-                }
-            });
-
             await getFullState();
             renderCategoryManagement();
             showAlert(`Category "${categoryToDelete}" has been deleted.`);
@@ -2599,7 +2580,7 @@
                 report.reportData.items.forEach(item => {
                     for (const categoryName in reportingCategories) {
                         if (reportingCategories[categoryName].includes(item.name)) {
-                            const productInfo = defaultProducts.find(p => p.name === item.name);
+                            const productInfo = state.products.find(p => p.name === item.name);
                             const rate = productInfo ? productInfo.rate : item.rate;
                             categoryData[categoryName].tgtAmount += item.tgt * rate;
                             categoryData[categoryName].salesAmount += item.sales * rate;
