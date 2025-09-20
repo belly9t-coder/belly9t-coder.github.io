@@ -477,7 +477,10 @@
                                 <select id="categoryReportMemberSelect" class="input-field !mb-0 w-full"></select>
                             </div>
                         </div>
-                        <button onclick="renderCategoryWiseReport()" class="btn btn-primary w-full">View Category Report</button>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button onclick="renderCategoryWiseReport()" class="btn btn-primary w-full">View Category Report</button>
+                            <button onclick="exportCategoryReportToExcel()" class="btn btn-success w-full">Export to Excel</button>
+                        </div>
                         <div class="mt-4">
                             <canvas id="categoryChart"></canvas>
                         </div>
@@ -2652,7 +2655,7 @@
             // Render Table
             const tableContainer = document.getElementById('categoryReportTableContainer');
             let tableHtml = `
-                <table class="w-full text-left text-sm mt-4">
+                <table class="w-full text-left text-sm mt-4" id="categoryReportTable">
                     <thead class="bg-gray-200">
                         <tr>
                             <th class="p-2 font-semibold">Category</th>
@@ -2692,6 +2695,20 @@
             `;
 
             tableContainer.innerHTML = tableHtml;
+        }
+
+        function exportCategoryReportToExcel() {
+            const table = document.getElementById('categoryReportTable');
+            if (!table || table.rows.length <= 1) { // Check if table has more than just header
+                return showAlert('No data available to export.');
+            }
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Category Report" });
+
+            const startDate = document.getElementById('categoryReportStartDate').value;
+            const endDate = document.getElementById('categoryReportEndDate').value;
+
+            const fileName = `CategoryWiseReport_${startDate}_to_${endDate}.xlsx`;
+            XLSX.writeFile(wb, fileName);
         }
 
         // --- App Initialization ---
