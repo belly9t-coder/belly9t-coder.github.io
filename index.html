@@ -1609,7 +1609,7 @@
             }
 
             const productData = {};
-            const productsToList = (selectedProduct && selectedProduct !== 'all') ? state.products.filter(p => p.name === selectedProduct) : state.products;
+            const productsToList = (selectedProduct && selectedProduct !== 'all') ? state.products.filter(p => p.name === selectedProduct) : [...state.products];
 
             productsToList.forEach(product => {
                 productData[product.name] = { 
@@ -1737,7 +1737,18 @@
             subHeaderRow.innerHTML += '<th class="summary-header">TGT</th><th class="summary-header">Sales</th><th class="summary-header">Amount</th>';
 
             tableBody.innerHTML = '';
-            const productsToList = (selectedProduct && selectedProduct !== 'all') ? state.products.filter(p => p.name === selectedProduct) : state.products;
+            const productsToList = (selectedProduct && selectedProduct !== 'all') ? state.products.filter(p => p.name === selectedProduct) : [...state.products];
+            
+            // Sort the list for rendering
+            productsToList.sort((a, b) => {
+                const indexA = defaultProducts.findIndex(p => p.name === a.name);
+                const indexB = defaultProducts.findIndex(p => p.name === b.name);
+                if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+                if (indexA === -1) return 1;
+                if (indexB === -1) return -1;
+                return indexA - indexB;
+            });
+
 
             productsToList.forEach((product, index) => {
                 const productName = product.name;
@@ -2042,18 +2053,10 @@
                 container.innerHTML = '<p class="p-4 text-center text-gray-500">No products found.</p>';
                 return;
             }
-
-            // Sort products based on their order in state.products
-            const sortedProducts = products.sort((a, b) => {
-                const indexA = state.products.findIndex(p => p.id === a.id);
-                const indexB = state.products.findIndex(p => p.id === b.id);
-                return indexA - indexB;
-            });
-
-
+            
             let tableHtml = '<table class="w-full grouped-product-table"><thead><tr><th>Product</th><th>TGT</th><th>Sales</th><th class="text-right">Amount</th></tr></thead><tbody>';
 
-            sortedProducts.forEach(p => {
+            products.forEach(p => {
                 tableHtml += `
                     <tr data-product-id="${p.id}">
                         <td>${p.name}</td>
@@ -2077,14 +2080,25 @@
             document.getElementById('memberProductSearch').value = '';
             const container = document.getElementById('memberProductListContainer');
             container.innerHTML = '';
+
             if (categoryKey) {
-                let products;
-                if (categoryKey === 'All') {
-                    products = [...state.products];
-                } else {
-                    products = state.products.filter(p => p.category === categoryKey);
-                }
-                renderProductTableForMember(products, 'memberProductListContainer');
+                const productMap = new Map(state.products.map(p => [p.name, { rate: p.rate, id: p.id }]));
+                
+                let filteredProducts = (categoryKey === 'All')
+                    ? defaultProducts
+                    : defaultProducts.filter(p => p.category === categoryKey);
+
+                let productsWithLatestRates = filteredProducts.map(dp => {
+                    const updatedProduct = productMap.get(dp.name);
+                    return {
+                        ...dp,
+                        rate: updatedProduct ? updatedProduct.rate : dp.rate,
+                        id: updatedProduct ? updatedProduct.id : dp.id,
+                    };
+                });
+                
+                // No need to sort here as defaultProducts is already sorted
+                renderProductTableForMember(productsWithLatestRates, 'memberProductListContainer');
             }
         }
         
@@ -2095,9 +2109,20 @@
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
             if (lowerCaseSearchTerm.length > 1) {
-                const filteredProducts = state.products.filter(product => 
-                    product.name.toLowerCase().includes(lowerCaseSearchTerm)
-                );
+                const productMap = new Map(state.products.map(p => [p.name, { rate: p.rate, id: p.id }]));
+
+                let filteredProducts = defaultProducts
+                    .filter(dp => dp.name.toLowerCase().includes(lowerCaseSearchTerm))
+                    .map(dp => {
+                         const updatedProduct = productMap.get(dp.name);
+                         return {
+                            ...dp,
+                            rate: updatedProduct ? updatedProduct.rate : dp.rate,
+                            id: updatedProduct ? updatedProduct.id : dp.id,
+                        };
+                    });
+                
+                // No need to sort, as it's filtered from an already sorted list (defaultProducts)
                 renderProductTableForMember(filteredProducts, 'memberProductListContainer');
             }
         }
