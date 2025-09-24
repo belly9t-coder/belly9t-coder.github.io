@@ -269,6 +269,48 @@
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             background-color: rgba(255, 255, 255, 0.05);
         }
+        
+        #voice-assistant-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        #mic-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #1877f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        #mic-btn.listening {
+            background-color: #fa383e;
+            transform: scale(1.1);
+        }
+        #mic-icon {
+            color: white;
+            width: 28px;
+            height: 28px;
+        }
+        #assistant-status {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: none;
+            font-size: 0.9rem;
+        }
 
     </style>
 </head>
@@ -705,6 +747,17 @@
 
         <!-- Advertisement Container -->
         <div id="adContainer" class="mt-8 text-center"></div>
+        
+        <!-- Voice Assistant UI -->
+        <div id="voice-assistant-container" style="display: none;">
+             <div id="assistant-status"></div>
+             <div id="mic-btn">
+                <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM17 12a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-3.08A7 7 0 0 0 19 12h-2z"/>
+                </svg>
+            </div>
+        </div>
+
     </div>
     <footer id="mainFooter">
         © 2024 shohel_it. All rights reserved.
@@ -731,6 +784,11 @@
         let logoutClickCounter = 0;
         let logoutClickTimer = null;
         let categoryChartInstance = null;
+        let isListening = false;
+        let recognition;
+        let countdownInterval = null;
+        let synth = window.speechSynthesis;
+        let bengaliVoice = null;
         
         const defaultProducts = [
             { id: 'prod_1', name: 'Chili Powder 50gm NEW', rate: 29.11, category: 'Chili Powder' },
@@ -931,7 +989,16 @@
             const page = document.getElementById(pageId);
              if (page) {
                 page.classList.add('active');
-                 document.body.style.overflowY = (pageId === 'teamAdminDashboard' || pageId === 'superAdminDashboard') ? 'auto' : 'hidden';
+                document.body.style.overflowY = (pageId === 'teamAdminDashboard' || pageId === 'superAdminDashboard') ? 'auto' : 'hidden';
+
+                // Show/hide voice assistant based on page
+                const voiceAssistant = document.getElementById('voice-assistant-container');
+                if (pageId === 'teamAdminDashboard') {
+                    voiceAssistant.style.display = 'block';
+                } else {
+                    voiceAssistant.style.display = 'none';
+                }
+
             } else {
                  document.body.style.overflowY = 'hidden';
             }
@@ -2020,7 +2087,7 @@
             
             state.currentReportItems = [];
             
-            playVoice("ধন্যবাদ, আপনি সফলভাবে আজকের রিপোর্ট সাবমিট করেছেন", 'bn-BD', true);
+            playVoice("ধন্যবাদ, আপনি সফলভাবে আজকের রিপোর্ট সাবমিট করেছেন");
             showAlert('Report submitted successfully!');
 
             // Show popunder ad
@@ -2246,44 +2313,57 @@
         }
 
         // --- Notification and Voice System ---
-        function playVoice(text, lang = 'en-US', isFemale = true, onEndCallback) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = lang;
-                utterance.rate = 0.9;
-                
-                if (onEndCallback) {
-                    utterance.onend = onEndCallback;
-                }
-                
-                const voices = window.speechSynthesis.getVoices();
-                let chosenVoice = null;
+        function loadBengaliVoice() {
+            if (!synth) return;
+            const voices = synth.getVoices();
+            if (voices.length === 0) return; // Wait for onvoiceschanged
 
-                if (lang === 'bn-BD') {
-                    chosenVoice = voices.find(v => v.lang === 'bn-BD' && v.name.includes('Female'));
-                    if (!chosenVoice) {
-                        chosenVoice = voices.find(v => v.lang === 'bn-BD');
-                    }
-                } else if (isFemale) {
-                    chosenVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google UK English Female'));
-                }
-                
-                if(chosenVoice) {
-                    utterance.voice = chosenVoice;
-                }
-                
-                window.speechSynthesis.cancel(); // Stop any previous speech
-                window.speechSynthesis.speak(utterance);
+            // Find the best available Bengali voice
+            bengaliVoice = voices.find(v => v.lang === 'bn-BD' && (v.name.includes('Female') || v.name.includes('FEMALE') || v.localService)) ||
+                           voices.find(v => v.lang === 'bn-BD') ||
+                           voices.find(v => v.lang === 'bn-IN' && (v.name.includes('Female') || v.name.includes('FEMALE'))) ||
+                           voices.find(v => v.lang.startsWith('bn')) ||
+                           null;
+
+            if (bengaliVoice) {
+                console.log("Found Bengali voice:", bengaliVoice.name);
             } else {
-                console.log("Speech synthesis not supported.");
-                 if (onEndCallback) {
-                    onEndCallback();
-                }
+                console.warn("No suitable Bengali voice found. Using default.");
             }
         }
 
+        function playVoice(text, onEndCallback) {
+            if (!synth) {
+                console.error("Speech synthesis not supported.");
+                if (onEndCallback) onEndCallback();
+                return;
+            }
+
+            synth.cancel(); // Stop any previous speech
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'bn-BD';
+            utterance.rate = 0.85; // Slightly slower for clarity
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            if (bengaliVoice) {
+                utterance.voice = bengaliVoice;
+            } else {
+                // If voice not found yet, try to load it again, but don't delay this speech
+                loadBengaliVoice();
+                if(bengaliVoice) utterance.voice = bengaliVoice;
+            }
+
+            if (onEndCallback) {
+                utterance.onend = onEndCallback;
+            }
+
+            synth.speak(utterance);
+        }
+
         async function playAdminWelcomeVoice() {
-            playVoice("Welcome admin", 'en-US', false);
+            playVoice("স্বাগতম এডমিন");
 
             const today = new Date().toISOString().split('T')[0];
             const { grandTotalAmount } = getReportDataForDateRange(today, today, 'all', 'all');
@@ -2307,17 +2387,17 @@
 
             let fullMessage = "";
             if (notSubmittedMembers.length > 0) {
-                fullMessage += `${notSubmittedMembers.length} members have not submitted the report yet. `;
+                fullMessage += `${notSubmittedMembers.length} জন সদস্য এখনও রিপোর্ট জমা দেননি। `;
             } else {
-                fullMessage += `All members have submitted their reports. `;
+                fullMessage += `সকল সদস্য তাদের রিপোর্ট জমা দিয়েছেন। `;
             }
-            fullMessage += `Today's grand total amount is ${Math.round(grandTotalAmount)}.`;
+            fullMessage += `আজকের মোট বিক্রির পরিমাণ হলো ${Math.round(grandTotalAmount)} টাকা।`;
 
             let repeatCounter = 0;
             const playRepeatedly = () => {
                 if (repeatCounter < repeatCount) {
                     repeatCounter++;
-                    playVoice(fullMessage, 'en-US', false, playRepeatedly);
+                    playVoice(fullMessage, playRepeatedly);
                 }
             };
             
@@ -2336,25 +2416,20 @@
 
                 if (!hasSubmittedToday) {
                     setTimeout(() => {
-                        playVoice("আপনি আজকের রিপোর্ট এখনো সাবমিট করেননি, তাই আপনাকে স্মরণ করানো হলো", 'bn-BD', true);
+                        playVoice("আপনি আজকের রিপোর্ট এখনো সাবমিট করেননি, তাই আপনাকে স্মরণ করানো হলো");
                     }, 5000); 
                 }
             }
         }
         
         function unlockAudio() {
-            if ('speechSynthesis' in window) {
-                const voices = window.speechSynthesis.getVoices();
-                if (voices.length === 0) {
-                     const utterance = new SpeechSynthesisUtterance('');
-                    utterance.volume = 0;
-                    window.speechSynthesis.speak(utterance);
-                }
+            if (!synth) return;
+            if (synth.paused) synth.resume();
+            if (!synth.speaking) {
+                const dummyUtterance = new SpeechSynthesisUtterance('');
+                dummyUtterance.volume = 0;
+                synth.speak(dummyUtterance);
             }
-        }
-
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = unlockAudio;
         }
 
         function startMemberAlarmSystem() {
@@ -2385,7 +2460,7 @@
                 const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
                 
                 if (settings.reminderTimes && settings.reminderTimes.includes(currentTime)) {
-                    playVoice(settings.reminderMessage, 'bn-BD', true);
+                    playVoice(settings.reminderMessage);
                 }
             }, 60000); // Check every minute
         }
@@ -2716,12 +2791,169 @@
             const fileName = `CategoryWiseReport_${startDate}_to_${endDate}.xlsx`;
             XLSX.writeFile(wb, fileName);
         }
+        
+        // --- Voice Assistant Functions ---
+        function setupVoiceAssistant() {
+            const micBtn = document.getElementById('mic-btn');
+            const assistantStatus = document.getElementById('assistant-status');
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                micBtn.style.display = 'none';
+                console.error("Speech Recognition API not supported in this browser.");
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'bn-BD';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.classList.add('listening');
+                assistantStatus.textContent = "শুনছি...";
+                assistantStatus.style.display = 'block';
+                if(countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                assistantStatus.textContent = `আপনি বলেছেন: "${transcript}"`;
+                processVoiceCommand(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error", event.error);
+                let errorMessage = "কিছু একটা সমস্যা হয়েছে।";
+                if (event.error === 'no-speech') {
+                    errorMessage = "আমি আপনার কথা শুনতে পাইনি।";
+                } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    errorMessage = "মাইক্রোফোন ব্যবহারের অনুমতি দিন।";
+                }
+                assistantStatus.textContent = errorMessage;
+                 setTimeout(() => assistantStatus.style.display = 'none', 3000);
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('listening');
+                if (!countdownInterval) {
+                    setTimeout(() => {
+                        // Only hide status if synth is not speaking
+                        if(!window.speechSynthesis.speaking) {
+                            assistantStatus.style.display = 'none';
+                        }
+                    }, 3000);
+                }
+            };
+
+            micBtn.addEventListener('click', () => {
+                unlockAudio(); 
+                
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.error("Error starting recognition:", e);
+                        assistantStatus.textContent = "শুরু করতে সমস্যা হচ্ছে।";
+                        setTimeout(() => assistantStatus.style.display = 'none', 3000);
+                    }
+                }
+            });
+        }
+        
+        function processVoiceCommand(command) {
+            const lowerCaseCommand = command.toLowerCase();
+            let response = "";
+            
+            // --- App-Specific Commands ---
+            if (lowerCaseCommand.includes("আজকের মোট বিক্রি") || lowerCaseCommand.includes("আজকের টোটাল সেলস")) {
+                const today = new Date().toISOString().split('T')[0];
+                const { grandTotalAmount } = getReportDataForDateRange(today, today, 'all', 'all');
+                response = `আজকের মোট বিক্রির পরিমাণ হলো ${Math.round(grandTotalAmount)} টাকা।`;
+            } 
+            else if (lowerCaseCommand.includes("রিপোর্ট দেয়নি") || lowerCaseCommand.includes("রিপোর্ট সাবমিট করেনি")) {
+                const today = new Date().toISOString().split('T')[0];
+                const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
+                const allMembers = admin.teamMembers ? Object.values(admin.teamMembers).filter(m => m.status === 'active') : [];
+
+                const reportsForDate = state.salesReports.filter(r => {
+                    const reportDate = new Date(r.date);
+                    const selectedDate = new Date(today);
+                    return r.team === state.loggedInUserName &&
+                           reportDate.getFullYear() === selectedDate.getFullYear() &&
+                           reportDate.getMonth() === selectedDate.getMonth() &&
+                           reportDate.getDate() === selectedDate.getDate();
+                });
+
+                const submittedMemberUsernames = new Set(reportsForDate.map(r => r.submittedBy));
+                const notSubmittedMembers = allMembers.filter(m => !submittedMemberUsernames.has(m.username));
+                
+                if (notSubmittedMembers.length === 0) {
+                    response = "খুব ভালো খবর! আজ সবাই সময়মতো রিপোর্ট জমা দিয়েছেন।";
+                } else {
+                    const names = notSubmittedMembers.map(m => m.name).join(', ');
+                    response = `আজ ${notSubmittedMembers.length} জন রিপোর্ট জমা দেননি। তাদের নাম হলো: ${names}।`;
+                }
+            } 
+            // --- General Conversation ---
+            else if (lowerCaseCommand.includes("কেমন আছো") || lowerCaseCommand.includes("কেমন আছেন")) {
+                response = "ধন্যবাদ। আমি ভালো আছি। আপনাকে কীভাবে সাহায্য করতে পারি?";
+            } else if (lowerCaseCommand.includes("তোমার নাম কি")) {
+                response = "আমি আপনার ব্যক্তিগত সেলস অ্যাসিস্ট্যান্ট। আপনি আমাকে যেকোনো প্রশ্ন করতে পারেন।";
+            } else if (lowerCaseCommand.includes("ধন্যবাদ")) {
+                response = "আপনাকে স্বাগতম!";
+            }
+            // --- Fallback for unknown questions ---
+            else {
+                response = "দুঃখিত, আমি আপনার প্রশ্নটি বুঝতে পারিনি। আমি এখনো শিখছি। আপনি আমাকে রিপোর্ট সম্পর্কিত বা সাধারণ জ্ঞানের প্রশ্ন করতে পারেন।";
+            }
+
+            const assistantStatus = document.getElementById('assistant-status');
+            const micBtn = document.getElementById('mic-btn');
+            
+            assistantStatus.textContent = "উত্তর প্রস্তুত করছি...";
+            
+            let countdown = Math.floor(Math.random() * 2) + 2; // Random time between 2-3 seconds
+            micBtn.innerHTML = `<span class="text-2xl">${countdown}</span>`;
+
+            countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    micBtn.innerHTML = `<span class="text-2xl">${countdown}</span>`;
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    micBtn.innerHTML = `<svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM17 12a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-3.08A7 7 0 0 0 19 12h-2z"/></svg>`;
+                    
+                    playVoice(response, () => {
+                        assistantStatus.style.display = 'none';
+                    });
+                }
+            }, 1000);
+        }
+
 
         // --- App Initialization ---
         async function initializeApp() {
             resetLocalState();
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
+
+            if (synth) {
+                if (synth.getVoices().length > 0) {
+                    loadBengaliVoice();
+                } else {
+                    synth.onvoiceschanged = loadBengaliVoice;
+                }
+            }
 
             if (firebase.messaging.isSupported()) {
                 messaging = firebase.messaging();
@@ -2800,7 +3032,7 @@
                  showPage('mainLoginPage');
             }
 
-            document.addEventListener('click', unlockAudio, { once: true });
+            setupVoiceAssistant();
         }
 
         window.onload = initializeApp;
