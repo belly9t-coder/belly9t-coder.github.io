@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         html, body {
             height: 100%;
@@ -115,65 +116,75 @@
             border: 1px solid #e2e8f0;
         }
         
-        #reportTable {
+        #reportTable, #dateRangeReportTable {
             border-collapse: collapse;
             width: 100%;
             background: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             font-size: 0.7rem; /* Smaller font size */
         }
-        #reportTable th, #reportTable td {
+        #reportTable th, #reportTable td,
+        #dateRangeReportTable th, #dateRangeReportTable td {
             border: 1px solid #ddd;
             padding: 3px; /* Smaller padding */
             text-align: center;
             white-space: nowrap;
         }
-        #reportTable thead th {
+        #reportTable thead th, #dateRangeReportTable thead th {
             position: sticky;
             z-index: 10;
         }
-        #reportTable thead tr:first-child th {
+        #reportTable thead tr:first-child th,
+        #dateRangeReportTable thead tr:first-child th {
             top: 0;
         }
-        #reportTable thead tr:nth-child(2) th {
+        #reportTable thead tr:nth-child(2) th,
+        #dateRangeReportTable thead tr:nth-child(2) th {
             top: 25px; /* Adjust this value based on the height of the first row */
         }
 
         #reportTable th:first-child, #reportTable td:first-child,
         #reportTable th:nth-child(2), #reportTable td:nth-child(2),
-        #reportTable th:nth-child(3), #reportTable td:nth-child(3) {
+        #reportTable th:nth-child(3), #reportTable td:nth-child(3),
+        #dateRangeReportTable th:first-child, #dateRangeReportTable td:first-child,
+        #dateRangeReportTable th:nth-child(2), #dateRangeReportTable td:nth-child(2),
+        #dateRangeReportTable th:nth-child(3), #dateRangeReportTable td:nth-child(3) {
             position: sticky;
             z-index: 11;
             background: #f1f5f9;
         }
-        #reportTable th:first-child, #reportTable td:first-child {
+        #reportTable th:first-child, #reportTable td:first-child,
+        #dateRangeReportTable th:first-child, #dateRangeReportTable td:first-child {
             left: 0;
             min-width: 40px;
         }
-        #reportTable th:nth-child(2), #reportTable td:nth-child(2) {
+        #reportTable th:nth-child(2), #reportTable td:nth-child(2),
+        #dateRangeReportTable th:nth-child(2), #dateRangeReportTable td:nth-child(2) {
             left: 40px;
             min-width: 100px;
         }
-        #reportTable th:nth-child(3), #reportTable td:nth-child(3) {
+        #reportTable th:nth-child(3), #reportTable td:nth-child(3),
+        #dateRangeReportTable th:nth-child(3), #dateRangeReportTable td:nth-child(3) {
             left: 140px;
         }
         
-        #reportTable thead th {
+        #reportTable thead th, #dateRangeReportTable thead th {
              background: #0867d2;
              color: white;
         }
-        #reportTable th:first-child, #reportTable th:nth-child(2), #reportTable th:nth-child(3) {
+        #reportTable th:first-child, #reportTable th:nth-child(2), #reportTable th:nth-child(3),
+        #dateRangeReportTable th:first-child, #dateRangeReportTable th:nth-child(2), #dateRangeReportTable th:nth-child(3) {
             z-index: 12;
         }
 
-        #reportTable tfoot td {
+        #reportTable tfoot td, #dateRangeReportTable tfoot td {
             font-weight: bold;
             background: #f1f5f9;
         }
-        #reportTable .summary-header {
+        #reportTable .summary-header, #dateRangeReportTable .summary-header {
             background: #4a148c; /* Purple for Summary Header */
         }
-        #reportTable .summary-col {
+        #reportTable .summary-col, #dateRangeReportTable .summary-col {
              background: #f3e5f5; /* Light purple for summary data columns */
              font-weight: bold;
         }
@@ -311,6 +322,113 @@
             display: none;
             font-size: 0.9rem;
         }
+         /* Sidebar Styles */
+        #admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px; /* Hidden by default */
+            width: 280px;
+            height: 100%;
+            background-color: #1f2937; /* Gray-800 */
+            color: #d1d5db; /* Gray-300 */
+            transition: left 0.3s ease-in-out;
+            z-index: 1040;
+            display: flex;
+            flex-direction: column;
+        }
+        #admin-sidebar.show {
+            left: 0;
+        }
+        #sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1030;
+        }
+        #sidebar-overlay.show {
+            display: block;
+        }
+        #sidebar-nav {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .sidebar-menu-item, .sidebar-submenu-item {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .sidebar-menu-item:hover, .sidebar-submenu-item:hover {
+            background-color: #374151; /* Gray-700 */
+            color: white;
+        }
+        .sidebar-menu-item.active, .sidebar-submenu-item.active {
+             background-color: #4b5563; /* Gray-600 */
+             color: white;
+        }
+        .sidebar-submenu {
+            padding-left: 1rem;
+            display: none;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 0.375rem;
+            margin-top: 0.25rem;
+        }
+        .sidebar-submenu.show {
+            display: block;
+        }
+        .sidebar-menu-container {
+             margin-bottom: 0.5rem;
+        }
+        .add-submenu-btn, .delete-menu-btn {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0 0.25rem;
+        }
+        .add-submenu-btn:hover, .delete-menu-btn:hover {
+            color: white;
+        }
+        .sortable-ghost {
+            background: #4b5563;
+            opacity: 0.5;
+        }
+        .sortable-drag {
+            opacity: 1 !important;
+        }
+        #admin-main-content {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        @media (min-width: 768px) {
+            #admin-sidebar {
+                left: 0;
+            }
+            #admin-main-content {
+                margin-left: 280px;
+            }
+            #sidebar-toggle-btn {
+                display: none;
+            }
+             #admin-sidebar.show {
+                left: 0;
+            }
+        }
+        .admin-content-view {
+            display: none;
+        }
+        .admin-content-view.active {
+            display: block;
+        }
 
     </style>
 </head>
@@ -434,135 +552,190 @@
 
         <!-- Team Admin Dashboard -->
         <div id="teamAdminDashboard" class="page">
-             <div class="card">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <h2 class="text-2xl font-bold mb-4 md:mb-0">Team Admin Dashboard</h2>
-                    <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
+            <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+            <!-- Sidebar -->
+            <div id="admin-sidebar">
+                <div class="flex justify-between items-center mb-6 p-4">
+                     <h2 class="text-xl font-bold text-white">Dashboard</h2>
+                     <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white md:hidden text-2xl">&times;</button>
                 </div>
-                <p class="mb-6">Welcome, <span id="loggedInTeamAdminUsername" class="font-semibold"></span>!</p>
-                <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
-
-                <div class="mb-8">
-                     <button onclick="showPage('createTeamMemberPage')" class="btn btn-primary">Create New Team Member</button>
+                <nav id="sidebar-nav">
+                    <!-- Dynamic menu will be injected here by JS -->
+                </nav>
+                <div class="p-4 border-t border-gray-700">
+                    <button onclick="addNewMainMenu()" class="btn btn-secondary w-full">Add Menu</button>
                 </div>
+            </div>
 
-                <!-- Team Report Section -->
-                <div id="teamReportSection" class="mb-8">
-                    <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
+            <!-- Main Content -->
+            <div id="admin-main-content">
+                <div class="p-4">
+                    <header class="flex justify-between items-center mb-6">
+                        <button id="sidebar-toggle-btn" onclick="toggleSidebar()" class="btn btn-secondary md:hidden">Menu</button>
+                        <h2 class="text-2xl font-bold">Team Admin Dashboard</h2>
+                        <button onclick="handleLogoutClick(event)" class="btn btn-danger">Logout</button>
+                    </header>
+                    <p class="mb-6">Welcome, <span id="loggedInTeamAdminUsername" class="font-semibold"></span>!</p>
+                    <div id="superAdminNoticeContainerForAdmin" class="mb-4"></div>
+
+                    <!-- Dashboard Default View -->
+                    <div id="view_dashboard_default" class="admin-content-view">
+                         <div id="reportSubmissionStatus" class="mb-4 p-4 border rounded-lg bg-gray-50">
+                            <!-- Submission status will be rendered here -->
+                        </div>
+                         <!-- Category Wise Report Section -->
+                        <div class="p-4 border rounded-lg space-y-6 bg-gray-50">
+                             <h3 class="text-lg font-semibold">Category Wise Report</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                <div>
+                                    <label for="categoryReportStartDate" class="font-semibold text-sm">Start Date:</label>
+                                    <input type="date" id="categoryReportStartDate" class="input-field !mb-0 w-full" onchange="renderCategoryWiseReport()">
+                                </div>
+                                <div>
+                                    <label for="categoryReportEndDate" class="font-semibold text-sm">End Date:</label>
+                                    <input type="date" id="categoryReportEndDate" class="input-field !mb-0 w-full" onchange="renderCategoryWiseReport()">
+                                </div>
+                                <div>
+                                    <label for="categoryReportMemberSelect" class="font-semibold text-sm">Select Member:</label>
+                                    <select id="categoryReportMemberSelect" class="input-field !mb-0 w-full" onchange="renderCategoryWiseReport()"></select>
+                                </div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button onclick="renderCategoryWiseReport()" class="btn btn-primary w-full">Refresh Report</button>
+                                <button onclick="exportCategoryReportToExcel()" class="btn btn-success w-full">Export to Excel</button>
+                            </div>
+                            <div class="mt-4 h-96">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                            <div id="categoryReportTableContainer" class="mt-4 overflow-x-auto"></div>
+                        </div>
+                    </div>
                     
-                    <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
-                        <div class="flex items-center space-x-2">
-                            <label for="reportDate" class="font-semibold whitespace-nowrap">Select Date:</label>
-                            <input type="date" id="reportDate" onchange="renderTeamAdminReports()" class="input-field !mb-0 w-auto">
-                        </div>
-                         <button onclick="exportReportToExcel()" class="btn btn-success">Export</button>
-                         <button onclick="copyTable()" class="btn btn-secondary">Copy</button>
-                    </div>
-
-                    <div id="reportSubmissionStatus" class="mb-4 p-4 border rounded-lg bg-gray-50">
-                        <!-- Submission status will be rendered here -->
-                    </div>
-
-                    <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
-                        <table id="reportTable">
-                            <thead>
-                              <tr id="memberRow">
-                              </tr>
-                              <tr id="subHeaderRow">
-                              </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                            </tbody>
-                            <tfoot id="tableFoot">
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-
-                 <div class="mt-8 mb-8 border-t pt-8">
-                    <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-4 p-4 border rounded-lg bg-gray-50">
-                        <div>
-                            <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
-                            <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
-                        </div>
-                         <div>
-                            <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
-                            <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
-                        </div>
-                        <div>
-                            <label for="reportMemberSelect" class="font-semibold text-sm">Select Member:</label>
-                            <select id="reportMemberSelect" class="input-field !mb-0 w-full"></select>
-                        </div>
-                         <div>
-                            <label for="reportProductSelect" class="font-semibold text-sm">Select Product:</label>
-                            <select id="reportProductSelect" class="input-field !mb-0 w-full"></select>
-                        </div>
-                    </div>
-                    <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full">View Report</button>
-                </div>
-                
-                 <!-- Category Wise Report Section -->
-                <div class="border-t-4 border-gray-200 pt-8 mt-8 mb-8">
-                     <div class="flex items-center mb-4">
-                        <h3 class="text-lg font-semibold">Category Wise Report</h3>
-                        <span id="toggleCategoryWiseReport" class="toggle-btn text-sm">[Show]</span>
-                    </div>
-                    <div id="categoryWiseReportSection" class="p-4 border rounded-lg space-y-6 bg-gray-50" style="display: none;">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                            <div>
-                                <label for="categoryReportStartDate" class="font-semibold text-sm">Start Date:</label>
-                                <input type="date" id="categoryReportStartDate" class="input-field !mb-0 w-full">
+                    <!-- Team Report View -->
+                    <div id="view_team_report" class="admin-content-view">
+                        <div class="card">
+                             <h3 class="text-lg font-semibold mb-2">Team Report Dashboard</h3>
+                             <div class="controls mb-4 flex flex-col md:flex-row items-stretch md:items-center md:space-x-4 space-y-4 md:space-y-0">
+                                <div class="flex items-center space-x-2">
+                                    <label for="reportDate" class="font-semibold whitespace-nowrap">Select Date:</label>
+                                    <input type="date" id="reportDate" onchange="renderTeamAdminReports()" class="input-field !mb-0 w-auto">
+                                </div>
+                                <button onclick="exportReportToExcel('reportTable')" class="btn btn-success">Export</button>
+                                <button onclick="copyTable('reportTable')" class="btn btn-secondary">Copy</button>
                             </div>
-                             <div>
-                                <label for="categoryReportEndDate" class="font-semibold text-sm">End Date:</label>
-                                <input type="date" id="categoryReportEndDate" class="input-field !mb-0 w-full">
-                            </div>
-                            <div>
-                                <label for="categoryReportMemberSelect" class="font-semibold text-sm">Select Member:</label>
-                                <select id="categoryReportMemberSelect" class="input-field !mb-0 w-full"></select>
+                             <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
+                                <table id="reportTable">
+                                    <thead>
+                                      <tr id="memberRow">
+                                      </tr>
+                                      <tr id="subHeaderRow">
+                                      </tr>
+                                    </thead>
+                                    <tbody id="tableBody">
+                                    </tbody>
+                                    <tfoot id="tableFoot">
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <button onclick="renderCategoryWiseReport()" class="btn btn-primary w-full">View Category Report</button>
-                            <button onclick="exportCategoryReportToExcel()" class="btn btn-success w-full">Export to Excel</button>
-                        </div>
-                        <div class="mt-4">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
-                        <div id="categoryReportTableContainer" class="mt-4 overflow-x-auto"></div>
                     </div>
-                </div>
 
-                <div id="allSectionsManager" class="border-t-4 border-double border-gray-300 pt-8 mt-12 mb-8">
-                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-bold">All Section Manage</h3>
-                        <button id="toggleAllSectionsBtn" class="btn btn-secondary btn-sm">Toggle All</button>
+                    <!-- Date Range Report View -->
+                    <div id="view_date_range_report" class="admin-content-view">
+                         <div class="card">
+                            <h3 class="text-lg font-semibold mb-2">Up to Date Report</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-4 p-4 border rounded-lg bg-gray-50">
+                                <div>
+                                    <label for="reportStartDate" class="font-semibold text-sm">Start Date:</label>
+                                    <input type="date" id="reportStartDate" class="input-field !mb-0 w-full">
+                                </div>
+                                <div>
+                                    <label for="reportEndDate" class="font-semibold text-sm">End Date:</label>
+                                    <input type="date" id="reportEndDate" class="input-field !mb-0 w-full">
+                                </div>
+                                <div>
+                                    <label for="reportMemberSelect" class="font-semibold text-sm">Select Member:</label>
+                                    <select id="reportMemberSelect" class="input-field !mb-0 w-full"></select>
+                                </div>
+                                <div>
+                                    <label for="reportProductSelect" class="font-semibold text-sm">Select Product:</label>
+                                    <select id="reportProductSelect" class="input-field !mb-0 w-full"></select>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 mb-4">
+                                <button onclick="renderTeamAdminReportsForDateRange()" class="btn btn-primary w-full">View Report</button>
+                                <button onclick="exportReportToExcel('dateRangeReportTable')" class="btn btn-success">Export</button>
+                                <button onclick="copyTable('dateRangeReportTable')" class="btn btn-secondary">Copy</button>
+                            </div>
+                             <div class="overflow-x-auto max-h-[50vh] overflow-y-auto">
+                                <table id="dateRangeReportTable">
+                                    <thead>
+                                      <tr id="dateRangeMemberRow">
+                                      </tr>
+                                      <tr id="dateRangeSubHeaderRow">
+                                      </tr>
+                                    </thead>
+                                    <tbody id="dateRangeTableBody">
+                                    </tbody>
+                                    <tfoot id="dateRangeTableFoot">
+                                    </tfoot>
+                                </table>
+                            </div>
+                         </div>
                     </div>
-                    <div class="border rounded-lg overflow-hidden">
-                        
-                        <div class="accordion-header">
-                            <h3 class="text-lg font-semibold">Manage Team Members</h3>
+
+                    <!-- Reporting Format View -->
+                    <div id="view_reporting_format_sku" class="admin-content-view">
+                        <div class="card">
+                             <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold">SKU Wise Report Format</h3>
+                                <div class="flex items-center">
+                                    <span class="mr-2 font-medium text-gray-700">Enable for Team Members:</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="enableSkuReport" class="sr-only peer" onchange="toggleSkuReportForMembers(this.checked)">
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                             </div>
+                             <p class="text-sm text-gray-500 mb-6">Enabling this will allow team members to see this consolidated report view. All report tables are combined here for a complete overview.</p>
+                             
+                             <div id="skuReportContainer" class="space-y-8">
+                                <!-- All report tables will be duplicated or moved here -->
+                             </div>
                         </div>
-                        <div class="accordion-content">
+                    </div>
+
+                    <!-- Create Team Member View -->
+                    <div id="view_create_team_member" class="admin-content-view">
+                         <div class="card max-w-md mx-auto">
+                             <h3 class="text-xl font-bold mb-4">Create New Team Member</h3>
+                            <input type="text" id="newTeamMemberName" class="input-field" placeholder="Team Member Name">
+                            <input type="text" id="newTeamMemberUsername_sidebar" class="input-field" placeholder="Team Member Username">
+                            <input type="password" id="newTeamMemberPassword_sidebar" class="input-field" placeholder="Password">
+                            <button onclick="createTeamMember()" class="btn btn-primary w-full">Create Team Member</button>
+                        </div>
+                    </div>
+                    
+                    <!-- All Sections Manager Views -->
+                    <div id="view_manage_team_members" class="admin-content-view">
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">Manage Team Members</h3>
                             <div id="teamMembersList" class="space-y-2"></div>
                         </div>
-        
-                        <div class="accordion-header">
-                            <h3 class="text-lg font-semibold">Notice for Team Members</h3>
-                        </div>
-                        <div class="accordion-content">
+                    </div>
+                     <div id="view_notice_for_members" class="admin-content-view">
+                        <div class="card max-w-lg mx-auto">
+                            <h3 class="text-lg font-semibold mb-4">Notice for Team Members</h3>
                             <div id="teamAdminNoticeSection" class="space-y-4">
                                 <textarea id="teamAdminNotice" class="input-field !mb-0" placeholder="Write notice for team members..."></textarea>
                                 <button onclick="saveTeamAdminNotice()" class="btn btn-primary w-full">Save Notice</button>
                                 <button onclick="deleteTeamAdminNotice()" class="btn btn-danger w-full mt-2">Delete Notice</button>
                             </div>
                         </div>
-        
-                        <div class="accordion-header">
-                            <h3 class="text-lg font-semibold">Add New Product</h3>
-                        </div>
-                        <div class="accordion-content">
+                     </div>
+                     <div id="view_add_new_product" class="admin-content-view">
+                        <div class="card max-w-lg mx-auto">
+                            <h3 class="text-lg font-semibold mb-4">Add New Product</h3>
                             <div id="addProductSection" class="space-y-4">
                                 <input type="text" id="newProductName" class="input-field" placeholder="Product Name">
                                 <input type="number" id="newProductRate" class="input-field" placeholder="Product Rate">
@@ -571,11 +744,10 @@
                                 <button onclick="addNewProduct()" class="btn btn-primary w-full">Add Product</button>
                             </div>
                         </div>
-        
-                        <div class="accordion-header">
-                            <h3 class="text-lg font-semibold">Manage Products</h3>
-                        </div>
-                        <div class="accordion-content">
+                     </div>
+                    <div id="view_manage_products" class="admin-content-view">
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">Manage Products</h3>
                             <div id="manageProductSection">
                                 <div class="relative mb-2">
                                     <input type="text" id="adminProductSearch" class="input-field" placeholder="Search for a product..." oninput="filterProductsForAdmin(this.value)">
@@ -583,12 +755,11 @@
                                 <div id="productListForAdmin" class="space-y-2 max-h-96 overflow-y-auto p-2 border rounded-md"></div>
                             </div>
                         </div>
-
-                        <div class="accordion-header">
-                            <h3 class="text-lg font-semibold">Manage Categories</h3>
-                        </div>
-                        <div class="accordion-content">
-                            <div id="categoryManagerSection">
+                    </div>
+                    <div id="view_manage_categories" class="admin-content-view">
+                        <div class="card">
+                             <h3 class="text-lg font-semibold mb-4">Manage Categories</h3>
+                             <div id="categoryManagerSection">
                                 <div class="mb-4 p-4 border rounded-lg">
                                     <h4 class="font-semibold mb-2">Add New Category</h4>
                                     <input type="text" id="newStandaloneCategoryName" class="input-field" placeholder="New category name">
@@ -603,12 +774,11 @@
                                 </div>
                             </div>
                         </div>
-
-                         <div class="accordion-header">
-                            <h3 class="text-lg font-semibold">Manage Notification System</h3>
-                        </div>
-                        <div class="accordion-content">
-                            <div id="notificationSystemSection" class="space-y-6">
+                    </div>
+                    <div id="view_notification_system" class="admin-content-view">
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">Manage Notification System</h3>
+                             <div id="notificationSystemSection" class="space-y-6">
                                 <div class="flex items-center justify-between">
                                     <label for="enableNotifications" class="font-semibold text-gray-700">Enable Notification System</label>
                                     <label class="relative inline-flex items-center cursor-pointer">
@@ -638,12 +808,11 @@
                                 <button onclick="saveNotificationSettings()" class="btn btn-primary w-full">Save Settings</button>
                             </div>
                         </div>
-
-                        <div class="accordion-header">
-                            <h3 class="text-lg font-semibold">Manage Logout Settings</h3>
-                        </div>
-                        <div class="accordion-content">
-                            <div id="logoutSettingsSection" class="space-y-4">
+                    </div>
+                     <div id="view_logout_settings" class="admin-content-view">
+                        <div class="card max-w-lg mx-auto">
+                             <h3 class="text-lg font-semibold mb-4">Manage Logout Settings</h3>
+                             <div id="logoutSettingsSection" class="space-y-4">
                                 <div>
                                     <label for="logoutClickCount" class="block text-sm font-medium text-gray-700 mb-1">Required Clicks to Logout</label>
                                     <input type="number" id="logoutClickCount" class="input-field !mb-0" placeholder="e.g., 10">
@@ -651,11 +820,10 @@
                                 <button onclick="saveLogoutSettings()" class="btn btn-primary w-full">Save Logout Clicks</button>
                             </div>
                         </div>
-                        
-                        <div class="accordion-header">
-                            <h3 class="text-lg font-semibold">Manage Voice Settings</h3>
-                        </div>
-                        <div class="accordion-content">
+                     </div>
+                      <div id="view_voice_settings" class="admin-content-view">
+                        <div class="card max-w-lg mx-auto">
+                            <h3 class="text-lg font-semibold mb-4">Manage Voice Settings</h3>
                             <div id="voiceSettingsSection" class="space-y-4">
                                 <div>
                                     <label for="voiceRepeatCount" class="block text-sm font-medium text-gray-700 mb-1">Voice Summary Repeat Count</label>
@@ -664,10 +832,9 @@
                                 <button onclick="saveVoiceSettings()" class="btn btn-primary w-full">Save Voice Settings</button>
                             </div>
                         </div>
+                      </div>
 
-                    </div>
                 </div>
-
             </div>
         </div>
         
@@ -675,7 +842,6 @@
         <div id="createTeamMemberPage" class="page">
             <div class="card max-w-md mx-auto mt-8 md:mt-16">
                  <h3 class="text-xl font-bold mb-4">Create New Team Member</h3>
-                <input type="text" id="newTeamMemberName" class="input-field" placeholder="Team Member Name">
                 <input type="text" id="newTeamMemberUsername" class="input-field" placeholder="Team Member Username">
                 <input type="password" id="newTeamMemberPassword" class="input-field" placeholder="Password">
                 <button onclick="createTeamMember()" class="btn btn-primary w-full">Create Team Member</button>
@@ -693,8 +859,23 @@
                     </div>
                     <button onclick="handleLogoutClick(event)" class="btn btn-danger w-full md:w-auto">Logout</button>
                 </div>
-                 <div id="teamAdminNoticeContainer" class="border-b pb-4 mb-6"></div>
 
+                <!-- Member's Default View -->
+                <div id="memberDefaultView">
+                    <div id="teamAdminNoticeContainer" class="border-b pb-4 mb-6"></div>
+                    <div id="memberPersonalReportContainer" class="p-4 border rounded-lg mb-6">
+                        <h3 class="text-lg font-semibold mb-2">My Category Wise Report</h3>
+                        <div class="flex items-center gap-2 mb-2">
+                             <input type="date" id="memberReportStartDate" class="input-field !mb-0">
+                             <span class="font-bold">-</span>
+                             <input type="date" id="memberReportEndDate" class="input-field !mb-0">
+                             <button onclick="renderMemberPersonalReport()" class="btn btn-primary">Show</button>
+                        </div>
+                        <div id="memberPersonalReportContent" style="display:none;" class="mt-4">
+                            <!-- Report content will be rendered here by JS -->
+                        </div>
+                    </div>
+                </div>
 
                 <div id="submitReportContainer" class="mb-8 p-4 border rounded-lg">
                     <h3 class="text-lg font-semibold mb-2">Submit Daily Sales Report</h3>
@@ -736,6 +917,12 @@
 
                     <button onclick="submitSalesReport()" class="btn btn-success mt-4 w-full">Submit Final Report</button>
                 </div>
+                
+                <!-- Dynamic Report Format View for Members -->
+                <div id="memberDynamicReportView" class="mt-8" style="display: none;">
+                    <!-- Content from admin's enabled report format will be injected here -->
+                </div>
+
 
                 <div class="mt-8">
                     <h3 class="text-lg font-semibold mb-2">My All Submitted Reports</h3>
@@ -752,6 +939,7 @@
         <div id="voice-assistant-container" style="display: none;">
              <div id="assistant-status"></div>
              <div id="mic-btn">
+                <span id="mic-countdown" style="display: none;"></span>
                 <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM17 12a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-3.08A7 7 0 0 0 19 12h-2z"/>
                 </svg>
@@ -861,7 +1049,7 @@
             { id: 'prod_68', name: 'Whole Panchforan 50gm New', rate: 23.41, category: 'Panchforan and Jello' },
             { id: 'prod_69', name: 'The chef Tomato Sauce 295gm', rate: 86.20, category: 'Sauce and Vinegar' },
             { id: 'prod_70', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62, category: 'Sauce and Vinegar' },
-            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
+            { id: 'prod_71', name: 'The chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
             { id: 'prod_72', name: 'The chef White Vinager 330 ml', rate: 26.40, category: 'Sauce and Vinegar' },
             { id: 'prod_73', name: 'The chef White vinager 650 ml', rate: 43.56, category: 'Sauce and Vinegar' },
             { id: 'prod_74', name: 'The chef white vinager 5 ltr', rate: 213.18, category: 'Sauce and Vinegar' },
@@ -924,7 +1112,9 @@
                     nativeBanner: ''
                 },
                 superAdminNotice: '',
-                notices: {}
+                notices: {},
+                reportingSettings: {},
+                sidebarMenuConfig: [],
             };
         }
 
@@ -950,6 +1140,7 @@
                 state.notificationSettings = dbState.notificationSettings || {};
                 state.logoutSettings = dbState.logoutSettings || {};
                 state.voiceSettings = dbState.voiceSettings || {};
+                state.reportingSettings = dbState.reportingSettings || {};
 
 
                 if (!dbState.products || state.products.length < 80) {
@@ -1309,8 +1500,8 @@
         
         async function createTeamMember() {
             const name = document.getElementById('newTeamMemberName').value.trim();
-            const username = document.getElementById('newTeamMemberUsername').value.trim();
-            const password = document.getElementById('newTeamMemberPassword').value.trim();
+            const username = document.getElementById('newTeamMemberUsername_sidebar').value.trim();
+            const password = document.getElementById('newTeamMemberPassword_sidebar').value.trim();
             const adminId = state.loggedInUser;
 
             if (!name || !username || !password) {
@@ -1339,13 +1530,13 @@
             await db.ref(`teamAdmins/${adminId}/teamMembers`).push(newMemberData);
             
             document.getElementById('newTeamMemberName').value = '';
-            document.getElementById('newTeamMemberUsername').value = '';
-            document.getElementById('newTeamMemberPassword').value = '';
+            document.getElementById('newTeamMemberUsername_sidebar').value = '';
+            document.getElementById('newTeamMemberPassword_sidebar').value = '';
             
             await getFullState();
             renderTeamAdminDashboard();
             showAlert('Team Member created successfully!');
-            showPage('teamAdminDashboard');
+            switchAdminView('view_manage_team_members');
         }
 
         async function deleteTeamMember(memberId) {
@@ -1496,38 +1687,7 @@
              });
         }
         
-        function setupAccordion() {
-            const manager = document.getElementById('allSectionsManager');
-            if (!manager) return;
-
-            const headers = manager.querySelectorAll('.accordion-header');
-            const contents = manager.querySelectorAll('.accordion-content');
-            const toggleAllBtn = document.getElementById('toggleAllSectionsBtn');
-
-            headers.forEach((header, index) => {
-                header.addEventListener('click', () => {
-                    const content = contents[index];
-                    const isVisible = content.style.display === 'block';
-
-                    // Close all sections
-                    contents.forEach(c => c.style.display = 'none');
-
-                    // Open the clicked section if it was closed
-                    if (!isVisible) {
-                        content.style.display = 'block';
-                    }
-                });
-            });
-
-            toggleAllBtn.addEventListener('click', () => {
-                const areAnyOpen = Array.from(contents).some(c => c.style.display === 'block');
-                const newDisplayState = areAnyOpen ? 'none' : 'block';
-                contents.forEach(c => c.style.display = newDisplayState);
-            });
-        }
-
-
-        function renderTeamAdminDashboard() {
+        async function renderTeamAdminDashboard() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('reportDate').value = today;
             document.getElementById('reportStartDate').value = today;
@@ -1596,17 +1756,11 @@
                 reportProductSelect.innerHTML += `<option value="${product.name}">${product.name}</option>`;
             });
 
-            // Populate category wise report member dropdown
             const categoryMemberSelect = document.getElementById('categoryReportMemberSelect');
             categoryMemberSelect.innerHTML = '<option value="all">All Members</option>';
             members.forEach(member => {
                 categoryMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
             });
-
-
-            setupAccordion();
-            setupToggle('toggleCategoryWiseReport', 'categoryWiseReportSection', false);
-
 
             document.getElementById('adminProductSearch').value = '';
             renderProductManagement(state.products);
@@ -1614,13 +1768,31 @@
             renderLogoutSettings();
             renderCategoryManagement();
             renderVoiceSettings();
+            renderSkuReportSettings();
+
+            // Setup new sidebar UI
+            await setupAdminSidebar();
+            switchAdminView('view_dashboard_default');
             
-            renderTeamAdminReports();
-            renderCategoryWiseReport();
+            renderTeamAdminReports(); // Render for default view
+            renderCategoryWiseReport(); // Render for default view
+            
+            // Populate SKU wise report view
+            const skuReportContainer = document.getElementById('skuReportContainer');
+            skuReportContainer.innerHTML = '';
+            const teamReportClone = document.getElementById('view_team_report').cloneNode(true);
+            const dateRangeReportClone = document.getElementById('view_date_range_report').cloneNode(true);
+            teamReportClone.querySelector('h3').innerText = "Daily Team Report (Consolidated)";
+            dateRangeReportClone.querySelector('h3').innerText = "Date Range Report (Consolidated)";
+            skuReportContainer.appendChild(teamReportClone);
+            skuReportContainer.appendChild(document.createElement('hr'));
+            skuReportContainer.appendChild(dateRangeReportClone);
+
         }
 
         function copyNotSubmittedNames() {
-            const namesText = document.getElementById('notSubmittedNames').value;
+            const container = document.getElementById('reportSubmissionStatus');
+            const namesText = container.querySelector('textarea')?.value;
             if (namesText) {
                 navigator.clipboard.writeText(namesText).then(() => {
                     showAlert('Names copied to clipboard!');
@@ -1631,8 +1803,8 @@
             }
         }
         
-        async function copyTable() {
-            const table = document.getElementById('reportTable');
+        async function copyTable(tableId) {
+            const table = document.getElementById(tableId);
             try {
                 let text = '';
                 for (const row of table.rows) {
@@ -1727,16 +1899,15 @@
             if (new Date(startDate) > new Date(endDate)) {
                 return showAlert('Start date cannot be after end date.');
             }
-            renderTeamAdminReports(startDate, endDate, member, product);
+            renderTeamAdminReports(startDate, endDate, member, product, 'dateRange');
         }
 
-        function renderTeamAdminReports(startDate, endDate, selectedMember, selectedProduct) {
-            const isFiltered = startDate && endDate;
-            const selectedDateValue = startDate || document.getElementById('reportDate').value;
+        function renderTeamAdminReports(date, endDate, selectedMember, selectedProduct, reportType = 'daily') {
+            const isDateRange = reportType === 'dateRange';
+            const selectedDateValue = date || document.getElementById('reportDate').value;
+            const finalEndDate = endDate || selectedDateValue;
             
-            const { productData, reportingMembers } = isFiltered
-                ? getReportDataForDateRange(startDate, endDate, selectedMember, selectedProduct)
-                : getReportDataForDateRange(selectedDateValue, selectedDateValue, 'all', 'all');
+            const { productData, reportingMembers } = getReportDataForDateRange(selectedDateValue, finalEndDate, selectedMember, selectedProduct);
 
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
             const allMembers = admin.teamMembers && typeof admin.teamMembers === 'object' 
@@ -1744,7 +1915,7 @@
                 : [];
             
             // Submission status check for single day, non-filtered report
-            if (!isFiltered) {
+            if (!isDateRange && !selectedMember && !selectedProduct) {
                  const reportsForDate = state.salesReports.filter(r => {
                     const reportDate = new Date(r.date);
                     const selectedDate = new Date(selectedDateValue);
@@ -1761,7 +1932,7 @@
                 const submittedCount = submittedMemberUsernames.size;
                 let notSubmittedNames = notSubmittedMembers.map(m => m.name).join(', ');
                 if (notSubmittedNames) {
-                    notSubmittedNames = "যারা এখনো রিপোর্ট দেননি তাদের নাম দেয়া হলো, অনুগ্রহ পূর্বক রিপোর্ট দেন !!! " + notSubmittedNames;
+                    notSubmittedNames = "যারা এখনো রিপোর্ট দেননি তাদের নাম দেয়া হলো, অনুগ্রহ পূর্বক রিপোর্ট দেন !!! " + notSubmittedNames + " belly9t-coder.github.io";
                 }
 
                 statusContainer.innerHTML = `
@@ -1770,26 +1941,27 @@
                         <div class="mt-2">
                             <label for="notSubmittedNames" class="font-semibold">Members who did not submit:</label>
                             <div class="flex items-center">
-                                <textarea id="notSubmittedNames" readonly class="input-field !mb-0 flex-grow" rows="2">${notSubmittedNames}</textarea>
+                                <textarea readonly class="input-field !mb-0 flex-grow" rows="2">${notSubmittedNames}</textarea>
                                 <button onclick="copyNotSubmittedNames()" class="btn btn-secondary ml-2">Copy</button>
                             </div>
                         </div>
                     ` : '<p class="mt-2 text-green-600 font-semibold">All active members have submitted their reports!</p>'}
                 `;
-            } else {
+            } else if (!isDateRange) {
                  document.getElementById('reportSubmissionStatus').innerHTML = `<p class="font-bold">Displaying filtered report.</p>`;
             }
 
-            const memberRow = document.getElementById('memberRow');
-            const subHeaderRow = document.getElementById('subHeaderRow');
-            const tableBody = document.getElementById('tableBody');
-            const tableFoot = document.getElementById('tableFoot');
+            const tablePrefix = isDateRange ? 'dateRange' : '';
+            const memberRow = document.getElementById(`${tablePrefix}MemberRow`);
+            const subHeaderRow = document.getElementById(`${tablePrefix}SubHeaderRow`);
+            const tableBody = document.getElementById(`${tablePrefix}TableBody`);
+            const tableFoot = document.getElementById(`${tablePrefix}TableFoot`);
 
             if (Object.keys(productData).length === 0) {
-                memberRow.innerHTML = '';
-                subHeaderRow.innerHTML = '';
-                tableBody.innerHTML = '<tr><td colspan="100%" class="p-4 text-center text-gray-500">No data available for the selected criteria.</td></tr>';
-                tableFoot.innerHTML = '';
+                if (memberRow) memberRow.innerHTML = '';
+                if (subHeaderRow) subHeaderRow.innerHTML = '';
+                if (tableBody) tableBody.innerHTML = '<tr><td colspan="100%" class="p-4 text-center text-gray-500">No data available for the selected criteria.</td></tr>';
+                if (tableFoot) tableFoot.innerHTML = '';
                 return;
             }
 
@@ -1867,20 +2039,22 @@
             tableFoot.innerHTML = footerHtml;
         }
 
-        function exportReportToExcel() {
-            const table = document.getElementById('reportTable');
+        function exportReportToExcel(tableId) {
+            const table = document.getElementById(tableId);
             if (!table || table.querySelector('td')?.innerText.includes('No data')) {
                  return showAlert('No data available to export.');
             }
             const wb = XLSX.utils.table_to_book(table, {sheet: "Report"});
             
-            const selectedDate = document.getElementById('reportDate').value;
-            const startDate = document.getElementById('reportStartDate').value;
-            const endDate = document.getElementById('reportEndDate').value;
-            
-            let fileName = `SalesReport_${selectedDate}.xlsx`;
-            if (startDate && endDate && (startDate !== selectedDate || endDate !== selectedDate)) {
-                 fileName = `SalesReport_${startDate}_to_${endDate}.xlsx`;
+            let fileName;
+            if(tableId === 'dateRangeReportTable' || tableId === 'categoryReportTable') {
+                const startDate = document.getElementById(tableId === 'categoryReportTable' ? 'categoryReportStartDate' : 'reportStartDate').value;
+                const endDate = document.getElementById(tableId === 'categoryReportTable' ? 'categoryReportEndDate' : 'reportEndDate').value;
+                const prefix = tableId === 'categoryReportTable' ? 'CategoryWiseReport' : 'SalesReport';
+                fileName = `${prefix}_${startDate}_to_${endDate}.xlsx`;
+            } else {
+                const selectedDate = document.getElementById('reportDate').value;
+                fileName = `SalesReport_${selectedDate}.xlsx`;
             }
 
             XLSX.writeFile(wb, fileName);
@@ -2064,10 +2238,6 @@
                 return showAlert('You have already submitted your report for today. You can delete the existing one to submit a new one.');
             }
 
-            if (state.currentReportItems.length === 0) {
-                return showAlert('Please add at least one product to the report.');
-            }
-
             const grandTotal = state.currentReportItems.reduce((sum, item) => sum + item.amount, 0);
 
             const reportData = {
@@ -2196,6 +2366,9 @@
 
         function renderTeamMemberDashboard() {
             const today = new Date().toISOString().split('T')[0];
+            document.getElementById('memberReportStartDate').value = today;
+            document.getElementById('memberReportEndDate').value = today;
+
 
             document.getElementById('loggedInTeamMemberName').innerText = state.loggedInUserName;
             
@@ -2292,6 +2465,104 @@
             }
             state.currentReportItems = [];
             renderCurrentReportItems();
+            
+            // Show/hide dynamic report view for member
+            const adminReportingSettings = state.reportingSettings[state.loggedInUserTeamId] || {};
+            const dynamicReportView = document.getElementById('memberDynamicReportView');
+
+            if (adminReportingSettings.skuReportEnabled) {
+                 dynamicReportView.style.display = 'block';
+                 const skuReportContainerAdmin = document.getElementById('skuReportContainer');
+                 dynamicReportView.innerHTML = `<h3 class="text-lg font-semibold mb-2">Admin Enabled Report</h3>` + skuReportContainerAdmin.innerHTML;
+            } else {
+                dynamicReportView.style.display = 'none';
+                dynamicReportView.innerHTML = '';
+            }
+        }
+
+        function renderMemberPersonalReport() {
+            const contentDiv = document.getElementById('memberPersonalReportContent');
+            contentDiv.style.display = 'block';
+
+            const startDateStr = document.getElementById('memberReportStartDate').value;
+            const endDateStr = document.getElementById('memberReportEndDate').value;
+            const selectedMemberUsername = state.loggedInUserUsername;
+
+            if (!startDateStr || !endDateStr) {
+                contentDiv.innerHTML = '<p class="text-red-500">Please select both start and end dates.</p>';
+                return;
+            }
+
+            const startDate = new Date(startDateStr);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(endDateStr);
+            endDate.setHours(23, 59, 59, 999);
+
+            let relevantReports = state.salesReports.filter(r => {
+                return r.submittedBy === selectedMemberUsername && new Date(r.date).getTime() >= startDate.getTime() && new Date(r.date).getTime() <= endDate.getTime();
+            });
+            
+            const categoryData = {};
+            Object.keys(reportingCategories).forEach(cat => {
+                categoryData[cat] = { tgtAmount: 0, salesAmount: 0 };
+            });
+
+            relevantReports.forEach(report => {
+                report.reportData.items.forEach(item => {
+                    for (const categoryName in reportingCategories) {
+                        if (reportingCategories[categoryName].includes(item.name)) {
+                            const productInfo = state.products.find(p => p.name === item.name);
+                            const rate = productInfo ? productInfo.rate : item.rate;
+                            categoryData[categoryName].tgtAmount += item.tgt * rate;
+                            categoryData[categoryName].salesAmount += item.sales * rate;
+                            break; 
+                        }
+                    }
+                });
+            });
+
+            // Render Table
+            let tableHtml = `
+                <table class="w-full text-left text-sm mt-4">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="p-2 font-semibold">Category</th>
+                            <th class="p-2 font-semibold text-right">TGT Amount</th>
+                            <th class="p-2 font-semibold text-right">Sales Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let totalTgt = 0;
+            let totalSales = 0;
+
+            for (const categoryName in categoryData) {
+                const data = categoryData[categoryName];
+                totalTgt += data.tgtAmount;
+                totalSales += data.salesAmount;
+                tableHtml += `
+                    <tr class="border-b">
+                        <td class="p-2">${categoryName}</td>
+                        <td class="p-2 text-right">${Math.round(data.tgtAmount).toLocaleString()}</td>
+                        <td class="p-2 text-right">${Math.round(data.salesAmount).toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+            
+            tableHtml += `
+                    </tbody>
+                    <tfoot class="font-bold bg-gray-100">
+                        <tr>
+                            <td class="p-2">Grand Total</td>
+                            <td class="p-2 text-right">${Math.round(totalTgt).toLocaleString()}</td>
+                            <td class="p-2 text-right">${Math.round(totalSales).toLocaleString()}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+
+            contentDiv.innerHTML = tableHtml;
         }
         
         function renderAdvertisements(pageId) {
@@ -2315,14 +2586,16 @@
         // --- Notification and Voice System ---
         function loadBengaliVoice() {
             if (!synth) return;
-            const voices = synth.getVoices();
-            if (voices.length === 0) return; // Wait for onvoiceschanged
+             // This function is called once on init and on voiceschanged event
+            const allVoices = synth.getVoices();
+            if (allVoices.length === 0) {
+                // If voices are not loaded yet, the 'voiceschanged' event will trigger this again.
+                return;
+            }
 
-            // Find the best available Bengali voice
-            bengaliVoice = voices.find(v => v.lang === 'bn-BD' && (v.name.includes('Female') || v.name.includes('FEMALE') || v.localService)) ||
-                           voices.find(v => v.lang === 'bn-BD') ||
-                           voices.find(v => v.lang === 'bn-IN' && (v.name.includes('Female') || v.name.includes('FEMALE'))) ||
-                           voices.find(v => v.lang.startsWith('bn')) ||
+            bengaliVoice = allVoices.find(v => v.lang === 'bn-BD' && v.name.includes('Female')) ||
+                           allVoices.find(v => v.lang === 'bn-BD') ||
+                           allVoices.find(v => v.lang.startsWith('bn-')) ||
                            null;
 
             if (bengaliVoice) {
@@ -2339,27 +2612,32 @@
                 return;
             }
 
-            synth.cancel(); // Stop any previous speech
+            synth.cancel(); // Stop any currently speaking utterance
 
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'bn-BD';
-            utterance.rate = 0.85; // Slightly slower for clarity
+            utterance.rate = 0.85; 
             utterance.pitch = 1;
             utterance.volume = 1;
 
             if (bengaliVoice) {
                 utterance.voice = bengaliVoice;
             } else {
-                // If voice not found yet, try to load it again, but don't delay this speech
+                // Attempt to find it again, in case it loaded late.
                 loadBengaliVoice();
                 if(bengaliVoice) utterance.voice = bengaliVoice;
             }
 
-            if (onEndCallback) {
-                utterance.onend = onEndCallback;
-            }
+            utterance.onend = () => {
+                if(onEndCallback) onEndCallback();
+            };
+            
+            utterance.onerror = (event) => {
+                console.error('SpeechSynthesisUtterance.onerror', event);
+                 if (onEndCallback) onEndCallback();
+            };
 
-            synth.speak(utterance);
+            setTimeout(() => synth.speak(utterance), 100);
         }
 
         async function playAdminWelcomeVoice() {
@@ -2424,12 +2702,13 @@
         
         function unlockAudio() {
             if (!synth) return;
-            if (synth.paused) synth.resume();
-            if (!synth.speaking) {
-                const dummyUtterance = new SpeechSynthesisUtterance('');
-                dummyUtterance.volume = 0;
-                synth.speak(dummyUtterance);
+            // A silent utterance on user interaction is the most reliable way to unlock the audio context.
+            if (synth.paused) {
+                synth.resume();
             }
+            const utterance = new SpeechSynthesisUtterance('');
+            utterance.volume = 0;
+            synth.speak(utterance);
         }
 
         function startMemberAlarmSystem() {
@@ -2654,7 +2933,8 @@
             const selectedMemberUsername = document.getElementById('categoryReportMemberSelect').value;
 
             if (!startDateStr || !endDateStr) {
-                return showAlert('Please select both start and end dates for the category report.');
+                // Just return without alert, as it might be called on init
+                return;
             }
 
             const startDate = new Date(startDateStr);
@@ -2663,8 +2943,7 @@
             endDate.setHours(23, 59, 59, 999);
 
             let relevantReports = state.salesReports.filter(r => {
-                const reportDate = new Date(r.date).getTime();
-                return r.team === state.loggedInUserName && reportDate >= startDate.getTime() && reportDate <= endDate.getTime();
+                return r.team === state.loggedInUserName && new Date(r.date).getTime() >= startDate.getTime() && new Date(r.date).getTime() <= endDate.getTime();
             });
 
             if (selectedMemberUsername !== 'all') {
@@ -2815,10 +3094,6 @@
                 micBtn.classList.add('listening');
                 assistantStatus.textContent = "শুনছি...";
                 assistantStatus.style.display = 'block';
-                if(countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
             };
 
             recognition.onresult = (event) => {
@@ -2842,18 +3117,15 @@
             recognition.onend = () => {
                 isListening = false;
                 micBtn.classList.remove('listening');
-                if (!countdownInterval) {
+                 if (!countdownInterval && !synth.speaking) {
                     setTimeout(() => {
-                        // Only hide status if synth is not speaking
-                        if(!window.speechSynthesis.speaking) {
-                            assistantStatus.style.display = 'none';
-                        }
+                        assistantStatus.style.display = 'none';
                     }, 3000);
                 }
             };
 
             micBtn.addEventListener('click', () => {
-                unlockAudio(); 
+                unlockAudio(); // Important: unlock audio context on user gesture
                 
                 if (isListening) {
                     recognition.stop();
@@ -2869,75 +3141,308 @@
             });
         }
         
-        function processVoiceCommand(command) {
-            const lowerCaseCommand = command.toLowerCase();
-            let response = "";
-            
-            // --- App-Specific Commands ---
-            if (lowerCaseCommand.includes("আজকের মোট বিক্রি") || lowerCaseCommand.includes("আজকের টোটাল সেলস")) {
-                const today = new Date().toISOString().split('T')[0];
-                const { grandTotalAmount } = getReportDataForDateRange(today, today, 'all', 'all');
-                response = `আজকের মোট বিক্রির পরিমাণ হলো ${Math.round(grandTotalAmount)} টাকা।`;
-            } 
-            else if (lowerCaseCommand.includes("রিপোর্ট দেয়নি") || lowerCaseCommand.includes("রিপোর্ট সাবমিট করেনি")) {
-                const today = new Date().toISOString().split('T')[0];
-                const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
-                const allMembers = admin.teamMembers ? Object.values(admin.teamMembers).filter(m => m.status === 'active') : [];
+        async function processVoiceCommand(command) {
+            const assistantStatus = document.getElementById('assistant-status');
+            assistantStatus.textContent = "উত্তর প্রস্তুত করছি...";
 
-                const reportsForDate = state.salesReports.filter(r => {
-                    const reportDate = new Date(r.date);
-                    const selectedDate = new Date(today);
-                    return r.team === state.loggedInUserName &&
-                           reportDate.getFullYear() === selectedDate.getFullYear() &&
-                           reportDate.getMonth() === selectedDate.getMonth() &&
-                           reportDate.getDate() === selectedDate.getDate();
+            const functionUrl = 'https://us-central1-ekta-local-saver.cloudfunctions.net/askAI';
+            
+            try {
+                const response = await fetch(functionUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: command, adminId: state.loggedInUser })
                 });
 
-                const submittedMemberUsernames = new Set(reportsForDate.map(r => r.submittedBy));
-                const notSubmittedMembers = allMembers.filter(m => !submittedMemberUsernames.has(m.username));
+                if (!response.ok) {
+                    throw new Error(`Cloud Function Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const aiResponse = data.answer || "দুঃখিত, আমি কোনো উত্তর খুঁজে পাইনি।";
                 
-                if (notSubmittedMembers.length === 0) {
-                    response = "খুব ভালো খবর! আজ সবাই সময়মতো রিপোর্ট জমা দিয়েছেন।";
-                } else {
-                    const names = notSubmittedMembers.map(m => m.name).join(', ');
-                    response = `আজ ${notSubmittedMembers.length} জন রিপোর্ট জমা দেননি। তাদের নাম হলো: ${names}।`;
+                playVoice(aiResponse, () => {
+                    assistantStatus.style.display = 'none';
+                });
+
+            } catch (error) {
+                console.error("Error calling Cloud Function:", error);
+                const errorMessage = "দুঃখিত, এই মুহূর্তে আমি আপনার প্রশ্নের উত্তর দিতে পারছি না।";
+                
+                assistantStatus.textContent = errorMessage;
+                playVoice(errorMessage, () => {
+                    assistantStatus.style.display = 'none';
+                });
+            }
+        }
+        
+        // --- Sidebar and New UI Functions ---
+        async function getSidebarMenuConfig() {
+            const adminId = state.loggedInUser;
+            const snapshot = await db.ref(`sidebarMenuConfig/${adminId}`).once('value');
+            const config = snapshot.val();
+            if (config) {
+                state.sidebarMenuConfig = config;
+            } else {
+                state.sidebarMenuConfig = [
+                    { id: 'dashboard_default', name: 'Dashboard Home', icon: '🏠', children: [] },
+                    { id: 'team_report', name: 'Daily Team Report', icon: '📊', children: [] },
+                    { id: 'date_range_report', name: 'Date Range Report', icon: '📅', children: [] },
+                    { id: 'reporting_format', name: 'Reporting Format', icon: '📋', children: [
+                        { id: 'reporting_format_sku', name: 'SKU Wise Report', icon: '📦', children: [] },
+                    ] },
+                    { id: 'create_team_member', name: 'Create Team Member', icon: '➕', children: [] },
+                    { id: 'all_sections', name: 'All Section Management', icon: '⚙️', children: [
+                        { id: 'manage_team_members', name: 'Manage Team Members', children: [] },
+                        { id: 'notice_for_members', name: 'Notice for Members', children: [] },
+                        { id: 'add_new_product', name: 'Add New Product', children: [] },
+                        { id: 'manage_products', name: 'Manage Products', children: [] },
+                        { id: 'manage_categories', name: 'Manage Categories', children: [] },
+                        { id: 'notification_system', name: 'Notification System', children: [] },
+                        { id: 'logout_settings', name: 'Logout Settings', children: [] },
+                        { id: 'voice_settings', name: 'Voice Settings', children: [] },
+                    ]}
+                ];
+                await saveSidebarMenuConfig();
+            }
+        }
+
+        async function saveSidebarMenuConfig() {
+            const adminId = state.loggedInUser;
+            await db.ref(`sidebarMenuConfig/${adminId}`).set(state.sidebarMenuConfig);
+        }
+
+        function renderSidebarMenu(menuConfig) {
+            const nav = document.getElementById('sidebar-nav');
+            nav.innerHTML = '';
+
+            const createMenuItemHTML = (item) => {
+                const hasChildren = item.children && item.children.length > 0;
+                return `
+                    <div class="sidebar-menu-container" data-id="${item.id}">
+                        <div class="sidebar-menu-item" onclick="${!hasChildren ? `switchAdminView('view_${item.id}')` : `toggleSubmenu(this)`}" id="menu_item_${item.id}">
+                            <span class="flex-grow">${item.icon || ''} ${item.name}</span>
+                            <button class="add-submenu-btn" onclick="event.stopPropagation(); addNewSubMenu('${item.id}');">+</button>
+                            <button class="delete-menu-btn" onclick="event.stopPropagation(); deleteMenu('${item.id}');">&times;</button>
+                            ${hasChildren ? '<span class="transform transition-transform duration-200">&#9656;</span>' : ''}
+                        </div>
+                        ${hasChildren ? `
+                            <div class="sidebar-submenu" id="submenu_${item.id}">
+                                ${item.children.map(createMenuItemHTML).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            };
+
+            nav.innerHTML = menuConfig.map(createMenuItemHTML).join('');
+            initSortable();
+        }
+
+        function toggleSubmenu(element) {
+            const parentContainer = element.closest('.sidebar-menu-container');
+            const submenu = parentContainer.querySelector('.sidebar-submenu');
+            if (submenu) {
+                submenu.classList.toggle('show');
+                element.querySelector('span.transform').classList.toggle('rotate-90');
+            }
+        }
+        
+        async function addNewSubMenu(parentId) {
+            const name = prompt("Enter new sub-menu name:");
+            if (!name) return;
+            const id = name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+            const newItem = { id, name, children: [] };
+
+            const findAndAddItem = (items) => {
+                for (const item of items) {
+                    if (item.id === parentId) {
+                        item.children.push(newItem);
+                        return true;
+                    }
+                    if (item.children && findAndAddItem(item.children)) {
+                        return true;
+                    }
                 }
-            } 
-            // --- General Conversation ---
-            else if (lowerCaseCommand.includes("কেমন আছো") || lowerCaseCommand.includes("কেমন আছেন")) {
-                response = "ধন্যবাদ। আমি ভালো আছি। আপনাকে কীভাবে সাহায্য করতে পারি?";
-            } else if (lowerCaseCommand.includes("তোমার নাম কি")) {
-                response = "আমি আপনার ব্যক্তিগত সেলস অ্যাসিস্ট্যান্ট। আপনি আমাকে যেকোনো প্রশ্ন করতে পারেন।";
-            } else if (lowerCaseCommand.includes("ধন্যবাদ")) {
-                response = "আপনাকে স্বাগতম!";
-            }
-            // --- Fallback for unknown questions ---
-            else {
-                response = "দুঃখিত, আমি আপনার প্রশ্নটি বুঝতে পারিনি। আমি এখনো শিখছি। আপনি আমাকে রিপোর্ট সম্পর্কিত বা সাধারণ জ্ঞানের প্রশ্ন করতে পারেন।";
-            }
+                return false;
+            };
 
-            const assistantStatus = document.getElementById('assistant-status');
-            const micBtn = document.getElementById('mic-btn');
-            
-            assistantStatus.textContent = "উত্তর প্রস্তুত করছি...";
-            
-            let countdown = Math.floor(Math.random() * 2) + 2; // Random time between 2-3 seconds
-            micBtn.innerHTML = `<span class="text-2xl">${countdown}</span>`;
+            findAndAddItem(state.sidebarMenuConfig);
+            renderSidebarMenu(state.sidebarMenuConfig);
+            await saveSidebarMenuConfig();
+        }
 
-            countdownInterval = setInterval(() => {
-                countdown--;
-                if (countdown > 0) {
-                    micBtn.innerHTML = `<span class="text-2xl">${countdown}</span>`;
-                } else {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                    micBtn.innerHTML = `<svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM17 12a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V22h2v-3.08A7 7 0 0 0 19 12h-2z"/></svg>`;
+        async function addNewMainMenu() {
+            const name = prompt("Enter new menu name:");
+            if (!name) return;
+            const id = name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+            const newItem = { id, name, icon: '📄', children: [] };
+            state.sidebarMenuConfig.push(newItem);
+            renderSidebarMenu(state.sidebarMenuConfig);
+            await saveSidebarMenuConfig();
+        }
+        
+        async function deleteMenu(itemId) {
+            if (!confirm("Are you sure you want to delete this menu and all its sub-menus?")) return;
+
+            const findAndRemove = (items) => {
+                const index = items.findIndex(item => item.id === itemId);
+                if (index > -1) {
+                    items.splice(index, 1);
+                    return true;
+                }
+                for (const item of items) {
+                    if (item.children && findAndRemove(item.children)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            findAndRemove(state.sidebarMenuConfig);
+            renderSidebarMenu(state.sidebarMenuConfig);
+            await saveSidebarMenuConfig();
+        }
+        
+        function initSortable() {
+            const nav = document.getElementById('sidebar-nav');
+            const submenus = nav.querySelectorAll('.sidebar-submenu');
+
+            const sortableOptions = {
+                group: 'nested',
+                animation: 150,
+                fallbackOnBody: true,
+                swapThreshold: 0.65,
+                onEnd: async (evt) => {
+                    const getPath = (element) => {
+                        let path = [];
+                        let current = element;
+                        while (current && current.id !== 'sidebar-nav') {
+                            if (current.dataset.id) {
+                                path.unshift(current.dataset.id);
+                            }
+                            current = current.parentElement;
+                        }
+                        return path;
+                    };
                     
-                    playVoice(response, () => {
-                        assistantStatus.style.display = 'none';
-                    });
+                    const fromPath = getPath(evt.from);
+                    const toPath = getPath(evt.to);
+                    const itemId = evt.item.dataset.id;
+                    
+                    let draggedItem = null;
+
+                    const findAndRemove = (items, id) => {
+                        let found = null;
+                        for(let i=0; i<items.length; i++){
+                            if(items[i].id === id) {
+                                found = items.splice(i, 1)[0];
+                                break;
+                            }
+                            if(items[i].children) {
+                                found = findAndRemove(items[i].children, id);
+                                if(found) break;
+                            }
+                        }
+                        return found;
+                    };
+
+                    draggedItem = findAndRemove(state.sidebarMenuConfig, itemId);
+
+                    if(draggedItem) {
+                        const findAndInsert = (items, path, itemToInsert, newIndex) => {
+                           let currentLevel = items;
+                           for(const p of path) {
+                               const parent = currentLevel.find(i => i.id === p);
+                               if(parent) {
+                                   currentLevel = parent.children;
+                               }
+                           }
+                           currentLevel.splice(newIndex, 0, itemToInsert);
+                        };
+
+                        findAndInsert(state.sidebarMenuConfig, toPath.slice(0, -1), draggedItem, evt.newIndex);
+                    }
+                    
+                    await saveSidebarMenuConfig();
+                    renderSidebarMenu(state.sidebarMenuConfig);
                 }
-            }, 1000);
+            };
+            
+            new Sortable(nav, sortableOptions);
+            submenus.forEach(submenu => {
+                new Sortable(submenu, sortableOptions);
+            });
+        }
+
+
+        async function setupAdminSidebar() {
+            await getSidebarMenuConfig();
+            renderSidebarMenu(state.sidebarMenuConfig);
+        }
+        
+        function switchAdminView(viewId) {
+            document.querySelectorAll('.admin-content-view').forEach(v => v.classList.remove('active'));
+            const view = document.getElementById(viewId);
+            if(view) {
+                view.classList.add('active');
+            } else {
+                // If view doesn't exist, show a placeholder or default
+                document.getElementById('view_dashboard_default').classList.add('active');
+                console.warn(`View with id "${viewId}" not found. Showing default.`);
+            }
+
+            document.querySelectorAll('#sidebar-nav .sidebar-menu-item, #sidebar-nav .sidebar-submenu-item').forEach(item => item.classList.remove('active'));
+            
+            const menuItemId = `menu_item_${viewId.replace('view_', '')}`;
+            const activeItem = document.getElementById(menuItemId);
+            if(activeItem) {
+                activeItem.classList.add('active');
+                let parent = activeItem.closest('.sidebar-submenu');
+                while(parent) {
+                    parent.classList.add('show');
+                    const parentMenu = parent.closest('.sidebar-menu-container').querySelector('.sidebar-menu-item');
+                    if(parentMenu) {
+                        parentMenu.classList.add('active');
+                        parentMenu.querySelector('span.transform')?.classList.add('rotate-90');
+                    }
+                    parent = parent.parentElement.closest('.sidebar-submenu');
+                }
+            }
+
+            if (window.innerWidth < 768) {
+                toggleSidebar(false); // Hide sidebar on mobile after selection
+            }
+        }
+        
+        function toggleSidebar(forceShow) {
+            const sidebar = document.getElementById('admin-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const shouldShow = forceShow !== undefined ? forceShow : !sidebar.classList.contains('show');
+            
+            if (shouldShow) {
+                sidebar.classList.add('show');
+                overlay.classList.add('show');
+            } else {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            }
+        }
+        
+        function renderSkuReportSettings() {
+            const adminId = state.loggedInUser;
+            const settings = state.reportingSettings[adminId] || {};
+            document.getElementById('enableSkuReport').checked = settings.skuReportEnabled || false;
+        }
+
+        async function toggleSkuReportForMembers(isEnabled) {
+            const adminId = state.loggedInUser;
+            const currentSettings = state.reportingSettings[adminId] || {};
+            const newSettings = { ...currentSettings, skuReportEnabled: isEnabled };
+            
+            await db.ref(`reportingSettings/${adminId}`).set(newSettings);
+            state.reportingSettings[adminId] = newSettings;
+            showAlert(`SKU Wise Report for team members has been ${isEnabled ? 'enabled' : 'disabled'}.`);
         }
 
 
@@ -2947,10 +3452,10 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
 
+            // Pre-load voices
             if (synth) {
-                if (synth.getVoices().length > 0) {
-                    loadBengaliVoice();
-                } else {
+                loadBengaliVoice(); // Initial call
+                if (synth.onvoiceschanged !== undefined) {
                     synth.onvoiceschanged = loadBengaliVoice;
                 }
             }
@@ -3040,5 +3545,3 @@
     </script>
 </body>
 </html>
-
-    
