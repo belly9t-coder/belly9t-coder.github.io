@@ -116,7 +116,7 @@
             border: 1px solid #e2e8f0;
         }
         
-        #reportTable, #dateRangeReportTable {
+        #reportTable, #dateRangeReportTable, #skuTgtVsSalesReportTable, #myCategoryReportTable, #categoryReportTable {
             border-collapse: collapse;
             width: 100%;
             background: white;
@@ -124,22 +124,29 @@
             font-size: 0.7rem; /* Smaller font size */
         }
         #reportTable th, #reportTable td,
-        #dateRangeReportTable th, #dateRangeReportTable td {
+        #dateRangeReportTable th, #dateRangeReportTable td,
+        #skuTgtVsSalesReportTable th, #skuTgtVsSalesReportTable td,
+        #myCategoryReportTable th, #myCategoryReportTable td,
+        #categoryReportTable th, #categoryReportTable td {
             border: 1px solid #ddd;
             padding: 3px; /* Smaller padding */
             text-align: center;
             white-space: nowrap;
         }
-        #reportTable thead th, #dateRangeReportTable thead th {
+        #reportTable thead th, #dateRangeReportTable thead th, #skuTgtVsSalesReportTable thead th, #myCategoryReportTable thead th, #categoryReportTable thead th {
             position: sticky;
             z-index: 10;
         }
         #reportTable thead tr:first-child th,
-        #dateRangeReportTable thead tr:first-child th {
+        #dateRangeReportTable thead tr:first-child th,
+        #skuTgtVsSalesReportTable thead tr:first-child th,
+        #myCategoryReportTable thead tr:first-child th,
+        #categoryReportTable thead tr:first-child th {
             top: 0;
         }
         #reportTable thead tr:nth-child(2) th,
-        #dateRangeReportTable thead tr:nth-child(2) th {
+        #dateRangeReportTable thead tr:nth-child(2) th,
+        #skuTgtVsSalesReportTable thead tr:nth-child(2) th {
             top: 25px; /* Adjust this value based on the height of the first row */
         }
 
@@ -148,13 +155,19 @@
         #reportTable th:nth-child(3), #reportTable td:nth-child(3),
         #dateRangeReportTable th:first-child, #dateRangeReportTable td:first-child,
         #dateRangeReportTable th:nth-child(2), #dateRangeReportTable td:nth-child(2),
-        #dateRangeReportTable th:nth-child(3), #dateRangeReportTable td:nth-child(3) {
+        #dateRangeReportTable th:nth-child(3), #dateRangeReportTable td:nth-child(3),
+        #skuTgtVsSalesReportTable th:first-child, #skuTgtVsSalesReportTable td:first-child,
+        #myCategoryReportTable th:first-child, #myCategoryReportTable td:first-child,
+        #categoryReportTable th:first-child, #categoryReportTable td:first-child {
             position: sticky;
             z-index: 11;
             background: #f1f5f9;
         }
         #reportTable th:first-child, #reportTable td:first-child,
-        #dateRangeReportTable th:first-child, #dateRangeReportTable td:first-child {
+        #dateRangeReportTable th:first-child, #dateRangeReportTable td:first-child,
+        #skuTgtVsSalesReportTable th:first-child, #skuTgtVsSalesReportTable td:first-child,
+        #myCategoryReportTable th:first-child, #myCategoryReportTable td:first-child,
+        #categoryReportTable th:first-child, #categoryReportTable td:first-child {
             left: 0;
             min-width: 40px;
         }
@@ -168,23 +181,26 @@
             left: 140px;
         }
         
-        #reportTable thead th, #dateRangeReportTable thead th {
+        #reportTable thead th, #dateRangeReportTable thead th, #skuTgtVsSalesReportTable thead th, #myCategoryReportTable thead th, #categoryReportTable thead th {
              background: #0867d2;
              color: white;
         }
         #reportTable th:first-child, #reportTable th:nth-child(2), #reportTable th:nth-child(3),
-        #dateRangeReportTable th:first-child, #dateRangeReportTable th:nth-child(2), #dateRangeReportTable th:nth-child(3) {
+        #dateRangeReportTable th:first-child, #dateRangeReportTable th:nth-child(2), #dateRangeReportTable th:nth-child(3),
+        #skuTgtVsSalesReportTable th:first-child,
+        #myCategoryReportTable th:first-child,
+        #categoryReportTable th:first-child {
             z-index: 12;
         }
 
-        #reportTable tfoot td, #dateRangeReportTable tfoot td {
+        #reportTable tfoot td, #dateRangeReportTable tfoot td, #skuTgtVsSalesReportTable tfoot td, #myCategoryReportTable tfoot td, #categoryReportTable tfoot td {
             font-weight: bold;
             background: #f1f5f9;
         }
-        #reportTable .summary-header, #dateRangeReportTable .summary-header {
+        #reportTable .summary-header, #dateRangeReportTable .summary-header, #skuTgtVsSalesReportTable .summary-header {
             background: #4a148c; /* Purple for Summary Header */
         }
-        #reportTable .summary-col, #dateRangeReportTable .summary-col {
+        #reportTable .summary-col, #dateRangeReportTable .summary-col, #skuTgtVsSalesReportTable .summary-col {
              background: #f3e5f5; /* Light purple for summary data columns */
              font-weight: bold;
         }
@@ -602,7 +618,7 @@
                             </div>
                             <div class="flex flex-col sm:flex-row gap-4">
                                 <button onclick="renderCategoryWiseReport()" class="btn btn-primary w-full">Refresh Report</button>
-                                <button onclick="exportCategoryReportToExcel()" class="btn btn-success w-full">Export to Excel</button>
+                                <button onclick="exportReportToExcel('categoryReportTable')" class="btn btn-success w-full">Export to Excel</button>
                             </div>
                             <div class="mt-4 h-96">
                                 <canvas id="categoryChart"></canvas>
@@ -684,26 +700,73 @@
                          </div>
                     </div>
 
-                    <!-- Reporting Format View -->
-                    <div id="view_reporting_format_sku" class="admin-content-view">
+                    <!-- New SKU TGT vs Sales Report View -->
+                    <div id="view_sku_tgt_vs_sales_report" class="admin-content-view">
                         <div class="card">
-                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-semibold">SKU Wise Report Format</h3>
-                                <div class="flex items-center">
-                                    <span class="mr-2 font-medium text-gray-700">Enable for Team Members:</span>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" id="enableSkuReport" class="sr-only peer" onchange="toggleSkuReportForMembers(this.checked)">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold">SKU TGT vs Sales Difference Report</h3>
+                                <div id="skuReportMemberToggle" class="flex items-center gap-2">
+                                     <!-- Toggle switch will be injected by JS -->
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4 p-4 border rounded-lg bg-gray-50">
+                                <div>
+                                    <label for="skuTgtDate" class="font-semibold text-sm">Target Date:</label>
+                                    <input type="date" id="skuTgtDate" class="input-field !mb-0 w-full">
+                                </div>
+                                <div>
+                                    <label for="skuSalesDate" class="font-semibold text-sm">Sales Date:</label>
+                                    <input type="date" id="skuSalesDate" class="input-field !mb-0 w-full">
+                                </div>
+                                <div>
+                                    <label for="skuMemberSelect" class="font-semibold text-sm">Select Member:</label>
+                                    <select id="skuMemberSelect" class="input-field !mb-0 w-full"></select>
+                                </div>
+                                <div class="md:col-span-1">
+                                    <label for="skuCategorySelect" class="font-semibold text-sm">Select Category:</label>
+                                    <select id="skuCategorySelect" class="input-field !mb-0 w-full"></select>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="skuProductSelect" class="font-semibold text-sm">Select Product:</label>
+                                    <select id="skuProductSelect" class="input-field !mb-0 w-full"></select>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 mb-4">
+                                <button onclick="renderSkuTgtVsSalesReport()" class="btn btn-primary w-full">Show Report</button>
+                                <button onclick="exportReportToExcel('skuTgtVsSalesReportTable')" class="btn btn-success">Export to Excel</button>
+                            </div>
+                             <div class="overflow-x-auto max-h-[60vh] overflow-y-auto">
+                                <table id="skuTgtVsSalesReportTable">
+                                    <thead>
+                                      <!-- Header will be generated by JS -->
+                                    </thead>
+                                    <tbody id="skuTgtVsSalesReportBody">
+                                    </tbody>
+                                    <tfoot id="skuTgtVsSalesReportFoot">
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                     <!-- Report Format 1 View (For Admin) -->
+                    <div id="view_report_format_1" class="admin-content-view">
+                        <div class="card">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold">Report Format 1: Category Wise Sales</h3>
+                                <div id="reportFormat1MemberToggle" class="flex items-center gap-2">
+                                     <label for="enableReportFormat1" class="font-semibold text-gray-700">Enable for Team Members</label>
+                                     <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="enableReportFormat1" class="sr-only peer" onchange="toggleMemberReportFormat('report_format_1', this.checked)">
                                         <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                     </label>
                                 </div>
-                             </div>
-                             <p class="text-sm text-gray-500 mb-6">Enabling this will allow team members to see this consolidated report view. All report tables are combined here for a complete overview.</p>
-                             
-                             <div id="skuReportContainer" class="space-y-8">
-                                <!-- All report tables will be duplicated or moved here -->
-                             </div>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">This format allows team members to see their own category-wise sales report for a selected date range.</p>
+                            
                         </div>
                     </div>
+
 
                     <!-- Create Team Member View -->
                     <div id="view_create_team_member" class="admin-content-view">
@@ -863,18 +926,6 @@
                 <!-- Member's Default View -->
                 <div id="memberDefaultView">
                     <div id="teamAdminNoticeContainer" class="border-b pb-4 mb-6"></div>
-                    <div id="memberPersonalReportContainer" class="p-4 border rounded-lg mb-6">
-                        <h3 class="text-lg font-semibold mb-2">My Category Wise Report</h3>
-                        <div class="flex items-center gap-2 mb-2">
-                             <input type="date" id="memberReportStartDate" class="input-field !mb-0">
-                             <span class="font-bold">-</span>
-                             <input type="date" id="memberReportEndDate" class="input-field !mb-0">
-                             <button onclick="renderMemberPersonalReport()" class="btn btn-primary">Show</button>
-                        </div>
-                        <div id="memberPersonalReportContent" style="display:none;" class="mt-4">
-                            <!-- Report content will be rendered here by JS -->
-                        </div>
-                    </div>
                 </div>
 
                 <div id="submitReportContainer" class="mb-8 p-4 border rounded-lg">
@@ -920,7 +971,26 @@
                 
                 <!-- Dynamic Report Format View for Members -->
                 <div id="memberDynamicReportView" class="mt-8" style="display: none;">
-                    <!-- Content from admin's enabled report format will be injected here -->
+                    <div id="memberReport_format_1" style="display: none;">
+                         <div class="card">
+                             <h3 class="text-lg font-semibold">My Category Wise Report</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end mt-4">
+                                <div>
+                                    <label for="myCategoryReportStartDate" class="font-semibold text-sm">Start Date:</label>
+                                    <input type="date" id="myCategoryReportStartDate" class="input-field !mb-0 w-full">
+                                </div>
+                                <div>
+                                    <label for="myCategoryReportEndDate" class="font-semibold text-sm">End Date:</label>
+                                    <input type="date" id="myCategoryReportEndDate" class="input-field !mb-0 w-full">
+                                </div>
+                            </div>
+                             <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                                <button onclick="renderMyCategoryWiseReport()" class="btn btn-primary w-full">Show My Report</button>
+                                <button onclick="exportReportToExcel('myCategoryReportTable')" class="btn btn-success w-full">Export to Excel</button>
+                            </div>
+                            <div id="myCategoryReportTableContainer" class="mt-4 overflow-x-auto"></div>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -1049,7 +1119,7 @@
             { id: 'prod_68', name: 'Whole Panchforan 50gm New', rate: 23.41, category: 'Panchforan and Jello' },
             { id: 'prod_69', name: 'The chef Tomato Sauce 295gm', rate: 86.20, category: 'Sauce and Vinegar' },
             { id: 'prod_70', name: 'The Chef Hot Tomato Sauce-1000gm', rate: 229.62, category: 'Sauce and Vinegar' },
-            { id: 'prod_71', name: 'The chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
+            { id: 'prod_71', name: 'The Chef Hot Tomato Sauce 3 Kg', rate: 467.03, category: 'Sauce and Vinegar' },
             { id: 'prod_72', name: 'The chef White Vinager 330 ml', rate: 26.40, category: 'Sauce and Vinegar' },
             { id: 'prod_73', name: 'The chef White vinager 650 ml', rate: 43.56, category: 'Sauce and Vinegar' },
             { id: 'prod_74', name: 'The chef white vinager 5 ltr', rate: 213.18, category: 'Sauce and Vinegar' },
@@ -1181,6 +1251,40 @@
              if (page) {
                 page.classList.add('active');
                 document.body.style.overflowY = (pageId === 'teamAdminDashboard' || pageId === 'superAdminDashboard') ? 'auto' : 'hidden';
+
+                 // Set default dates when a page with reports is shown
+                const today = new Date().toISOString().split('T')[0];
+                if (pageId === 'teamAdminDashboard') {
+                    // Daily Report
+                    const reportDateEl = document.getElementById('reportDate');
+                    if (reportDateEl) reportDateEl.value = today;
+
+                    // Date Range Report
+                    const reportStartDateEl = document.getElementById('reportStartDate');
+                    if(reportStartDateEl) reportStartDateEl.value = today;
+                    const reportEndDateEl = document.getElementById('reportEndDate');
+                    if(reportEndDateEl) reportEndDateEl.value = today;
+                    
+                    // Category Report
+                    const categoryReportStartDateEl = document.getElementById('categoryReportStartDate');
+                    if(categoryReportStartDateEl) categoryReportStartDateEl.value = today;
+                    const categoryReportEndDateEl = document.getElementById('categoryReportEndDate');
+                    if(categoryReportEndDateEl) categoryReportEndDateEl.value = today;
+
+                    // SKU TGT vs Sales Report
+                    const skuTgtDateEl = document.getElementById('skuTgtDate');
+                    if (skuTgtDateEl) skuTgtDateEl.value = today;
+                    const skuSalesDateEl = document.getElementById('skuSalesDate');
+                    if (skuSalesDateEl) skuSalesDateEl.value = today;
+                }
+                if (pageId === 'teamMemberDashboard') {
+                    // Member Category Report
+                    const myCategoryReportStartDateEl = document.getElementById('myCategoryReportStartDate');
+                    if(myCategoryReportStartDateEl) myCategoryReportStartDateEl.value = today;
+                    const myCategoryReportEndDateEl = document.getElementById('myCategoryReportEndDate');
+                    if(myCategoryReportEndDateEl) myCategoryReportEndDateEl.value = today;
+                }
+
 
                 // Show/hide voice assistant based on page
                 const voiceAssistant = document.getElementById('voice-assistant-container');
@@ -1492,7 +1596,7 @@
                 await getFullState(); 
                 renderTeamAdminDashboard();
                 showPage('teamAdminDashboard');
-                playAdminWelcomeVoice();
+                playVoice("স্বাগতম এডমিন");
             } else {
                 showAlert('Invalid username or password.');
             }
@@ -1669,32 +1773,7 @@
             }
         }
         
-        function setupToggle(buttonId, sectionId, showByDefault = false) {
-             const button = document.getElementById(buttonId);
-             const section = document.getElementById(sectionId);
-             if(!button || !section) return;
-
-             let isVisible = showByDefault;
-             const updateVisibility = () => {
-                section.style.display = isVisible ? 'block' : 'none';
-                button.innerText = isVisible ? '[Hide]' : '[Show]';
-             }
-             updateVisibility();
-
-             button.addEventListener('click', () => {
-                isVisible = !isVisible;
-                updateVisibility();
-             });
-        }
-        
         async function renderTeamAdminDashboard() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('reportDate').value = today;
-            document.getElementById('reportStartDate').value = today;
-            document.getElementById('reportEndDate').value = today;
-            document.getElementById('categoryReportStartDate').value = today;
-            document.getElementById('categoryReportEndDate').value = today;
-            
             document.getElementById('loggedInTeamAdminUsername').innerText = state.loggedInUserName;
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
             if (!admin) return;
@@ -1746,21 +1825,55 @@
 
             // Populate member and product dropdowns for reports
             const reportMemberSelect = document.getElementById('reportMemberSelect');
+            if(reportMemberSelect) {
+                reportMemberSelect.innerHTML = '<option value="all">All Members</option>';
+                members.forEach(member => {
+                    reportMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
+                });
+            }
+            
             const reportProductSelect = document.getElementById('reportProductSelect');
-            reportMemberSelect.innerHTML = '<option value="all">All Members</option>';
-            members.forEach(member => {
-                reportMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
-            });
-            reportProductSelect.innerHTML = '<option value="all">All Products</option>';
-            state.products.forEach(product => {
-                reportProductSelect.innerHTML += `<option value="${product.name}">${product.name}</option>`;
-            });
+             if(reportProductSelect) {
+                reportProductSelect.innerHTML = '<option value="all">All Products</option>';
+                state.products.forEach(product => {
+                    reportProductSelect.innerHTML += `<option value="${product.name}">${product.name}</option>`;
+                });
+            }
 
             const categoryMemberSelect = document.getElementById('categoryReportMemberSelect');
-            categoryMemberSelect.innerHTML = '<option value="all">All Members</option>';
-            members.forEach(member => {
-                categoryMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
-            });
+            if(categoryMemberSelect) {
+                categoryMemberSelect.innerHTML = '<option value="all">All Members</option>';
+                members.forEach(member => {
+                    categoryMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
+                });
+            }
+            
+            // Populate filters for new SKU TGT vs Sales report
+            const skuMemberSelect = document.getElementById('skuMemberSelect');
+            if(skuMemberSelect){
+                skuMemberSelect.innerHTML = '<option value="all">All Members</option>';
+                members.forEach(member => {
+                    skuMemberSelect.innerHTML += `<option value="${member.username}">${member.name}</option>`;
+                });
+            }
+            
+            const allCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
+            const skuCategorySelect = document.getElementById('skuCategorySelect');
+            if(skuCategorySelect){
+                skuCategorySelect.innerHTML = '<option value="all">All Categories</option>';
+                allCategories.forEach(cat => {
+                    skuCategorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+                });
+            }
+
+            const skuProductSelect = document.getElementById('skuProductSelect');
+            if(skuProductSelect) {
+                skuProductSelect.innerHTML = '<option value="all">All Products</option>';
+                state.products.sort((a,b) => a.name.localeCompare(b.name)).forEach(product => {
+                    skuProductSelect.innerHTML += `<option value="${product.name}">${product.name}</option>`;
+                });
+            }
+
 
             document.getElementById('adminProductSearch').value = '';
             renderProductManagement(state.products);
@@ -1769,25 +1882,13 @@
             renderCategoryManagement();
             renderVoiceSettings();
             renderSkuReportSettings();
+            renderReportFormatSettings();
 
-            // Setup new sidebar UI
             await setupAdminSidebar();
             switchAdminView('view_dashboard_default');
             
-            renderTeamAdminReports(); // Render for default view
-            renderCategoryWiseReport(); // Render for default view
-            
-            // Populate SKU wise report view
-            const skuReportContainer = document.getElementById('skuReportContainer');
-            skuReportContainer.innerHTML = '';
-            const teamReportClone = document.getElementById('view_team_report').cloneNode(true);
-            const dateRangeReportClone = document.getElementById('view_date_range_report').cloneNode(true);
-            teamReportClone.querySelector('h3').innerText = "Daily Team Report (Consolidated)";
-            dateRangeReportClone.querySelector('h3').innerText = "Date Range Report (Consolidated)";
-            skuReportContainer.appendChild(teamReportClone);
-            skuReportContainer.appendChild(document.createElement('hr'));
-            skuReportContainer.appendChild(dateRangeReportClone);
-
+            renderReportSubmissionStatus();
+            renderCategoryWiseReport();
         }
 
         function copyNotSubmittedNames() {
@@ -1802,6 +1903,49 @@
                 });
             }
         }
+
+        async function renderReportSubmissionStatus() {
+            const today = new Date().toISOString().split('T')[0];
+            const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
+            if (!admin) return;
+
+            const allMembers = admin.teamMembers && typeof admin.teamMembers === 'object' 
+                ? Object.values(admin.teamMembers).filter(m => m.status === 'active') 
+                : [];
+            
+            const reportsForDate = state.salesReports.filter(r => {
+                const reportDate = new Date(r.date);
+                const selectedDate = new Date(today);
+                return r.team === state.loggedInUserName &&
+                        reportDate.getFullYear() === selectedDate.getFullYear() &&
+                        reportDate.getMonth() === selectedDate.getMonth() &&
+                        reportDate.getDate() === selectedDate.getDate();
+            });
+            const submittedMemberUsernames = new Set(reportsForDate.map(r => r.submittedBy));
+            const notSubmittedMembers = allMembers.filter(m => !submittedMemberUsernames.has(m.username));
+
+            const statusContainer = document.getElementById('reportSubmissionStatus');
+            const totalMembers = allMembers.length;
+            const submittedCount = submittedMemberUsernames.size;
+            let notSubmittedNames = notSubmittedMembers.map(m => m.name).join(', ');
+            if (notSubmittedNames) {
+                notSubmittedNames = "যারা এখনো রিপোর্ট দেননি তাদের নাম দেয়া হলো, অনুগ্রহ পূর্বক রিপোর্ট দেন !!! " + notSubmittedNames + " belly9t-coder.github.io";
+            }
+
+            statusContainer.innerHTML = `
+                <p class="font-bold">Total Members: ${totalMembers} | Submitted: ${submittedCount} | Not Submitted: ${notSubmittedMembers.length}</p>
+                ${notSubmittedMembers.length > 0 ? `
+                    <div class="mt-2">
+                        <label for="notSubmittedNames" class="font-semibold">Members who did not submit:</label>
+                        <div class="flex items-center">
+                            <textarea readonly class="input-field !mb-0 flex-grow" rows="2">${notSubmittedNames}</textarea>
+                            <button onclick="copyNotSubmittedNames()" class="btn btn-secondary ml-2">Copy</button>
+                        </div>
+                    </div>
+                ` : '<p class="mt-2 text-green-600 font-semibold">All active members have submitted their reports!</p>'}
+            `;
+        }
+
         
         async function copyTable(tableId) {
             const table = document.getElementById(tableId);
@@ -1910,52 +2054,16 @@
             const { productData, reportingMembers } = getReportDataForDateRange(selectedDateValue, finalEndDate, selectedMember, selectedProduct);
 
             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
-            const allMembers = admin.teamMembers && typeof admin.teamMembers === 'object' 
-                ? Object.values(admin.teamMembers).filter(m => m.status === 'active') 
-                : [];
-            
-            // Submission status check for single day, non-filtered report
-            if (!isDateRange && !selectedMember && !selectedProduct) {
-                 const reportsForDate = state.salesReports.filter(r => {
-                    const reportDate = new Date(r.date);
-                    const selectedDate = new Date(selectedDateValue);
-                    return r.team === state.loggedInUserName &&
-                           reportDate.getFullYear() === selectedDate.getFullYear() &&
-                           reportDate.getMonth() === selectedDate.getMonth() &&
-                           reportDate.getDate() === selectedDate.getDate();
-                });
-                const submittedMemberUsernames = new Set(reportsForDate.map(r => r.submittedBy));
-                const notSubmittedMembers = allMembers.filter(m => !submittedMemberUsernames.has(m.username));
-
-                const statusContainer = document.getElementById('reportSubmissionStatus');
-                const totalMembers = allMembers.length;
-                const submittedCount = submittedMemberUsernames.size;
-                let notSubmittedNames = notSubmittedMembers.map(m => m.name).join(', ');
-                if (notSubmittedNames) {
-                    notSubmittedNames = "যারা এখনো রিপোর্ট দেননি তাদের নাম দেয়া হলো, অনুগ্রহ পূর্বক রিপোর্ট দেন !!! " + notSubmittedNames + " belly9t-coder.github.io";
-                }
-
-                statusContainer.innerHTML = `
-                    <p class="font-bold">Total Members: ${totalMembers} | Submitted: ${submittedCount} | Not Submitted: ${notSubmittedMembers.length}</p>
-                    ${notSubmittedMembers.length > 0 ? `
-                        <div class="mt-2">
-                            <label for="notSubmittedNames" class="font-semibold">Members who did not submit:</label>
-                            <div class="flex items-center">
-                                <textarea readonly class="input-field !mb-0 flex-grow" rows="2">${notSubmittedNames}</textarea>
-                                <button onclick="copyNotSubmittedNames()" class="btn btn-secondary ml-2">Copy</button>
-                            </div>
-                        </div>
-                    ` : '<p class="mt-2 text-green-600 font-semibold">All active members have submitted their reports!</p>'}
-                `;
-            } else if (!isDateRange) {
-                 document.getElementById('reportSubmissionStatus').innerHTML = `<p class="font-bold">Displaying filtered report.</p>`;
-            }
+            if (!admin) return;
 
             const tablePrefix = isDateRange ? 'dateRange' : '';
             const memberRow = document.getElementById(`${tablePrefix}MemberRow`);
             const subHeaderRow = document.getElementById(`${tablePrefix}SubHeaderRow`);
             const tableBody = document.getElementById(`${tablePrefix}TableBody`);
             const tableFoot = document.getElementById(`${tablePrefix}TableFoot`);
+
+            if (!memberRow || !subHeaderRow || !tableBody || !tableFoot) return;
+
 
             if (Object.keys(productData).length === 0) {
                 if (memberRow) memberRow.innerHTML = '';
@@ -2047,14 +2155,33 @@
             const wb = XLSX.utils.table_to_book(table, {sheet: "Report"});
             
             let fileName;
-            if(tableId === 'dateRangeReportTable' || tableId === 'categoryReportTable') {
-                const startDate = document.getElementById(tableId === 'categoryReportTable' ? 'categoryReportStartDate' : 'reportStartDate').value;
-                const endDate = document.getElementById(tableId === 'categoryReportTable' ? 'categoryReportEndDate' : 'reportEndDate').value;
-                const prefix = tableId === 'categoryReportTable' ? 'CategoryWiseReport' : 'SalesReport';
-                fileName = `${prefix}_${startDate}_to_${endDate}.xlsx`;
-            } else {
-                const selectedDate = document.getElementById('reportDate').value;
-                fileName = `SalesReport_${selectedDate}.xlsx`;
+            let startDate, endDate;
+
+            switch(tableId) {
+                case 'dateRangeReportTable':
+                    startDate = document.getElementById('reportStartDate').value;
+                    endDate = document.getElementById('reportEndDate').value;
+                    fileName = `SalesReport_${startDate}_to_${endDate}.xlsx`;
+                    break;
+                case 'categoryReportTable':
+                    startDate = document.getElementById('categoryReportStartDate').value;
+                    endDate = document.getElementById('categoryReportEndDate').value;
+                    fileName = `CategoryWiseReport_${startDate}_to_${endDate}.xlsx`;
+                    break;
+                case 'skuTgtVsSalesReportTable':
+                    const tgtDate = document.getElementById('skuTgtDate').value;
+                    const salesDate = document.getElementById('skuSalesDate').value;
+                    fileName = `TgtVsSales_${tgtDate}_vs_${salesDate}.xlsx`;
+                    break;
+                 case 'myCategoryReportTable':
+                    startDate = document.getElementById('myCategoryReportStartDate').value;
+                    endDate = document.getElementById('myCategoryReportEndDate').value;
+                    fileName = `MyCategoryReport_${startDate}_to_${endDate}.xlsx`;
+                    break;
+                default: // 'reportTable'
+                    const selectedDate = document.getElementById('reportDate').value;
+                    fileName = `SalesReport_${selectedDate}.xlsx`;
+                    break;
             }
 
             XLSX.writeFile(wb, fileName);
@@ -2100,10 +2227,10 @@
 
                 state.loggedInUser = user.id;
                 state.loggedInUserName = user.name;
-                state.loggedInUserUsername = user.username; 
+                state.loggedInUserUsername = user.username;
                 state.loggedInUserRole = user.role;
                 state.loggedInUserTeam = user.team;
-                state.loggedInUserTeamId = teamAdminInfo.id;
+                state.loggedInUserTeamId = user.teamId;
                 
                 await getFullState();
                 renderTeamMemberDashboard();
@@ -2153,7 +2280,7 @@
                      const amount = rate * sales;
                      
                      if (state.currentReportItems.find(item => item.name === product.name)) {
-                        showAlert(`Product "${product.name}" is already in the report. Please remove the existing one to add again.`);
+                        showAlert(`Product "${product.name}" is already in the report. Please remove the existing existing one to add again.`);
                         itemsToAdd = []; // stop processing
                         return;
                     }
@@ -2365,11 +2492,6 @@
         }
 
         function renderTeamMemberDashboard() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('memberReportStartDate').value = today;
-            document.getElementById('memberReportEndDate').value = today;
-
-
             document.getElementById('loggedInTeamMemberName').innerText = state.loggedInUserName;
             
             const noticeContainer = document.getElementById('teamAdminNoticeContainer');
@@ -2467,102 +2589,33 @@
             renderCurrentReportItems();
             
             // Show/hide dynamic report view for member
-            const adminReportingSettings = state.reportingSettings[state.loggedInUserTeamId] || {};
-            const dynamicReportView = document.getElementById('memberDynamicReportView');
-
-            if (adminReportingSettings.skuReportEnabled) {
-                 dynamicReportView.style.display = 'block';
-                 const skuReportContainerAdmin = document.getElementById('skuReportContainer');
-                 dynamicReportView.innerHTML = `<h3 class="text-lg font-semibold mb-2">Admin Enabled Report</h3>` + skuReportContainerAdmin.innerHTML;
-            } else {
-                dynamicReportView.style.display = 'none';
-                dynamicReportView.innerHTML = '';
-            }
+            renderMemberDynamicReports();
         }
 
-        function renderMemberPersonalReport() {
-            const contentDiv = document.getElementById('memberPersonalReportContent');
-            contentDiv.style.display = 'block';
+        function renderMemberDynamicReports() {
+            const adminReportingSettings = state.reportingSettings[state.loggedInUserTeamId] || {};
+            const enabledReportFormatId = adminReportingSettings.enabledReportView;
 
-            const startDateStr = document.getElementById('memberReportStartDate').value;
-            const endDateStr = document.getElementById('memberReportEndDate').value;
-            const selectedMemberUsername = state.loggedInUserUsername;
+            // Hide all dynamic report formats first
+            document.querySelectorAll('#memberDynamicReportView > div').forEach(el => el.style.display = 'none');
 
-            if (!startDateStr || !endDateStr) {
-                contentDiv.innerHTML = '<p class="text-red-500">Please select both start and end dates.</p>';
-                return;
-            }
-
-            const startDate = new Date(startDateStr);
-            startDate.setHours(0, 0, 0, 0);
-            const endDate = new Date(endDateStr);
-            endDate.setHours(23, 59, 59, 999);
-
-            let relevantReports = state.salesReports.filter(r => {
-                return r.submittedBy === selectedMemberUsername && new Date(r.date).getTime() >= startDate.getTime() && new Date(r.date).getTime() <= endDate.getTime();
-            });
-            
-            const categoryData = {};
-            Object.keys(reportingCategories).forEach(cat => {
-                categoryData[cat] = { tgtAmount: 0, salesAmount: 0 };
-            });
-
-            relevantReports.forEach(report => {
-                report.reportData.items.forEach(item => {
-                    for (const categoryName in reportingCategories) {
-                        if (reportingCategories[categoryName].includes(item.name)) {
-                            const productInfo = state.products.find(p => p.name === item.name);
-                            const rate = productInfo ? productInfo.rate : item.rate;
-                            categoryData[categoryName].tgtAmount += item.tgt * rate;
-                            categoryData[categoryName].salesAmount += item.sales * rate;
-                            break; 
+            if (enabledReportFormatId) {
+                const reportFormatContainer = document.getElementById('member' + enabledReportFormatId.replace(/view/g, ''));
+                 if (reportFormatContainer) {
+                    document.getElementById('memberDynamicReportView').style.display = 'block';
+                    reportFormatContainer.style.display = 'block';
+                    
+                    const today = new Date().toISOString().split('T')[0];
+                    reportFormatContainer.querySelectorAll('input[type="date"]').forEach(input => {
+                        if (!input.value) { // Set date only if it's not already set
+                            input.value = today;
                         }
-                    }
-                });
-            });
+                    });
 
-            // Render Table
-            let tableHtml = `
-                <table class="w-full text-left text-sm mt-4">
-                    <thead class="bg-gray-200">
-                        <tr>
-                            <th class="p-2 font-semibold">Category</th>
-                            <th class="p-2 font-semibold text-right">TGT Amount</th>
-                            <th class="p-2 font-semibold text-right">Sales Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            let totalTgt = 0;
-            let totalSales = 0;
-
-            for (const categoryName in categoryData) {
-                const data = categoryData[categoryName];
-                totalTgt += data.tgtAmount;
-                totalSales += data.salesAmount;
-                tableHtml += `
-                    <tr class="border-b">
-                        <td class="p-2">${categoryName}</td>
-                        <td class="p-2 text-right">${Math.round(data.tgtAmount).toLocaleString()}</td>
-                        <td class="p-2 text-right">${Math.round(data.salesAmount).toLocaleString()}</td>
-                    </tr>
-                `;
+                }
+            } else {
+                document.getElementById('memberDynamicReportView').style.display = 'none';
             }
-            
-            tableHtml += `
-                    </tbody>
-                    <tfoot class="font-bold bg-gray-100">
-                        <tr>
-                            <td class="p-2">Grand Total</td>
-                            <td class="p-2 text-right">${Math.round(totalTgt).toLocaleString()}</td>
-                            <td class="p-2 text-right">${Math.round(totalSales).toLocaleString()}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            `;
-
-            contentDiv.innerHTML = tableHtml;
         }
         
         function renderAdvertisements(pageId) {
@@ -2640,52 +2693,8 @@
             setTimeout(() => synth.speak(utterance), 100);
         }
 
-        async function playAdminWelcomeVoice() {
-            playVoice("স্বাগতম এডমিন");
-
-            const today = new Date().toISOString().split('T')[0];
-            const { grandTotalAmount } = getReportDataForDateRange(today, today, 'all', 'all');
-            
-             const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
-            const allMembers = admin.teamMembers && typeof admin.teamMembers === 'object' ? Object.values(admin.teamMembers).filter(m => m.status === 'active') : [];
-             const reportsForDate = state.salesReports.filter(r => {
-                const reportDate = new Date(r.date);
-                const selectedDate = new Date(today);
-                return r.team === state.loggedInUserName &&
-                       reportDate.getFullYear() === selectedDate.getFullYear() &&
-                       reportDate.getMonth() === selectedDate.getMonth() &&
-                       reportDate.getDate() === selectedDate.getDate();
-            });
-            const submittedMemberUsernames = new Set(reportsForDate.map(r => r.submittedBy));
-            const notSubmittedMembers = allMembers.filter(m => !submittedMemberUsernames.has(m.username));
-
-
-            const adminSettings = state.voiceSettings[state.loggedInUser] || {};
-            const repeatCount = parseInt(adminSettings.repeatCount, 10) || 1;
-
-            let fullMessage = "";
-            if (notSubmittedMembers.length > 0) {
-                fullMessage += `${notSubmittedMembers.length} জন সদস্য এখনও রিপোর্ট জমা দেননি। `;
-            } else {
-                fullMessage += `সকল সদস্য তাদের রিপোর্ট জমা দিয়েছেন। `;
-            }
-            fullMessage += `আজকের মোট বিক্রির পরিমাণ হলো ${Math.round(grandTotalAmount)} টাকা।`;
-
-            let repeatCounter = 0;
-            const playRepeatedly = () => {
-                if (repeatCounter < repeatCount) {
-                    repeatCounter++;
-                    playVoice(fullMessage, playRepeatedly);
-                }
-            };
-            
-            setTimeout(() => {
-                playRepeatedly();
-            }, 2000);
-        }
-
         async function playWelcomeVoice(role) {
-             if (role === 'member') {
+             if (role === 'teammember') {
                 const todayStart = new Date();
                 todayStart.setHours(0, 0, 0, 0);
                 const hasSubmittedToday = state.salesReports.some(r => 
@@ -2933,7 +2942,6 @@
             const selectedMemberUsername = document.getElementById('categoryReportMemberSelect').value;
 
             if (!startDateStr || !endDateStr) {
-                // Just return without alert, as it might be called on init
                 return;
             }
 
@@ -2943,31 +2951,33 @@
             endDate.setHours(23, 59, 59, 999);
 
             let relevantReports = state.salesReports.filter(r => {
-                return r.team === state.loggedInUserName && new Date(r.date).getTime() >= startDate.getTime() && new Date(r.date).getTime() <= endDate.getTime();
+                const reportDate = new Date(r.date);
+                return r.team === state.loggedInUserName &&
+                       reportDate.getTime() >= startDate.getTime() && 
+                       reportDate.getTime() <= endDate.getTime();
             });
 
             if (selectedMemberUsername !== 'all') {
                 relevantReports = relevantReports.filter(r => r.submittedBy === selectedMemberUsername);
             }
-
+            
             const categoryData = {};
-            Object.keys(reportingCategories).forEach(cat => {
+            const allCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))];
+            allCategories.forEach(cat => {
                 categoryData[cat] = { tgtAmount: 0, salesAmount: 0 };
             });
 
             relevantReports.forEach(report => {
-                report.reportData.items.forEach(item => {
-                    for (const categoryName in reportingCategories) {
-                        if (reportingCategories[categoryName].includes(item.name)) {
-                            const productInfo = state.products.find(p => p.name === item.name);
-                            const rate = productInfo ? productInfo.rate : item.rate;
-                            categoryData[categoryName].tgtAmount += item.tgt * rate;
-                            categoryData[categoryName].salesAmount += item.sales * rate;
-                            // An item belongs to only one reporting category, so we can break.
-                            break; 
+                if (report.reportData && report.reportData.items) {
+                    report.reportData.items.forEach(item => {
+                        const productInfo = state.products.find(p => p.name === item.name);
+                        if (productInfo && productInfo.category && categoryData[productInfo.category]) {
+                            const rate = productInfo.rate;
+                            categoryData[productInfo.category].tgtAmount += item.tgt * rate;
+                            categoryData[productInfo.category].salesAmount += item.sales * rate;
                         }
-                    }
-                });
+                    });
+                }
             });
 
             // Render Chart
@@ -3056,21 +3066,89 @@
 
             tableContainer.innerHTML = tableHtml;
         }
-
-        function exportCategoryReportToExcel() {
-            const table = document.getElementById('categoryReportTable');
-            if (!table || table.rows.length <= 1) { // Check if table has more than just header
-                return showAlert('No data available to export.');
-            }
-            const wb = XLSX.utils.table_to_book(table, { sheet: "Category Report" });
-
-            const startDate = document.getElementById('categoryReportStartDate').value;
-            const endDate = document.getElementById('categoryReportEndDate').value;
-
-            const fileName = `CategoryWiseReport_${startDate}_to_${endDate}.xlsx`;
-            XLSX.writeFile(wb, fileName);
-        }
         
+         function renderMyCategoryWiseReport() {
+            const startDateStr = document.getElementById('myCategoryReportStartDate').value;
+            const endDateStr = document.getElementById('myCategoryReportEndDate').value;
+            const myUsername = state.loggedInUserUsername;
+
+            if (!startDateStr || !endDateStr || !myUsername) {
+                return;
+            }
+
+            const startDate = new Date(startDateStr);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(endDateStr);
+            endDate.setHours(23, 59, 59, 999);
+
+            const myReports = state.salesReports.filter(r => {
+                return r.submittedBy === myUsername && new Date(r.date).getTime() >= startDate.getTime() && new Date(r.date).getTime() <= endDate.getTime();
+            });
+
+            const categoryData = {};
+            const allCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))];
+            allCategories.forEach(cat => {
+                categoryData[cat] = { tgtAmount: 0, salesAmount: 0 };
+            });
+
+            myReports.forEach(report => {
+                report.reportData.items.forEach(item => {
+                    const productInfo = state.products.find(p => p.name === item.name);
+                    if (productInfo && productInfo.category && categoryData[productInfo.category]) {
+                        const rate = productInfo.rate;
+                        categoryData[productInfo.category].tgtAmount += item.tgt * rate;
+                        categoryData[productInfo.category].salesAmount += item.sales * rate;
+                    }
+                });
+            });
+
+            // Render Table
+            const tableContainer = document.getElementById('myCategoryReportTableContainer');
+            let tableHtml = `
+                <table class="w-full text-left text-sm mt-4" id="myCategoryReportTable">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="p-2 font-semibold">Category</th>
+                            <th class="p-2 font-semibold text-right">TGT Amount</th>
+                            <th class="p-2 font-semibold text-right">Sales Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let totalTgt = 0;
+            let totalSales = 0;
+
+            for (const categoryName in categoryData) {
+                const data = categoryData[categoryName];
+                 if(data.tgtAmount > 0 || data.salesAmount > 0) {
+                    totalTgt += data.tgtAmount;
+                    totalSales += data.salesAmount;
+                    tableHtml += `
+                        <tr class="border-b">
+                            <td class="p-2">${categoryName}</td>
+                            <td class="p-2 text-right">${Math.round(data.tgtAmount).toLocaleString()}</td>
+                            <td class="p-2 text-right">${Math.round(data.salesAmount).toLocaleString()}</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            tableHtml += `
+                    </tbody>
+                    <tfoot class="font-bold bg-gray-100">
+                        <tr>
+                            <td class="p-2">Grand Total</td>
+                            <td class="p-2 text-right">${Math.round(totalTgt).toLocaleString()}</td>
+                            <td class="p-2 text-right">${Math.round(totalSales).toLocaleString()}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+
+            tableContainer.innerHTML = tableHtml;
+        }
+
         // --- Voice Assistant Functions ---
         function setupVoiceAssistant() {
             const micBtn = document.getElementById('mic-btn');
@@ -3179,32 +3257,28 @@
         // --- Sidebar and New UI Functions ---
         async function getSidebarMenuConfig() {
             const adminId = state.loggedInUser;
-            const snapshot = await db.ref(`sidebarMenuConfig/${adminId}`).once('value');
-            const config = snapshot.val();
-            if (config) {
-                state.sidebarMenuConfig = config;
-            } else {
-                state.sidebarMenuConfig = [
-                    { id: 'dashboard_default', name: 'Dashboard Home', icon: '🏠', children: [] },
-                    { id: 'team_report', name: 'Daily Team Report', icon: '📊', children: [] },
-                    { id: 'date_range_report', name: 'Date Range Report', icon: '📅', children: [] },
-                    { id: 'reporting_format', name: 'Reporting Format', icon: '📋', children: [
-                        { id: 'reporting_format_sku', name: 'SKU Wise Report', icon: '📦', children: [] },
-                    ] },
-                    { id: 'create_team_member', name: 'Create Team Member', icon: '➕', children: [] },
-                    { id: 'all_sections', name: 'All Section Management', icon: '⚙️', children: [
-                        { id: 'manage_team_members', name: 'Manage Team Members', children: [] },
-                        { id: 'notice_for_members', name: 'Notice for Members', children: [] },
-                        { id: 'add_new_product', name: 'Add New Product', children: [] },
-                        { id: 'manage_products', name: 'Manage Products', children: [] },
-                        { id: 'manage_categories', name: 'Manage Categories', children: [] },
-                        { id: 'notification_system', name: 'Notification System', children: [] },
-                        { id: 'logout_settings', name: 'Logout Settings', children: [] },
-                        { id: 'voice_settings', name: 'Voice Settings', children: [] },
-                    ]}
-                ];
-                await saveSidebarMenuConfig();
-            }
+            // Always use the new static menu configuration
+            state.sidebarMenuConfig = [
+                { id: 'dashboard_default', name: 'Dashboard Home', icon: '🏠', children: [] },
+                { id: 'team_report', name: 'Daily Team Report', icon: '📊', children: [] },
+                { id: 'date_range_report', name: 'Date Range Report', icon: '📅', children: [] },
+                { id: 'sku_tgt_vs_sales_report', name: 'SKU TGT vs Sales Report', icon: '📈', children: [] },
+                 { id: 'reporting_formats', name: 'Reporting Formats', icon: '📄', children: [
+                     { id: 'report_format_1', name: 'Report Format 1', children: [] },
+                 ]},
+                { id: 'create_team_member', name: 'Create Team Member', icon: '➕', children: [] },
+                { id: 'all_sections', name: 'All Section Management', icon: '⚙️', children: [
+                    { id: 'manage_team_members', name: 'Manage Team Members', children: [] },
+                    { id: 'notice_for_members', name: 'Notice for Members', children: [] },
+                    { id: 'add_new_product', name: 'Add New Product', children: [] },
+                    { id: 'manage_products', name: 'Manage Products', children: [] },
+                    { id: 'manage_categories', name: 'Manage Categories', children: [] },
+                    { id: 'notification_system', name: 'Notification System', children: [] },
+                    { id: 'logout_settings', name: 'Logout Settings', children: [] },
+                    { id: 'voice_settings', name: 'Voice Settings', children: [] },
+                ]}
+            ];
+            await saveSidebarMenuConfig(); // Overwrite with static config to ensure consistency
         }
 
         async function saveSidebarMenuConfig() {
@@ -3218,12 +3292,13 @@
 
             const createMenuItemHTML = (item) => {
                 const hasChildren = item.children && item.children.length > 0;
+                const isSubItem = item.id.includes('report_format'); // Simple check if it's a sub-item
+                const itemClass = isSubItem ? 'sidebar-submenu-item' : 'sidebar-menu-item';
+                
                 return `
                     <div class="sidebar-menu-container" data-id="${item.id}">
-                        <div class="sidebar-menu-item" onclick="${!hasChildren ? `switchAdminView('view_${item.id}')` : `toggleSubmenu(this)`}" id="menu_item_${item.id}">
+                        <div class="${itemClass}" onclick="${!hasChildren ? `switchAdminView('view_${item.id}')` : `toggleSubmenu(this)`}" id="menu_item_${item.id}">
                             <span class="flex-grow">${item.icon || ''} ${item.name}</span>
-                            <button class="add-submenu-btn" onclick="event.stopPropagation(); addNewSubMenu('${item.id}');">+</button>
-                            <button class="delete-menu-btn" onclick="event.stopPropagation(); deleteMenu('${item.id}');">&times;</button>
                             ${hasChildren ? '<span class="transform transition-transform duration-200">&#9656;</span>' : ''}
                         </div>
                         ${hasChildren ? `
@@ -3236,7 +3311,6 @@
             };
 
             nav.innerHTML = menuConfig.map(createMenuItemHTML).join('');
-            initSortable();
         }
 
         function toggleSubmenu(element) {
@@ -3248,31 +3322,8 @@
             }
         }
         
-        async function addNewSubMenu(parentId) {
-            const name = prompt("Enter new sub-menu name:");
-            if (!name) return;
-            const id = name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
-            const newItem = { id, name, children: [] };
-
-            const findAndAddItem = (items) => {
-                for (const item of items) {
-                    if (item.id === parentId) {
-                        item.children.push(newItem);
-                        return true;
-                    }
-                    if (item.children && findAndAddItem(item.children)) {
-                        return true;
-                    }
-                }
-                return false;
-            };
-
-            findAndAddItem(state.sidebarMenuConfig);
-            renderSidebarMenu(state.sidebarMenuConfig);
-            await saveSidebarMenuConfig();
-        }
-
         async function addNewMainMenu() {
+            // This button is hidden but function is kept for potential future use.
             const name = prompt("Enter new menu name:");
             if (!name) return;
             const id = name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
@@ -3282,103 +3333,12 @@
             await saveSidebarMenuConfig();
         }
         
-        async function deleteMenu(itemId) {
-            if (!confirm("Are you sure you want to delete this menu and all its sub-menus?")) return;
-
-            const findAndRemove = (items) => {
-                const index = items.findIndex(item => item.id === itemId);
-                if (index > -1) {
-                    items.splice(index, 1);
-                    return true;
-                }
-                for (const item of items) {
-                    if (item.children && findAndRemove(item.children)) {
-                        return true;
-                    }
-                }
-                return false;
-            };
-
-            findAndRemove(state.sidebarMenuConfig);
-            renderSidebarMenu(state.sidebarMenuConfig);
-            await saveSidebarMenuConfig();
-        }
-        
-        function initSortable() {
-            const nav = document.getElementById('sidebar-nav');
-            const submenus = nav.querySelectorAll('.sidebar-submenu');
-
-            const sortableOptions = {
-                group: 'nested',
-                animation: 150,
-                fallbackOnBody: true,
-                swapThreshold: 0.65,
-                onEnd: async (evt) => {
-                    const getPath = (element) => {
-                        let path = [];
-                        let current = element;
-                        while (current && current.id !== 'sidebar-nav') {
-                            if (current.dataset.id) {
-                                path.unshift(current.dataset.id);
-                            }
-                            current = current.parentElement;
-                        }
-                        return path;
-                    };
-                    
-                    const fromPath = getPath(evt.from);
-                    const toPath = getPath(evt.to);
-                    const itemId = evt.item.dataset.id;
-                    
-                    let draggedItem = null;
-
-                    const findAndRemove = (items, id) => {
-                        let found = null;
-                        for(let i=0; i<items.length; i++){
-                            if(items[i].id === id) {
-                                found = items.splice(i, 1)[0];
-                                break;
-                            }
-                            if(items[i].children) {
-                                found = findAndRemove(items[i].children, id);
-                                if(found) break;
-                            }
-                        }
-                        return found;
-                    };
-
-                    draggedItem = findAndRemove(state.sidebarMenuConfig, itemId);
-
-                    if(draggedItem) {
-                        const findAndInsert = (items, path, itemToInsert, newIndex) => {
-                           let currentLevel = items;
-                           for(const p of path) {
-                               const parent = currentLevel.find(i => i.id === p);
-                               if(parent) {
-                                   currentLevel = parent.children;
-                               }
-                           }
-                           currentLevel.splice(newIndex, 0, itemToInsert);
-                        };
-
-                        findAndInsert(state.sidebarMenuConfig, toPath.slice(0, -1), draggedItem, evt.newIndex);
-                    }
-                    
-                    await saveSidebarMenuConfig();
-                    renderSidebarMenu(state.sidebarMenuConfig);
-                }
-            };
-            
-            new Sortable(nav, sortableOptions);
-            submenus.forEach(submenu => {
-                new Sortable(submenu, sortableOptions);
-            });
-        }
-
-
         async function setupAdminSidebar() {
             await getSidebarMenuConfig();
             renderSidebarMenu(state.sidebarMenuConfig);
+            // Hide "Add Menu" button as menu is now static
+            const addMenuBtn = document.querySelector('button[onclick="addNewMainMenu()"]');
+            if (addMenuBtn) addMenuBtn.style.display = 'none';
         }
         
         function switchAdminView(viewId) {
@@ -3387,7 +3347,6 @@
             if(view) {
                 view.classList.add('active');
             } else {
-                // If view doesn't exist, show a placeholder or default
                 document.getElementById('view_dashboard_default').classList.add('active');
                 console.warn(`View with id "${viewId}" not found. Showing default.`);
             }
@@ -3398,14 +3357,23 @@
             const activeItem = document.getElementById(menuItemId);
             if(activeItem) {
                 activeItem.classList.add('active');
+                
                 let parent = activeItem.closest('.sidebar-submenu');
                 while(parent) {
-                    parent.classList.add('show');
-                    const parentMenu = parent.closest('.sidebar-menu-container').querySelector('.sidebar-menu-item');
-                    if(parentMenu) {
-                        parentMenu.classList.add('active');
-                        parentMenu.querySelector('span.transform')?.classList.add('rotate-90');
+                    if (!parent.classList.contains('show')) {
+                        parent.classList.add('show');
+                         const parentMenu = parent.closest('.sidebar-menu-container').querySelector('.sidebar-menu-item');
+                        if(parentMenu) {
+                           const arrow = parentMenu.querySelector('span.transform');
+                           if (arrow && !arrow.classList.contains('rotate-90')) {
+                               arrow.classList.add('rotate-90');
+                           }
+                        }
                     }
+                    // Mark parent menu item as active for visual indication
+                    const parentMenuItem = parent.closest('.sidebar-menu-container').querySelector('.sidebar-menu-item');
+                     if(parentMenuItem) parentMenuItem.classList.add('active');
+
                     parent = parent.parentElement.closest('.sidebar-submenu');
                 }
             }
@@ -3432,19 +3400,215 @@
         function renderSkuReportSettings() {
             const adminId = state.loggedInUser;
             const settings = state.reportingSettings[adminId] || {};
-            document.getElementById('enableSkuReport').checked = settings.skuReportEnabled || false;
-        }
-
-        async function toggleSkuReportForMembers(isEnabled) {
-            const adminId = state.loggedInUser;
-            const currentSettings = state.reportingSettings[adminId] || {};
-            const newSettings = { ...currentSettings, skuReportEnabled: isEnabled };
+            const viewId = 'sku_tgt_vs_sales_report';
+            const isEnabled = settings.enabledReportView === viewId;
             
-            await db.ref(`reportingSettings/${adminId}`).set(newSettings);
-            state.reportingSettings[adminId] = newSettings;
-            showAlert(`SKU Wise Report for team members has been ${isEnabled ? 'enabled' : 'disabled'}.`);
+            const toggleContainer = document.getElementById('skuReportMemberToggle');
+            if(toggleContainer){
+                toggleContainer.innerHTML = `
+                    <label for="enableSkuReportForMembers" class="font-semibold text-gray-700">Enable this Report for Team Members</label>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="enableSkuReportForMembers" class="sr-only peer" ${isEnabled ? 'checked' : ''} onchange="toggleMemberReportFormat('${viewId}', this.checked)">
+                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                `;
+            }
         }
 
+        function renderReportFormatSettings() {
+            const adminId = state.loggedInUser;
+            const settings = state.reportingSettings[adminId] || {};
+            const viewId = 'report_format_1';
+            const isEnabled = settings.enabledReportView === viewId;
+
+            const checkbox = document.getElementById('enableReportFormat1');
+            if (checkbox) {
+                checkbox.checked = isEnabled;
+            }
+        }
+
+
+        async function toggleMemberReportFormat(viewId, isEnabled) {
+             const adminId = state.loggedInUser;
+             let currentSettings = state.reportingSettings[adminId] || {};
+             
+             let newEnabledViewId = isEnabled ? viewId.replace('view_','') : null;
+             
+             const newSettings = { ...currentSettings, enabledReportView: newEnabledViewId };
+             
+             await db.ref(`reportingSettings/${adminId}`).set(newSettings);
+             state.reportingSettings[adminId] = newSettings;
+             showAlert(`Report format settings for team members has been updated.`);
+             renderSkuReportSettings();
+             renderReportFormatSettings();
+        }
+
+        // --- New TGT vs Sales Report ---
+        function renderSkuTgtVsSalesReport() {
+            const tgtDateStr = document.getElementById('skuTgtDate').value;
+            const salesDateStr = document.getElementById('skuSalesDate').value;
+            const memberUsername = document.getElementById('skuMemberSelect').value;
+            const category = document.getElementById('skuCategorySelect').value;
+            const productName = document.getElementById('skuProductSelect').value;
+
+            if (!tgtDateStr || !salesDateStr) {
+                return showAlert('Please select both a Target Date and a Sales Date.');
+            }
+
+            const getStartOfDay = (dateStr) => {
+                const date = new Date(dateStr);
+                date.setHours(0, 0, 0, 0);
+                return date;
+            };
+            const getEndOfDay = (dateStr) => {
+                const date = new Date(dateStr);
+                date.setHours(23, 59, 59, 999);
+                return date;
+            };
+
+            const tgtDateStart = getStartOfDay(tgtDateStr);
+            const tgtDateEnd = getEndOfDay(tgtDateStr);
+            const salesDateStart = getStartOfDay(salesDateStr);
+            const salesDateEnd = getEndOfDay(salesDateStr);
+
+            const teamUsername = state.loggedInUserName;
+            
+            let filteredProducts = [...state.products];
+            if (category !== 'all') {
+                filteredProducts = filteredProducts.filter(p => p.category === category);
+            }
+            if (productName !== 'all') {
+                filteredProducts = filteredProducts.filter(p => p.name === productName);
+            }
+
+            const admin = state.teamAdmins.find(a => a.id === state.loggedInUser);
+            if (!admin) return;
+            let members = admin.teamMembers ? Object.values(admin.teamMembers).filter(m => m.status === 'active') : [];
+            if(memberUsername !== 'all') {
+                members = members.filter(m => m.username === memberUsername);
+            }
+            const memberUsernames = members.map(m => m.username);
+            
+            // 1. Get all relevant reports
+            const reports = state.salesReports.filter(r => 
+                r.team === teamUsername &&
+                memberUsernames.includes(r.submittedBy)
+            );
+
+            // 2. Process reports to get TGT and Sales data
+            const reportData = {}; // { productName: { tgt: X, sales: Y, rate: Z }}
+            
+            filteredProducts.forEach(p => {
+                reportData[p.name] = {
+                    tgt: 0,
+                    sales: 0,
+                    rate: p.rate
+                };
+            });
+
+            reports.forEach(r => {
+                const reportTime = new Date(r.date).getTime();
+                const isTgtReport = reportTime >= tgtDateStart.getTime() && reportTime <= tgtDateEnd.getTime();
+                const isSalesReport = reportTime >= salesDateStart.getTime() && reportTime <= salesDateEnd.getTime();
+
+                if (isTgtReport || isSalesReport) {
+                    if (r.reportData && r.reportData.items) {
+                        r.reportData.items.forEach(item => {
+                            if (reportData[item.name]) {
+                                if (isTgtReport) {
+                                    reportData[item.name].tgt += item.tgt;
+                                }
+                                if (isSalesReport) {
+                                    reportData[item.name].sales += item.sales;
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
+            // 3. Render the table
+            const tableHead = document.querySelector('#skuTgtVsSalesReportTable thead');
+            const tableBody = document.getElementById('skuTgtVsSalesReportBody');
+            const tableFoot = document.getElementById('skuTgtVsSalesReportFoot');
+            tableBody.innerHTML = '';
+            tableFoot.innerHTML = '';
+
+            tableHead.innerHTML = `
+                <tr>
+                    <th rowspan="2">SL</th>
+                    <th rowspan="2">Product Name</th>
+                    <th rowspan="2">Rate</th>
+                    <th colspan="2">Quantity</th>
+                    <th colspan="2">Amount</th>
+                    <th colspan="2">Difference</th>
+                </tr>
+                <tr>
+                    <th>TGT</th>
+                    <th>Sales</th>
+                    <th>TGT Amt</th>
+                    <th>Sales Amt</th>
+                    <th>Diff Qty</th>
+                    <th>Diff Amt</th>
+                </tr>
+            `;
+
+            let totalTgtQty = 0, totalSalesQty = 0, totalTgtAmt = 0, totalSalesAmt = 0, totalDiffQty = 0, totalDiffAmt = 0;
+            let sl = 1;
+
+            filteredProducts.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+                const data = reportData[p.name];
+                if (data && (data.tgt > 0 || data.sales > 0)) {
+                    const tgtAmt = data.tgt * data.rate;
+                    const salesAmt = data.sales * data.rate;
+                    const diffQty = data.sales - data.tgt;
+                    const diffAmt = salesAmt - tgtAmt;
+
+                    totalTgtQty += data.tgt;
+                    totalSalesQty += data.sales;
+                    totalTgtAmt += tgtAmt;
+                    totalSalesAmt += salesAmt;
+                    totalDiffQty += diffQty;
+                    totalDiffAmt += diffAmt;
+
+                    const diffQtyClass = diffQty < 0 ? 'text-red-500' : 'text-green-500 font-bold';
+                    const diffAmtClass = diffAmt < 0 ? 'text-red-500' : 'text-green-500 font-bold';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${sl++}</td>
+                        <td style="text-align: left; padding-left: 5px; white-space: normal;">${p.name}</td>
+                        <td>${data.rate.toFixed(2)}</td>
+                        <td>${data.tgt}</td>
+                        <td>${data.sales}</td>
+                        <td>${Math.round(tgtAmt)}</td>
+                        <td>${Math.round(salesAmt)}</td>
+                        <td class="${diffQtyClass}">${diffQty}</td>
+                        <td class="${diffAmtClass}">${Math.round(diffAmt)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            });
+            
+            if (sl === 1) {
+                 tableBody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">No data available for the selected criteria.</td></tr>';
+            } else {
+                 const diffQtyClass = totalDiffQty < 0 ? 'text-red-500' : 'text-green-500';
+                 const diffAmtClass = totalDiffAmt < 0 ? 'text-red-500' : 'text-green-500';
+
+                 tableFoot.innerHTML = `
+                    <tr>
+                        <td colspan="3"><b>Grand Total</b></td>
+                        <td><b>${totalTgtQty}</b></td>
+                        <td><b>${totalSalesQty}</b></td>
+                        <td><b>${Math.round(totalTgtAmt)}</b></td>
+                        <td><b>${Math.round(totalSalesAmt)}</b></td>
+                        <td class="font-bold ${diffQtyClass}"><b>${totalDiffQty}</b></td>
+                        <td class="font-bold ${diffAmtClass}"><b>${Math.round(totalDiffAmt)}</b></td>
+                    </tr>
+                 `;
+            }
+        }
 
         // --- App Initialization ---
         async function initializeApp() {
@@ -3516,7 +3680,7 @@
                         state.loggedInUserName = savedUser.username;
                         renderTeamAdminDashboard();
                         showPage('teamAdminDashboard');
-                        playAdminWelcomeVoice();
+                        playVoice("স্বাগতম এডমিন");
                     } else if (savedUser.role === 'teammember') {
                         state.loggedInUserName = savedUser.name;
                         state.loggedInUserUsername = savedUser.username;
@@ -3538,6 +3702,10 @@
             }
 
             setupVoiceAssistant();
+             const today = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.value = today;
+            });
         }
 
         window.onload = initializeApp;
@@ -3545,3 +3713,4 @@
     </script>
 </body>
 </html>
+
