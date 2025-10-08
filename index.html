@@ -1648,7 +1648,7 @@
                 await getFullState(); 
                 renderTeamAdminDashboard();
                 showPage('teamAdminDashboard');
-                playVoice("স্বাগতম এডমিন");
+                
             } else {
                 showAlert('Invalid username or password.');
             }
@@ -3017,7 +3017,7 @@
             }
             
             const categoryData = {};
-            const allCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))];
+            const allCategories = Object.keys(reportingCategories);
             allCategories.forEach(cat => {
                 categoryData[cat] = { tgtAmount: 0, salesAmount: 0 };
             });
@@ -3026,10 +3026,15 @@
                 if (report.reportData && report.reportData.items) {
                     report.reportData.items.forEach(item => {
                         const productInfo = state.products.find(p => p.name === item.name);
-                        if (productInfo && productInfo.category && categoryData[productInfo.category]) {
-                            const rate = productInfo.rate;
-                            categoryData[productInfo.category].tgtAmount += item.tgt * rate;
-                            categoryData[productInfo.category].salesAmount += item.sales * rate;
+                        if (productInfo && productInfo.category) {
+                             for (const categoryName in reportingCategories) {
+                                if (reportingCategories[categoryName].includes(item.name)) {
+                                    const rate = productInfo.rate;
+                                    categoryData[categoryName].tgtAmount += item.tgt * rate;
+                                    categoryData[categoryName].salesAmount += item.sales * rate;
+                                    break; 
+                                }
+                            }
                         }
                     });
                 }
@@ -3141,7 +3146,7 @@
             });
 
             const categoryData = {};
-            const allCategories = [...new Set(state.products.map(p => p.category).filter(Boolean))];
+            const allCategories = Object.keys(reportingCategories);
             allCategories.forEach(cat => {
                 categoryData[cat] = { tgtAmount: 0, salesAmount: 0 };
             });
@@ -3149,10 +3154,15 @@
             myReports.forEach(report => {
                 report.reportData.items.forEach(item => {
                     const productInfo = state.products.find(p => p.name === item.name);
-                    if (productInfo && productInfo.category && categoryData[productInfo.category]) {
-                        const rate = productInfo.rate;
-                        categoryData[productInfo.category].tgtAmount += item.tgt * rate;
-                        categoryData[productInfo.category].salesAmount += item.sales * rate;
+                     if (productInfo && productInfo.category) {
+                        for (const categoryName in reportingCategories) {
+                            if (reportingCategories[categoryName].includes(item.name)) {
+                                const rate = productInfo.rate;
+                                categoryData[categoryName].tgtAmount += item.tgt * rate;
+                                categoryData[categoryName].salesAmount += item.sales * rate;
+                                break;
+                            }
+                        }
                     }
                 });
             });
@@ -3882,12 +3892,14 @@
                         showPage('superAdminDashboard');
                     } else if (savedUser.role === 'teamadmin') {
                         state.loggedInUserName = savedUser.username;
+                        state.loggedInUser = savedUser.id;
                         renderTeamAdminDashboard();
                         showPage('teamAdminDashboard');
                         playVoice("স্বাগতম এডমিন");
                     } else if (savedUser.role === 'teammember') {
                         state.loggedInUserName = savedUser.name;
                         state.loggedInUserUsername = savedUser.username;
+                        state.loggedInUserRole = 'teammember';
                         state.loggedInUserTeam = savedUser.team;
                         state.loggedInUserTeamId = savedUser.teamId;
                         renderTeamMemberDashboard();
